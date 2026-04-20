@@ -392,10 +392,10 @@ export default function HomePage() {
         <button
           onClick={handleAskAI}
           disabled={loading || loadingMore}
-          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all ${
+          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all active:scale-95 ${
             focusIds.size > 0
-              ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-md shadow-amber-200/50 dark:shadow-amber-900/30 disabled:opacity-50'
-              : 'btn-primary'
+              ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-md shadow-amber-200/50 dark:shadow-amber-900/30 disabled:opacity-50 animate-cta-pulse'
+              : 'btn-primary animate-cta-pulse'
           }`}
         >
           {loading
@@ -424,8 +424,10 @@ export default function HomePage() {
             </p>
             <div className="space-y-3">
               {recipes.map((recipe, i) => (
-                <RecipeCard key={`${recipe.title}-${i}`} recipe={recipe} saved={savedTitles.has(recipe.title)}
-                  onView={() => setSelectedRecipe(recipe)} onSave={() => handleSave(recipe)} />
+                <div key={`${recipe.title}-${i}`} className="animate-card-enter" style={{ animationDelay: `${i * 80}ms` }}>
+                  <RecipeCard recipe={recipe} saved={savedTitles.has(recipe.title)}
+                    onView={() => setSelectedRecipe(recipe)} onSave={() => handleSave(recipe)} />
+                </div>
               ))}
             </div>
             <button onClick={handleLoadMore} disabled={loadingMore}

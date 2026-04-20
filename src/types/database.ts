@@ -1,4 +1,4 @@
-export type DietaryPreference = 'vegetarian' | 'vegetarian_with_eggs' | 'vegan'
+export type DietaryPreference = 'vegetarian' | 'vegetarian_with_eggs' | 'vegan' | 'non_vegetarian'
 
 export interface AiRecipe {
   title: string

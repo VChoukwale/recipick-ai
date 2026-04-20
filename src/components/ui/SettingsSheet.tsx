@@ -7,6 +7,7 @@ const DIETARY_OPTIONS: { value: DietaryPreference; label: string; desc: string }
   { value: 'vegetarian',            label: '🥛 Vegetarian',        desc: 'No meat or fish, dairy & eggs OK' },
   { value: 'vegetarian_with_eggs',  label: '🥚 Eggitarian',        desc: 'Vegetarian + eggs' },
   { value: 'vegan',                 label: '🌱 Vegan',             desc: 'No animal products at all' },
+  { value: 'non_vegetarian',        label: '🍗 Non-vegetarian',    desc: 'All foods including meat & fish' },
 ]
 
 const SKILL_OPTIONS: { value: SkillLevel; label: string; desc: string }[] = [
