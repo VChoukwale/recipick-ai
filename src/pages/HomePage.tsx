@@ -304,9 +304,9 @@ export default function HomePage() {
             >
               ⭐ Star Mode
             </button>
-            {isStarMode && (
+            {focusIds.size > 0 && (
               <span className="text-xs font-body text-amber-600 dark:text-amber-400">
-                hero: {focusedStarNames.join(', ')}
+                hero: {focusIngredientNames.join(', ')}
               </span>
             )}
           </div>
@@ -315,7 +315,7 @@ export default function HomePage() {
         {/* Ingredient focus picker */}
         {pantryItems.length > 0 && (
           <div className={`mb-4 bg-white dark:bg-charcoal-800 rounded-2xl border overflow-hidden transition-colors duration-200 ${
-            isStarMode
+            focusIds.size > 0
               ? 'border-amber-200 dark:border-amber-800'
               : 'border-cream-200 dark:border-charcoal-700'
           }`}>
@@ -324,15 +324,10 @@ export default function HomePage() {
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-base flex-shrink-0">{isStarMode ? '⭐' : '🎯'}</span>
+                <span className="text-base flex-shrink-0">{focusIds.size > 0 ? '⭐' : '🎯'}</span>
                 <span className="font-display font-700 text-sm text-stone-700 dark:text-stone-200">
-                  {isStarMode ? 'Star Mode active' : 'Cook with specific ingredients?'}
+                  {focusIds.size > 0 ? `${focusIds.size} ingredient${focusIds.size > 1 ? 's' : ''} selected` : 'Cook with specific ingredients?'}
                 </span>
-                {focusIds.size > 0 && !isStarMode && (
-                  <span className="flex-shrink-0 text-xs font-display font-600 px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400">
-                    {focusIds.size} selected
-                  </span>
-                )}
               </div>
               <span className={`text-stone-400 text-xs flex-shrink-0 transition-transform duration-200 ${showPicker ? 'rotate-180' : ''}`}>▼</span>
             </button>
@@ -340,9 +335,7 @@ export default function HomePage() {
             {showPicker && (
               <div className="px-4 pb-4">
                 <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-3">
-                  {isStarMode
-                    ? 'Every recipe will be built around your star ingredient as the hero.'
-                    : 'Tap ingredients you want to cook with — recipes will be built around them as the hero. Leaving empty uses your full pantry.'}
+                  Tap ingredients to cook with — recipes will be built around them as the hero. Leaving empty uses your full pantry.
                 </p>
 
                 {/* Search */}
@@ -399,15 +392,15 @@ export default function HomePage() {
           onClick={handleAskAI}
           disabled={loading || loadingMore}
           className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all ${
-            isStarMode
+            focusIds.size > 0
               ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-md shadow-amber-200/50 dark:shadow-amber-900/30 disabled:opacity-50'
               : 'btn-primary'
           }`}
         >
           {loading
             ? <><span className="animate-simmer text-lg">🍳</span><span>Cooking up ideas…</span></>
-            : isStarMode
-              ? <><span className="text-lg">⭐</span><span>Cook with {focusedStarNames[0]}{focusedStarNames.length > 1 ? ` +${focusedStarNames.length - 1}` : ''}</span></>
+            : focusIds.size > 0
+              ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
               : <><span className="text-lg">✨</span><span>What should I cook?</span></>}
         </button>
 
