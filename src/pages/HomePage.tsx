@@ -392,10 +392,10 @@ export default function HomePage() {
         <button
           onClick={handleAskAI}
           disabled={loading || loadingMore}
-          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all active:scale-95 ${
+          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all active:scale-95 disabled:opacity-50 ${
             focusIds.size > 0
-              ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-md shadow-amber-200/50 dark:shadow-amber-900/30 disabled:opacity-50 animate-cta-pulse'
-              : 'btn-primary animate-cta-pulse'
+              ? 'bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-white shadow-lg shadow-amber-300/40 dark:shadow-amber-900/30'
+              : 'btn-primary'
           }`}
         >
           {loading

@@ -32,14 +32,27 @@
   body {
     @apply min-h-screen antialiased;
     background-color: var(--bg-base);
-    /* Subtle warm dot pattern for light mode */
-    background-image: radial-gradient(circle, #E8713A0A 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle, #E8713A09 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 
   .dark body {
-    background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle, #ffffff05 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* Desktop ambient gradient — subtle warmth only, no bouncing blobs */
+  .app-desktop-bg {
+    background:
+      radial-gradient(ellipse 90% 55% at 50% -5%, rgba(232,113,58,0.09) 0%, transparent 100%),
+      radial-gradient(ellipse 55% 40% at 98% 100%, rgba(251,191,36,0.07) 0%, transparent 100%),
+      #FFF8F0;
+  }
+
+  .dark .app-desktop-bg {
+    background:
+      radial-gradient(ellipse 70% 35% at 50% 108%, rgba(180,75,20,0.12) 0%, transparent 100%),
+      #0F0E0D;
   }
 
   h1, h2, h3, h4, h5, h6 {
