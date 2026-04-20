@@ -43,11 +43,12 @@ export default function PantryPage() {
   }
 
   // ── Add item ──────────────────────────────────────────────
-  async function handleAdd(fields: { name: string; category: PantryCategory; store_name: string; quantity: string }) {
+  async function handleAdd(fields: { name: string; category: PantryCategory; secondary_categories: PantryCategory[]; store_name: string; quantity: string }) {
     const newItem = {
       user_id: user!.id,
       name: fields.name,
       category: fields.category,
+      secondary_categories: fields.secondary_categories,
       store_name: fields.store_name || null,
       quantity: fields.quantity || null,
       is_available: true,
@@ -147,9 +148,16 @@ export default function PantryPage() {
   const grouped = useMemo(() => {
     const map = new Map<PantryCategory, PantryItem[]>()
     for (const item of filtered) {
-      const arr = map.get(item.category) ?? []
-      arr.push(item)
-      map.set(item.category, arr)
+      // Add to primary category
+      const primary = map.get(item.category) ?? []
+      if (!primary.find(i => i.id === item.id)) primary.push(item)
+      map.set(item.category, primary)
+      // Add to each secondary category
+      for (const sec of (item.secondary_categories ?? [])) {
+        const arr = map.get(sec) ?? []
+        if (!arr.find(i => i.id === item.id)) arr.push(item)
+        map.set(sec, arr)
+      }
     }
     return map
   }, [filtered])

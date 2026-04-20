@@ -3,6 +3,7 @@ import type { PantryCategory } from '../../types/database'
 export const CATEGORY_META: Record<PantryCategory, { label: string; emoji: string }> = {
   fresh_produce:     { label: 'Fresh Produce',       emoji: '🥬' },
   dairy_eggs:        { label: 'Dairy & Eggs',         emoji: '🥛' },
+  protein:           { label: 'Protein',              emoji: '💪' },
   grains_legumes:    { label: 'Grains & Legumes',     emoji: '🌾' },
   spices_herbs:      { label: 'Spices & Herbs',       emoji: '🌶️' },
   condiments_sauces: { label: 'Condiments & Sauces',  emoji: '🫙' },
@@ -18,7 +19,7 @@ export const CATEGORY_META: Record<PantryCategory, { label: string; emoji: strin
 }
 
 export const CATEGORY_ORDER: PantryCategory[] = [
-  'fresh_produce', 'dairy_eggs', 'grains_legumes', 'spices_herbs',
+  'fresh_produce', 'dairy_eggs', 'protein', 'grains_legumes', 'spices_herbs',
   'condiments_sauces', 'oils_fats', 'frozen', 'canned',
   'dry_shelf', 'baking', 'snacks', 'beverages', 'dips', 'other',
 ]

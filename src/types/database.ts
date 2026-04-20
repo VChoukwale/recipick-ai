@@ -18,6 +18,7 @@ export type PantryCategory =
   | 'baking'
   | 'dips'
   | 'canned'
+  | 'protein'
   | 'other'
 
 export interface Profile {
@@ -48,6 +49,7 @@ export interface PantryItem {
   is_star_ingredient: boolean
   quantity: string | null
   ai_tags: string[]
+  secondary_categories: PantryCategory[]
   added_at: string
   updated_at: string
 }
@@ -108,8 +110,8 @@ export interface Database {
       }
       pantry_items: {
         Row: PantryItem
-        Insert: { user_id: string; name: string; category: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[] }
-        Update: { name?: string; category?: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[] }
+        Insert: { user_id: string; name: string; category: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[]; secondary_categories?: PantryCategory[] }
+        Update: { name?: string; category?: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[]; secondary_categories?: PantryCategory[] }
       }
       saved_recipes: {
         Row: SavedRecipe
