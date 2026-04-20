@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { SavedRecipe, RecipeIngredient, Difficulty } from '../types/database'
@@ -189,11 +189,8 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
   )
 }
 
-type Mode = 'url' | 'text'
-
 export default function InboxPage() {
   const { user } = useAuth()
-  const [mode, setMode] = useState<Mode>('text')
   const [url, setUrl] = useState('')
   const [pastedText, setPastedText] = useState('')
   const [extracting, setExtracting] = useState(false)
@@ -204,7 +201,6 @@ export default function InboxPage() {
   const [pantryNames, setPantryNames] = useState<Set<string>>(new Set())
   const [imports, setImports] = useState<SavedRecipe[]>([])
   const [viewingRecipe, setViewingRecipe] = useState<SavedRecipe | null>(null)
-  const urlInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -227,12 +223,9 @@ export default function InboxPage() {
     setError('')
     setExtracted(null)
 
-    const pantryList = Array.from(pantryNames)
-    const body = mode === 'text'
-      ? { text: pastedText.trim(), url: url.trim() || undefined, pantry_items: pantryList }
-      : { url: url.trim(), pantry_items: pantryList }
-
-    const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', { body })
+    const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', {
+      body: { text: pastedText.trim(), url: url.trim() || undefined, pantry_items: Array.from(pantryNames) },
+    })
     setExtracting(false)
 
     if (fnError || !data) { setError('Could not reach the extraction service. Try again.'); return }
@@ -243,97 +236,48 @@ export default function InboxPage() {
     setShowPreview(true)
   }
 
-  const canSubmit = mode === 'text' ? pastedText.trim().length > 20 : url.trim().length > 5
-
   return (
     <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
       <div className="px-4 pt-4 pb-3">
         <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Inbox</h1>
-        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Save recipes from anywhere</p>
-      </div>
-
-      {/* Mode tabs */}
-      <div className="px-4 mb-3">
-        <div className="flex bg-cream-200 dark:bg-charcoal-800 rounded-2xl p-1 gap-1">
-          <button onClick={() => { setMode('text'); setError('') }}
-            className={`flex-1 py-2 text-sm font-display font-700 rounded-xl transition-all ${
-              mode === 'text' ? 'bg-white dark:bg-charcoal-700 text-stone-800 dark:text-stone-100 shadow-sm' : 'text-stone-500 dark:text-stone-400'
-            }`}>
-            📋 Paste Text
-          </button>
-          <button onClick={() => { setMode('url'); setError('') }}
-            className={`flex-1 py-2 text-sm font-display font-700 rounded-xl transition-all ${
-              mode === 'url' ? 'bg-white dark:bg-charcoal-700 text-stone-800 dark:text-stone-100 shadow-sm' : 'text-stone-500 dark:text-stone-400'
-            }`}>
-            🔗 From URL
-          </button>
-        </div>
+        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Copy recipe text from anywhere and save it</p>
       </div>
 
       <div className="px-4 pb-4">
         <form onSubmit={handleExtract} className="flex flex-col gap-2">
-          {mode === 'text' ? (
-            <>
-              <p className="text-xs font-body text-stone-400 dark:text-stone-500 px-0.5">
-                Copy the recipe from YouTube description, Instagram caption, or any website and paste it below
-              </p>
-              <textarea
-                value={pastedText}
-                onChange={e => { setPastedText(e.target.value); setError('') }}
-                placeholder="Paste recipe text here — ingredients, steps, anything…"
-                rows={6}
-                className="input-field font-body text-sm resize-none leading-relaxed"
-                disabled={extracting}
-              />
-              <div className="relative">
-                <input
-                  value={url}
-                  onChange={e => setUrl(e.target.value)}
-                  placeholder="Source URL (optional, for reference)"
-                  className="input-field font-body text-sm pr-16"
-                  disabled={extracting}
-                  autoComplete="off"
-                  autoCapitalize="none"
-                />
-                <button type="button"
-                  onClick={async () => {
-                    try { const t = await navigator.clipboard.readText(); setUrl(t.trim()) } catch { /* ignore */ }
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
-                  Paste
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-xs font-body text-stone-400 dark:text-stone-500 px-0.5">
-                Works best with recipe blog URLs. YouTube/Instagram won't work — use Paste Text instead.
-              </p>
-              <div className="relative">
-                <input
-                  ref={urlInputRef}
-                  value={url}
-                  onChange={e => { setUrl(e.target.value); setError('') }}
-                  placeholder="https://example.com/recipe/..."
-                  className="input-field font-body text-sm pr-16"
-                  disabled={extracting}
-                  autoComplete="off"
-                  autoCapitalize="none"
-                />
-                <button type="button"
-                  onClick={async () => {
-                    try { const t = await navigator.clipboard.readText(); setUrl(t.trim()); urlInputRef.current?.focus() } catch { urlInputRef.current?.focus() }
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
-                  Paste
-                </button>
-              </div>
-            </>
-          )}
+          <p className="text-xs font-body text-stone-400 dark:text-stone-500 px-0.5">
+            Works with YouTube descriptions, Instagram captions, recipe blogs — copy the text and paste below
+          </p>
+          <textarea
+            value={pastedText}
+            onChange={e => { setPastedText(e.target.value); setError('') }}
+            placeholder="Paste recipe text here — ingredients, steps, anything…"
+            rows={6}
+            className="input-field font-body text-sm resize-none leading-relaxed"
+            disabled={extracting}
+          />
+          <div className="relative">
+            <input
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder="Source URL (optional)"
+              className="input-field font-body text-sm pr-16"
+              disabled={extracting}
+              autoComplete="off"
+              autoCapitalize="none"
+            />
+            <button type="button"
+              onClick={async () => {
+                try { const t = await navigator.clipboard.readText(); setUrl(t.trim()) } catch { /* ignore */ }
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
+              Paste
+            </button>
+          </div>
 
           {error && <p className="text-xs font-body text-red-500 dark:text-red-400 px-1">{error}</p>}
 
-          <button type="submit" disabled={extracting || !canSubmit}
+          <button type="submit" disabled={extracting || pastedText.trim().length < 20}
             className="btn-primary py-3 font-display font-700 text-sm rounded-2xl disabled:opacity-40 flex items-center justify-center gap-2">
             {extracting ? <><span className="animate-simmer">🍳</span><span>Extracting…</span></> : '✨ Extract Recipe'}
           </button>
