@@ -56,6 +56,13 @@ export default {
         display: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'],
         body:    ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      fontWeight: {
+        '400': '400',
+        '500': '500',
+        '600': '600',
+        '700': '700',
+        '800': '800',
+      },
       animation: {
         'pulse-green': 'pulseGreen 0.4s ease-out',
         'glow-gold':   'glowGold 0.5s ease-out forwards',
