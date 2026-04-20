@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { PantryCategory } from '../../types/database'
 import { CATEGORY_META, CATEGORY_ORDER } from './categoryMeta'
 import QuantityInput from './QuantityInput'
+import StoreInput from './StoreInput'
 
 interface Props {
   onAdd: (item: {
@@ -144,11 +145,15 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
               </div>
             </div>
 
-            {/* Store */}
-            <input value={store} onChange={e => setStore(e.target.value)}
-              placeholder="Store (optional, e.g. Trader Joe's)" className="input-field" />
+            {/* Store — optional */}
+            <div>
+              <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
+                Store <span className="font-400 text-stone-400">(optional)</span>
+              </label>
+              <StoreInput value={store} onChange={setStore} />
+            </div>
 
-            {/* Quantity + unit */}
+            {/* Quantity + unit — optional */}
             <div>
               <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
                 Quantity <span className="font-400 text-stone-400">(optional)</span>
