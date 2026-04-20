@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { SavedRecipe, AiRecipe, Difficulty } from '../types/database'
 import RecipeDetailSheet from '../components/home/RecipeDetailSheet'
+import CookingSpinner from '../components/ui/CookingSpinner'
 
 function toAiRecipe(r: SavedRecipe): AiRecipe {
   const missing = Object.entries(r.substitutions ?? {}).map(([name, substitution]) => ({ name, substitution }))
@@ -234,9 +235,8 @@ export default function RecipesPage() {
         onScroll={e => setShowScrollTop(e.currentTarget.scrollTop > 200)}
       >
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-48 gap-3">
-            <span className="text-3xl animate-simmer">📖</span>
-            <p className="text-sm font-body text-stone-400">Loading your vault…</p>
+          <div className="flex flex-col items-center justify-center h-48">
+            <CookingSpinner size="md" label="Loading your vault…" />
           </div>
         ) : recipes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-6">

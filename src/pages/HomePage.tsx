@@ -5,6 +5,7 @@ import type { DayStatus, AiRecipe } from '../types/database'
 import DayStatusPicker from '../components/home/DayStatusPicker'
 import RecipeCard from '../components/home/RecipeCard'
 import RecipeDetailSheet from '../components/home/RecipeDetailSheet'
+import CookingSpinner from '../components/ui/CookingSpinner'
 
 const STATUS_MESSAGE: Record<DayStatus, string> = {
   home_all_day: 'Take your time today ✨',
@@ -398,7 +399,7 @@ export default function HomePage() {
           }`}
         >
           {loading
-            ? <><span className="animate-simmer text-lg">🍳</span><span>Cooking up ideas…</span></>
+            ? <><span className="text-lg animate-spin">🍳</span><span>Cooking up ideas…</span></>
             : focusIds.size > 0
               ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
               : <><span className="text-lg">✨</span><span>What should I cook?</span></>}
@@ -407,10 +408,8 @@ export default function HomePage() {
         {error && <p className="text-sm text-red-500 text-center mb-4 font-body">{error}</p>}
 
         {loading && (
-          <div className="space-y-3">
-            {[1,2,3].map(i => (
-              <div key={i} className="bg-white dark:bg-charcoal-800 rounded-2xl h-44 animate-pulse border border-cream-200 dark:border-charcoal-700" />
-            ))}
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
+            <CookingSpinner size="lg" label="Finding the perfect recipes…" />
           </div>
         )}
 
@@ -436,10 +435,8 @@ export default function HomePage() {
                 : '✦ Get more recipe ideas'}
             </button>
             {loadingMore && (
-              <div className="space-y-3 mt-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="bg-white dark:bg-charcoal-800 rounded-2xl h-44 animate-pulse border border-cream-200 dark:border-charcoal-700" />
-                ))}
+              <div className="flex justify-center py-6">
+                <CookingSpinner size="md" label="Finding more ideas…" />
               </div>
             )}
           </>
@@ -447,7 +444,7 @@ export default function HomePage() {
 
         {!loading && !hasAsked && (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
-            <span className="text-5xl animate-simmer">🍳</span>
+            <CookingSpinner size="lg" />
             <p className="font-display font-700 text-stone-600 dark:text-stone-400">Your AI chef is ready</p>
             <p className="text-sm font-body text-stone-400 dark:text-stone-500 max-w-xs">
               Set your day, pick a cuisine, and tap the button — I'll suggest recipes based on what's in your pantry.

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { SavedRecipe, RecipeIngredient, Difficulty } from '../types/database'
+import CookingSpinner from '../components/ui/CookingSpinner'
 
 const SKIP_WATER = new Set(['water', 'warm water', 'cold water', 'hot water', 'water (for boiling)', 'boiling water'])
 
@@ -279,7 +280,7 @@ export default function InboxPage() {
 
           <button type="submit" disabled={extracting || pastedText.trim().length < 20}
             className="btn-primary py-3 font-display font-700 text-sm rounded-2xl disabled:opacity-40 flex items-center justify-center gap-2">
-            {extracting ? <><span className="animate-simmer">🍳</span><span>Extracting…</span></> : '✨ Extract Recipe'}
+            {extracting ? <><CookingSpinner size="sm" /><span>Extracting…</span></> : '✨ Extract Recipe'}
           </button>
         </form>
 

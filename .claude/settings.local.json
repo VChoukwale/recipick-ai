@@ -7,7 +7,21 @@
       "Bash(npm install *)",
       "Bash(npx tsc *)",
       "Bash(npx vite *)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('SUPABASE_ACCESS_TOKEN', 'sbp_756c17dbcfbdf37893a4cf4b2ec2aaa132737e74', 'Process'\\); npx supabase functions deploy ai-chef --project-ref panmfdjwsofaaimqsxub\")",
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('SUPABASE_ACCESS_TOKEN', 'sbp_756c17dbcfbdf37893a4cf4b2ec2aaa132737e74', 'Process'\\); npx supabase functions deploy ai-chef --project-ref panmfdjwsofaaimqsxub --no-verify-jwt\")",
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('SUPABASE_ACCESS_TOKEN', 'sbp_756c17dbcfbdf37893a4cf4b2ec2aaa132737e74', 'Process'\\); npx supabase functions logs ai-chef --project-ref panmfdjwsofaaimqsxub\")",
+      "Bash(echo \"\")",
+      "Bash(echo \"# Claude Code \\(contains tokens/permissions\\)\")",
+      "Bash(echo \".claude/settings.local.json\")",
+      "Bash(echo \"# Supabase temp\")",
+      "Bash(echo \"supabase/.temp/\")",
+      "Bash(cat src/main.tsx)",
+      "Bash(cat src/App.tsx)",
+      "Bash(gh pr *)",
+      "Bash(where gh *)",
+      "Bash(winget list *)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_756c17dbcfbdf37893a4cf4b2ec2aaa132737e74 npx supabase functions deploy ai-extract-recipe --project-ref panmfdjwsofaaimqsxub --no-verify-jwt)"
     ]
   }
 }

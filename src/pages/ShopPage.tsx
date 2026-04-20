@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import CookingSpinner from '../components/ui/CookingSpinner'
 
 interface GroceryItem {
   id: string
@@ -129,9 +130,8 @@ export default function ShopPage() {
       {/* List */}
       <div className="flex-1 overflow-y-auto px-4 pb-28">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-48 gap-3">
-            <span className="text-3xl animate-simmer">🛒</span>
-            <p className="text-sm font-body text-stone-400">Loading…</p>
+          <div className="flex flex-col items-center justify-center h-48">
+            <CookingSpinner size="md" label="Loading your list…" />
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-6">
