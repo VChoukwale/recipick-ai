@@ -5,6 +5,7 @@ import type { PantryItem, PantryCategory } from '../types/database'
 import { CATEGORY_ORDER } from '../components/pantry/categoryMeta'
 import PantrySection from '../components/pantry/PantrySection'
 import AddItemSheet from '../components/pantry/AddItemSheet'
+import EditItemSheet from '../components/pantry/EditItemSheet'
 
 export default function PantryPage() {
   const { user } = useAuth()
@@ -12,6 +13,7 @@ export default function PantryPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
+  const [editingItem, setEditingItem] = useState<PantryItem | null>(null)
   const [vocabulary, setVocabulary] = useState<string[]>([])
 
   // ── Load pantry items ──────────────────────────────────────
@@ -138,6 +140,18 @@ export default function PantryPage() {
     await supabase.from('pantry_items').delete().eq('id', id)
   }
 
+  // ── Edit ──────────────────────────────────────────────────
+  async function handleEdit(id: string, fields: {
+    name: string
+    category: PantryCategory
+    secondary_categories: PantryCategory[]
+    store_name: string | null
+    quantity: string | null
+  }) {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, ...fields } : i))
+    await supabase.from('pantry_items').update(fields).eq('id', id)
+  }
+
   // ── Filtered + grouped items ──────────────────────────────
   const filtered = useMemo(() => {
     if (!search.trim()) return items
@@ -244,6 +258,7 @@ export default function PantryPage() {
                 items={grouped.get(cat)!}
                 onToggleAvailable={handleToggleAvailable}
                 onToggleStar={handleToggleStar}
+                onEdit={setEditingItem}
                 onDelete={handleDelete}
               />
             ))}
@@ -257,6 +272,15 @@ export default function PantryPage() {
           onAdd={async (fields) => { await handleAdd(fields) }}
           onClose={() => setShowAdd(false)}
           suggestions={vocabulary}
+        />
+      )}
+
+      {/* Edit item sheet */}
+      {editingItem && (
+        <EditItemSheet
+          item={editingItem}
+          onSave={handleEdit}
+          onClose={() => setEditingItem(null)}
         />
       )}
     </div>

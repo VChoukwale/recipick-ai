@@ -1,38 +1,27 @@
-import { useState, useEffect, useRef } from 'react'
-import type { PantryCategory } from '../../types/database'
+import { useState } from 'react'
+import type { PantryItem, PantryCategory } from '../../types/database'
 import { CATEGORY_META, CATEGORY_ORDER } from './categoryMeta'
 
 interface Props {
-  onAdd: (item: {
+  item: PantryItem
+  onSave: (id: string, fields: {
     name: string
     category: PantryCategory
     secondary_categories: PantryCategory[]
-    store_name: string
-    quantity: string
+    store_name: string | null
+    quantity: string | null
   }) => void
   onClose: () => void
-  suggestions: string[]
 }
 
-export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState<PantryCategory>('other')
-  const [secondaryCategories, setSecondaryCategories] = useState<PantryCategory[]>([])
-  const [store, setStore] = useState('')
-  const [quantity, setQuantity] = useState('')
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => { inputRef.current?.focus() }, [])
-
-  useEffect(() => {
-    if (name.length < 2) { setFilteredSuggestions([]); setShowSuggestions(false); return }
-    const lower = name.toLowerCase()
-    const matches = suggestions.filter(s => s.toLowerCase().includes(lower)).slice(0, 6)
-    setFilteredSuggestions(matches)
-    setShowSuggestions(matches.length > 0)
-  }, [name, suggestions])
+export default function EditItemSheet({ item, onSave, onClose }: Props) {
+  const [name, setName] = useState(item.name)
+  const [category, setCategory] = useState<PantryCategory>(item.category)
+  const [secondaryCategories, setSecondaryCategories] = useState<PantryCategory[]>(
+    item.secondary_categories ?? []
+  )
+  const [store, setStore] = useState(item.store_name ?? '')
+  const [quantity, setQuantity] = useState(item.quantity ?? '')
 
   function toggleSecondary(cat: PantryCategory) {
     setSecondaryCategories(prev =>
@@ -43,19 +32,16 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
-    onAdd({
+    onSave(item.id, {
       name: name.trim(),
       category,
       secondary_categories: secondaryCategories.filter(c => c !== category),
-      store_name: store.trim(),
-      quantity: quantity.trim(),
+      store_name: store.trim() || null,
+      quantity: quantity.trim() || null,
     })
-    setName(''); setStore(''); setQuantity('')
-    setCategory('other'); setSecondaryCategories([])
-    inputRef.current?.focus()
+    onClose()
   }
 
-  // Available secondary categories = all except the primary one
   const secondaryOptions = CATEGORY_ORDER.filter(c => c !== category)
 
   return (
@@ -67,33 +53,20 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
 
         <div className="px-5 pb-8">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display font-800 text-lg text-stone-800 dark:text-stone-100">Add to pantry</h3>
+            <h3 className="font-display font-800 text-lg text-stone-800 dark:text-stone-100">
+              Edit item
+            </h3>
             <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-xl">✕</button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
-            <div className="relative">
-              <input
-                ref={inputRef}
-                value={name}
-                onChange={e => setName(e.target.value)}
-                onFocus={() => filteredSuggestions.length > 0 && setShowSuggestions(true)}
-                placeholder="Item name (e.g. paneer, rice, olive oil)"
-                className="input-field"
-                autoComplete="off"
-              />
-              {showSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-charcoal-800 rounded-2xl shadow-lg border border-cream-200 dark:border-charcoal-700 z-10 overflow-hidden">
-                  {filteredSuggestions.map(s => (
-                    <button key={s} type="button"
-                      onClick={() => { setName(s); setShowSuggestions(false) }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-body text-stone-700 dark:text-stone-300 hover:bg-cream-100 dark:hover:bg-charcoal-700 transition-colors"
-                    >{s}</button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Item name"
+              className="input-field"
+            />
 
             {/* Primary category */}
             <div>
@@ -120,16 +93,13 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
             {/* Secondary categories */}
             <div>
               <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
-                Also appears in <span className="font-400 text-stone-400">(optional — for items like paneer = dairy + protein)</span>
+                Also appears in <span className="font-400 text-stone-400">(optional)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {secondaryOptions.map(cat => {
                   const selected = secondaryCategories.includes(cat)
                   return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => toggleSecondary(cat)}
+                    <button key={cat} type="button" onClick={() => toggleSecondary(cat)}
                       className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-xs font-display font-600 transition-all duration-150 ${
                         selected
                           ? 'border-brand-500 bg-brand-500 text-white'
@@ -146,14 +116,14 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
             {/* Store + Quantity */}
             <div className="flex gap-2">
               <input value={store} onChange={e => setStore(e.target.value)}
-                placeholder="Store (optional)" className="input-field flex-1" />
+                placeholder="Store (e.g. Trader Joe's)" className="input-field flex-1" />
               <input value={quantity} onChange={e => setQuantity(e.target.value)}
-                placeholder="Qty (optional)" className="input-field w-28" />
+                placeholder="Qty" className="input-field w-28" />
             </div>
 
             <button type="submit" disabled={!name.trim()}
               className="w-full btn-primary py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
-              Add to pantry
+              Save changes
             </button>
           </form>
         </div>

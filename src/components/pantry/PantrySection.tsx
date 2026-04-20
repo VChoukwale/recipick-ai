@@ -8,10 +8,11 @@ interface Props {
   items: PantryItem[]
   onToggleAvailable: (id: string, value: boolean) => void
   onToggleStar: (id: string) => void
+  onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
 }
 
-export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onDelete }: Props) {
+export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete }: Props) {
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_META[category]
   const availableCount = items.filter(i => i.is_available).length
@@ -44,6 +45,7 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
               item={item}
               onToggleAvailable={onToggleAvailable}
               onToggleStar={onToggleStar}
+              onEdit={onEdit}
               onDelete={onDelete}
             />
           ))}

@@ -5,10 +5,11 @@ interface Props {
   item: PantryItem
   onToggleAvailable: (id: string, value: boolean) => void
   onToggleStar: (id: string) => void
+  onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
 }
 
-export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onDelete }: Props) {
+export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
@@ -18,10 +19,9 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         onClick={() => onToggleAvailable(item.id, !item.is_available)}
         className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
           item.is_available
-            ? 'bg-sage-400 border-sage-400 animate-pulse-green'
+            ? 'bg-sage-400 border-sage-400'
             : 'border-stone-300 dark:border-stone-600'
         }`}
-        title={item.is_available ? 'Mark as unavailable' : 'Mark as available'}
       >
         {item.is_available && <span className="text-white text-xs font-bold">✓</span>}
       </button>
@@ -44,6 +44,14 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
           {item.quantity && (
             <span className="text-[10px] text-stone-400 dark:text-stone-500 font-body">{item.quantity}</span>
           )}
+          {!item.store_name && !item.quantity && (
+            <button
+              onClick={() => onEdit(item)}
+              className="text-[10px] text-brand-400 hover:text-brand-600 font-display font-600 transition-colors"
+            >
+              + add store / qty
+            </button>
+          )}
         </div>
       </div>
 
@@ -53,35 +61,33 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         className={`flex-shrink-0 text-lg transition-all duration-200 ${
           item.is_star_ingredient ? 'animate-glow-gold' : 'opacity-30 hover:opacity-70'
         }`}
-        title={item.is_star_ingredient ? 'Remove star ingredient' : 'Set as star ingredient'}
       >
         {item.is_star_ingredient ? '⭐' : '☆'}
       </button>
 
-      {/* Delete */}
+      {/* Edit / Delete */}
       {confirmDelete ? (
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button
-            onClick={() => onDelete(item.id)}
-            className="text-[11px] px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-display font-600"
-          >
+          <button onClick={() => onDelete(item.id)}
+            className="text-[11px] px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-display font-600">
             Remove
           </button>
-          <button
-            onClick={() => setConfirmDelete(false)}
-            className="text-[11px] px-2 py-1 rounded-lg bg-stone-100 dark:bg-charcoal-800 text-stone-500 font-display font-600"
-          >
+          <button onClick={() => setConfirmDelete(false)}
+            className="text-[11px] px-2 py-1 rounded-lg bg-stone-100 dark:bg-charcoal-800 text-stone-500 font-display font-600">
             Cancel
           </button>
         </div>
       ) : (
-        <button
-          onClick={() => setConfirmDelete(true)}
-          className="flex-shrink-0 opacity-0 group-hover:opacity-40 hover:!opacity-80 text-stone-400 transition-opacity duration-150 text-sm"
-          title="Delete item"
-        >
-          ✕
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <button onClick={() => onEdit(item)}
+            className="text-[11px] px-2 py-1 rounded-lg bg-cream-200 dark:bg-charcoal-700 text-stone-500 dark:text-stone-400 font-display font-600 hover:bg-cream-300 transition-colors">
+            Edit
+          </button>
+          <button onClick={() => setConfirmDelete(true)}
+            className="text-stone-300 hover:text-red-400 text-sm transition-colors px-1">
+            ✕
+          </button>
+        </div>
       )}
     </div>
   )
