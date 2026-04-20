@@ -97,34 +97,34 @@ export interface FoodVocabulary {
   last_used: string
 }
 
-// Supabase Database generic type for createClient
+// Supabase Database generic type
 export interface Database {
   public: {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Profile, 'id' | 'created_at'>>
+        Insert: { id: string; display_name?: string | null; dietary_preference?: DietaryPreference; skill_level?: SkillLevel; preferred_cuisines?: string[]; day_status?: DayStatus; busy_until_time?: string | null; onboarding_completed?: boolean }
+        Update: { display_name?: string | null; dietary_preference?: DietaryPreference; skill_level?: SkillLevel; preferred_cuisines?: string[]; day_status?: DayStatus; busy_until_time?: string | null; onboarding_completed?: boolean }
       }
       pantry_items: {
         Row: PantryItem
-        Insert: Omit<PantryItem, 'id' | 'added_at' | 'updated_at'>
-        Update: Partial<Omit<PantryItem, 'id' | 'user_id' | 'added_at'>>
+        Insert: { user_id: string; name: string; category: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[] }
+        Update: { name?: string; category?: PantryCategory; subcategory?: string | null; store_name?: string | null; product_url?: string | null; product_image_url?: string | null; manual_image_url?: string | null; is_available?: boolean; is_favorite?: boolean; is_star_ingredient?: boolean; quantity?: string | null; ai_tags?: string[] }
       }
       saved_recipes: {
         Row: SavedRecipe
-        Insert: Omit<SavedRecipe, 'id' | 'created_at'>
-        Update: Partial<Omit<SavedRecipe, 'id' | 'user_id' | 'created_at'>>
+        Insert: { user_id: string; title: string; description?: string | null; cuisine_type?: string | null; region_detail?: string | null; ingredients?: RecipeIngredient[]; instructions?: string[]; difficulty?: Difficulty; time_minutes?: number | null; match_percentage?: number | null; is_favorite?: boolean; source?: RecipeSource; source_url?: string | null; why_this?: string | null; substitutions?: Record<string, string> | null }
+        Update: { title?: string; description?: string | null; cuisine_type?: string | null; region_detail?: string | null; ingredients?: RecipeIngredient[]; instructions?: string[]; difficulty?: Difficulty; time_minutes?: number | null; match_percentage?: number | null; is_favorite?: boolean; source?: RecipeSource; source_url?: string | null; why_this?: string | null; substitutions?: Record<string, string> | null }
       }
       grocery_list: {
         Row: GroceryItem
-        Insert: Omit<GroceryItem, 'id' | 'added_at'>
-        Update: Partial<Omit<GroceryItem, 'id' | 'user_id' | 'added_at'>>
+        Insert: { user_id: string; name: string; category?: string | null; store_name?: string | null; is_checked?: boolean; ai_tags?: string[] }
+        Update: { name?: string; category?: string | null; store_name?: string | null; is_checked?: boolean; ai_tags?: string[] }
       }
       food_vocabulary: {
         Row: FoodVocabulary
-        Insert: Omit<FoodVocabulary, 'id'>
-        Update: Partial<Omit<FoodVocabulary, 'id' | 'user_id'>>
+        Insert: { user_id: string; word: string; frequency?: number; last_used?: string }
+        Update: { word?: string; frequency?: number; last_used?: string }
       }
     }
   }

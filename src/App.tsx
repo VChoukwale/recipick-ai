@@ -1,13 +1,36 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import AppShell from './components/layout/AppShell'
 import AuthPage from './pages/AuthPage'
+import OnboardingPage from './pages/OnboardingPage'
 import HomePage from './pages/HomePage'
 import PantryPage from './pages/PantryPage'
 import ShopPage from './pages/ShopPage'
 import RecipesPage from './pages/RecipesPage'
 import InboxPage from './pages/InboxPage'
+
+// Guards /onboarding — must be signed in; redirects away if already onboarded
+function OnboardingRoute() {
+  const { user, profile, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cream-100 dark:bg-charcoal-900">
+        <div className="flex flex-col items-center gap-3">
+          <span className="text-4xl animate-simmer">🥘</span>
+          <p className="font-display text-brand-500 font-600 text-sm">Getting your kitchen ready…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/auth" replace />
+  if (profile?.onboarding_completed) return <Navigate to="/" replace />
+
+  return <OnboardingPage />
+}
 
 export default function App() {
   return (
@@ -17,7 +40,10 @@ export default function App() {
           {/* Public */}
           <Route path="/auth" element={<AuthPage />} />
 
-          {/* Protected — requires sign-in */}
+          {/* Onboarding */}
+          <Route path="/onboarding" element={<OnboardingRoute />} />
+
+          {/* Protected — requires sign-in + onboarding completed */}
           <Route
             path="/"
             element={

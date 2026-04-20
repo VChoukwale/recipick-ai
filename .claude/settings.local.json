@@ -5,7 +5,9 @@
       "Bash(npm create *)",
       "Bash(npx --yes create-vite@5 . --template react-ts)",
       "Bash(npm install *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
     ]
   }
 }

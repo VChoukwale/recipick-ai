@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single()
-    setProfile(data)
+    setProfile(data as Profile | null)
   }
 
   async function refreshProfile() {
