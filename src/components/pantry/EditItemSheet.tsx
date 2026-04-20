@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { PantryItem, PantryCategory } from '../../types/database'
 import { CATEGORY_META, CATEGORY_ORDER } from './categoryMeta'
+import QuantityInput from './QuantityInput'
 
 interface Props {
   item: PantryItem
@@ -113,12 +114,16 @@ export default function EditItemSheet({ item, onSave, onClose }: Props) {
               </div>
             </div>
 
-            {/* Store + Quantity */}
-            <div className="flex gap-2">
-              <input value={store} onChange={e => setStore(e.target.value)}
-                placeholder="Store (e.g. Trader Joe's)" className="input-field flex-1" />
-              <input value={quantity} onChange={e => setQuantity(e.target.value)}
-                placeholder="Qty" className="input-field w-28" />
+            {/* Store */}
+            <input value={store} onChange={e => setStore(e.target.value)}
+              placeholder="Store (e.g. Trader Joe's, Whole Foods)" className="input-field" />
+
+            {/* Quantity + unit */}
+            <div>
+              <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
+                Quantity
+              </label>
+              <QuantityInput value={quantity} onChange={setQuantity} />
             </div>
 
             <button type="submit" disabled={!name.trim()}

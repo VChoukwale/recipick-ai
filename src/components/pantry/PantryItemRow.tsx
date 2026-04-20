@@ -28,7 +28,7 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
 
       {/* Item info */}
       <div className="flex-1 min-w-0">
-        <p className={`font-body text-sm leading-tight truncate ${
+        <p className={`font-body text-base leading-tight truncate ${
           item.is_available
             ? 'text-stone-800 dark:text-stone-100'
             : 'text-stone-400 dark:text-stone-500 line-through'
@@ -37,17 +37,17 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         </p>
         <div className="flex items-center gap-2 mt-0.5">
           {item.store_name && (
-            <span className="text-[10px] font-display font-600 px-1.5 py-0.5 rounded-full bg-cream-200 dark:bg-charcoal-800 text-stone-500 dark:text-stone-400">
+            <span className="text-xs font-display font-600 px-2 py-0.5 rounded-full bg-cream-200 dark:bg-charcoal-800 text-stone-500 dark:text-stone-400">
               {item.store_name}
             </span>
           )}
           {item.quantity && (
-            <span className="text-[10px] text-stone-400 dark:text-stone-500 font-body">{item.quantity}</span>
+            <span className="text-xs text-stone-400 dark:text-stone-500 font-body">{item.quantity}</span>
           )}
           {!item.store_name && !item.quantity && (
             <button
               onClick={() => onEdit(item)}
-              className="text-[10px] text-brand-400 hover:text-brand-600 font-display font-600 transition-colors"
+              className="text-xs text-brand-400 hover:text-brand-600 font-display font-600 transition-colors"
             >
               + add store / qty
             </button>

@@ -26,8 +26,8 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{meta.emoji}</span>
-          <span className="font-display font-700 text-sm text-stone-800 dark:text-stone-100">{meta.label}</span>
-          <span className="text-xs font-body text-stone-400 dark:text-stone-500">
+          <span className="font-display font-700 text-base text-stone-800 dark:text-stone-100">{meta.label}</span>
+          <span className="text-sm font-body text-stone-400 dark:text-stone-500">
             {availableCount}/{items.length}
           </span>
         </div>
