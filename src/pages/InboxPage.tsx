@@ -59,9 +59,7 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
   }))
   const inPantry = ingredients.filter(i => i.in_pantry)
   const missing = ingredients.filter(i => !i.in_pantry)
-  const matchPct = ingredients.length > 0
-    ? Math.round((inPantry.length / ingredients.length) * 100)
-    : 0
+  const matchPct = ingredients.length > 0 ? Math.round((inPantry.length / ingredients.length) * 100) : 0
 
   async function handleSave() {
     if (!user || saved) return
@@ -78,7 +76,7 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
       match_percentage: matchPct,
       why_this: recipe.why_this,
       source: 'web_import',
-      source_url: url,
+      source_url: url || null,
     })
     setSaved(true)
     onSave()
@@ -99,19 +97,14 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
           </div>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {recipe.cuisine_type && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 font-body">{recipe.cuisine_type}</span>
-            )}
-            {recipe.region_detail && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-cream-100 dark:bg-charcoal-700 text-stone-500 dark:text-stone-400 font-body">{recipe.region_detail}</span>
-            )}
+            {recipe.cuisine_type && <span className="text-xs px-2.5 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 font-body">{recipe.cuisine_type}</span>}
+            {recipe.region_detail && <span className="text-xs px-2.5 py-1 rounded-full bg-cream-100 dark:bg-charcoal-700 text-stone-500 dark:text-stone-400 font-body">{recipe.region_detail}</span>}
             <span className="text-xs px-2.5 py-1 rounded-full bg-cream-100 dark:bg-charcoal-700 text-stone-500 dark:text-stone-400 font-body">⏱ {recipe.time_minutes} min</span>
             <span className={`text-xs px-2.5 py-1 rounded-full font-body capitalize ${
               recipe.difficulty === 'easy' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
               : recipe.difficulty === 'medium' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
               : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
             }`}>{recipe.difficulty}</span>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-sage-50 dark:bg-sage-900/30 text-sage-600 dark:text-sage-400 font-body">🌐 Web import</span>
           </div>
 
           {recipe.why_this && (
@@ -120,7 +113,6 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
             </div>
           )}
 
-          {/* Pantry match */}
           {ingredients.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
@@ -177,10 +169,9 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
             </div>
           </div>
 
-          <a href={url} target="_blank" rel="noopener noreferrer"
-            className="text-xs font-body text-stone-400 dark:text-stone-500 underline break-all">
-            {url}
-          </a>
+          {url && (
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-body text-stone-400 dark:text-stone-500 underline break-all">{url}</a>
+          )}
         </div>
 
         <div className="flex-shrink-0 px-5 py-4 border-t border-cream-100 dark:border-charcoal-700/50">
@@ -196,9 +187,13 @@ function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
   )
 }
 
+type Mode = 'url' | 'text'
+
 export default function InboxPage() {
   const { user } = useAuth()
+  const [mode, setMode] = useState<Mode>('text')
   const [url, setUrl] = useState('')
+  const [pastedText, setPastedText] = useState('')
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState('')
   const [extracted, setExtracted] = useState<ExtractedRecipe | null>(null)
@@ -207,92 +202,137 @@ export default function InboxPage() {
   const [pantryNames, setPantryNames] = useState<Set<string>>(new Set())
   const [imports, setImports] = useState<SavedRecipe[]>([])
   const [viewingRecipe, setViewingRecipe] = useState<SavedRecipe | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const urlInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
     supabase.from('pantry_items').select('name').eq('user_id', user.id).eq('is_available', true)
-      .then(({ data }) => {
-        setPantryNames(new Set((data ?? []).map((i: { name: string }) => i.name.toLowerCase())))
-      })
+      .then(({ data }) => setPantryNames(new Set((data ?? []).map((i: { name: string }) => i.name.toLowerCase()))))
     fetchImports()
   }, [user])
 
   async function fetchImports() {
     const { data } = await supabase
-      .from('saved_recipes')
-      .select('*')
-      .eq('user_id', user!.id)
-      .eq('source', 'web_import')
+      .from('saved_recipes').select('*')
+      .eq('user_id', user!.id).eq('source', 'web_import')
       .order('created_at', { ascending: false })
     setImports((data as SavedRecipe[]) ?? [])
   }
 
   async function handleExtract(e: React.FormEvent) {
     e.preventDefault()
-    const trimmed = url.trim()
-    if (!trimmed) return
     setExtracting(true)
     setError('')
     setExtracted(null)
 
-    const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', {
-      body: { url: trimmed },
-    })
+    const body = mode === 'text'
+      ? { text: pastedText.trim(), url: url.trim() || undefined }
+      : { url: url.trim() }
 
+    const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', { body })
     setExtracting(false)
+
     if (fnError || !data) { setError('Could not reach the extraction service. Try again.'); return }
     if (data.error) { setError(data.error); return }
 
     setExtracted(data as ExtractedRecipe)
-    setExtractedUrl(trimmed)
+    setExtractedUrl(url.trim())
     setShowPreview(true)
   }
 
-  async function handlePaste() {
-    try {
-      const text = await navigator.clipboard.readText()
-      setUrl(text.trim())
-      inputRef.current?.focus()
-    } catch {
-      inputRef.current?.focus()
-    }
-  }
+  const canSubmit = mode === 'text' ? pastedText.trim().length > 20 : url.trim().length > 5
 
   return (
     <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
       <div className="px-4 pt-4 pb-3">
         <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Inbox</h1>
-        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Paste any recipe URL — AI extracts and saves it</p>
+        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Save recipes from anywhere</p>
+      </div>
+
+      {/* Mode tabs */}
+      <div className="px-4 mb-3">
+        <div className="flex bg-cream-200 dark:bg-charcoal-800 rounded-2xl p-1 gap-1">
+          <button onClick={() => { setMode('text'); setError('') }}
+            className={`flex-1 py-2 text-sm font-display font-700 rounded-xl transition-all ${
+              mode === 'text' ? 'bg-white dark:bg-charcoal-700 text-stone-800 dark:text-stone-100 shadow-sm' : 'text-stone-500 dark:text-stone-400'
+            }`}>
+            📋 Paste Text
+          </button>
+          <button onClick={() => { setMode('url'); setError('') }}
+            className={`flex-1 py-2 text-sm font-display font-700 rounded-xl transition-all ${
+              mode === 'url' ? 'bg-white dark:bg-charcoal-700 text-stone-800 dark:text-stone-100 shadow-sm' : 'text-stone-500 dark:text-stone-400'
+            }`}>
+            🔗 From URL
+          </button>
+        </div>
       </div>
 
       <div className="px-4 pb-4">
         <form onSubmit={handleExtract} className="flex flex-col gap-2">
-          <div className="relative">
-            <input
-              ref={inputRef}
-              value={url}
-              onChange={e => { setUrl(e.target.value); setError('') }}
-              placeholder="https://example.com/recipe/..."
-              className="input-field pr-16 font-body text-sm"
-              disabled={extracting}
-              autoComplete="off"
-              autoCapitalize="none"
-            />
-            <button type="button" onClick={handlePaste}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
-              Paste
-            </button>
-          </div>
+          {mode === 'text' ? (
+            <>
+              <p className="text-xs font-body text-stone-400 dark:text-stone-500 px-0.5">
+                Copy the recipe from YouTube description, Instagram caption, or any website and paste it below
+              </p>
+              <textarea
+                value={pastedText}
+                onChange={e => { setPastedText(e.target.value); setError('') }}
+                placeholder="Paste recipe text here — ingredients, steps, anything…"
+                rows={6}
+                className="input-field font-body text-sm resize-none leading-relaxed"
+                disabled={extracting}
+              />
+              <div className="relative">
+                <input
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  placeholder="Source URL (optional, for reference)"
+                  className="input-field font-body text-sm pr-16"
+                  disabled={extracting}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                />
+                <button type="button"
+                  onClick={async () => {
+                    try { const t = await navigator.clipboard.readText(); setUrl(t.trim()) } catch { /* ignore */ }
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
+                  Paste
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-body text-stone-400 dark:text-stone-500 px-0.5">
+                Works best with recipe blog URLs. YouTube/Instagram won't work — use Paste Text instead.
+              </p>
+              <div className="relative">
+                <input
+                  ref={urlInputRef}
+                  value={url}
+                  onChange={e => { setUrl(e.target.value); setError('') }}
+                  placeholder="https://example.com/recipe/..."
+                  className="input-field font-body text-sm pr-16"
+                  disabled={extracting}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                />
+                <button type="button"
+                  onClick={async () => {
+                    try { const t = await navigator.clipboard.readText(); setUrl(t.trim()); urlInputRef.current?.focus() } catch { urlInputRef.current?.focus() }
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-display font-600 text-brand-500 dark:text-brand-400 hover:text-brand-600">
+                  Paste
+                </button>
+              </div>
+            </>
+          )}
+
           {error && <p className="text-xs font-body text-red-500 dark:text-red-400 px-1">{error}</p>}
-          <button type="submit" disabled={extracting || !url.trim()}
+
+          <button type="submit" disabled={extracting || !canSubmit}
             className="btn-primary py-3 font-display font-700 text-sm rounded-2xl disabled:opacity-40 flex items-center justify-center gap-2">
-            {extracting ? (
-              <>
-                <span className="animate-simmer">🍳</span>
-                <span>Extracting recipe…</span>
-              </>
-            ) : '✨ Extract Recipe'}
+            {extracting ? <><span className="animate-simmer">🍳</span><span>Extracting…</span></> : '✨ Extract Recipe'}
           </button>
         </form>
 
@@ -306,7 +346,7 @@ export default function InboxPage() {
 
       <div className="flex-1 overflow-y-auto px-4 pb-24">
         {imports.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-6">
+          <div className="flex flex-col items-center justify-center h-40 gap-3 text-center px-6">
             <span className="text-4xl">🌐</span>
             <p className="text-sm font-body text-stone-400 dark:text-stone-500">Recipes you import will appear here</p>
           </div>
@@ -314,9 +354,7 @@ export default function InboxPage() {
           <>
             <p className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 mb-3">{imports.length} imported</p>
             <div className="space-y-2">
-              {imports.map(r => (
-                <ImportedRecipeCard key={r.id} recipe={r} onView={() => setViewingRecipe(r)} />
-              ))}
+              {imports.map(r => <ImportedRecipeCard key={r.id} recipe={r} onView={() => setViewingRecipe(r)} />)}
             </div>
           </>
         )}
@@ -324,10 +362,8 @@ export default function InboxPage() {
 
       {showPreview && extracted && (
         <RecipePreviewSheet
-          recipe={extracted}
-          url={extractedUrl}
-          pantryNames={pantryNames}
-          onSave={() => { fetchImports(); setUrl('') }}
+          recipe={extracted} url={extractedUrl} pantryNames={pantryNames}
+          onSave={() => { fetchImports(); setUrl(''); setPastedText('') }}
           onClose={() => setShowPreview(false)}
         />
       )}
