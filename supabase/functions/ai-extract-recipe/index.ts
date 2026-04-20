@@ -93,40 +93,62 @@ const SCHEMA = `{
   "region_detail": "string or null — e.g. Maharashtrian, Sicilian",
   "difficulty": "easy|medium|hard",
   "time_minutes": number,
-  "ingredients": [{ "name": "string", "quantity": "string" }],
+  "ingredients": [{ "name": "string", "quantity": "string", "in_pantry": boolean }],
   "instructions": ["step 1", "step 2"],
   "why_this": "string — one friendly sentence on why this dish is worth making"
 }`
+
+function pantryBlock(pantryItems: string[]): string {
+  if (!pantryItems.length) return ''
+  return `
+The user's pantry contains these items: ${pantryItems.join(', ')}
+
+For each ingredient, set in_pantry: true if ANY of the following apply:
+- The ingredient name exactly matches a pantry item (case-insensitive)
+- The ingredient is a synonym or regional variant of a pantry item (e.g. "curd" = "yogurt", "rava" = "semolina" = "sooji", "jowar flour" = "sorghum flour", "capsicum" = "bell pepper", "coriander" = "cilantro", "aubergine" = "eggplant", "courgette" = "zucchini", "groundnut oil" = "peanut oil", "maize flour" = "cornmeal")
+- The ingredient is water in any form (water, warm water, cold water, hot water, boiling water) — ALWAYS set in_pantry: true for water, never list it as missing
+
+Set in_pantry: false only if the ingredient is genuinely not present and has no synonym in the pantry.`
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
   try {
     const body = await req.json()
-    const { url, text } = body
+    const { url, text, pantry_items = [] } = body
 
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     if (!anthropicKey) throw new Error('ANTHROPIC_API_KEY not set')
 
     let prompt = ''
 
+    const pantry = pantryBlock(pantry_items)
+
     if (text) {
-      // Text paste mode — most reliable, works for YouTube descriptions, Instagram captions, anything
       prompt = `Extract a vegetarian/vegan recipe from this text. The app is vegetarian/vegan only — if the recipe contains meat or fish, return {"error": "This recipe contains meat or fish and cannot be imported."}.
 
 Text:
 ${text.slice(0, 15000)}
 
 ${url ? `Source URL (for reference only): ${url}` : ''}
+${pantry}
 
 Return ONLY this JSON (no markdown). If you cannot find a recipe in the text, return {"error": "No recipe found in this text."}.
 ${SCHEMA}`
     } else if (url) {
       let pageText = ''
       const ytId = extractYouTubeId(url)
+      const isInstagram = url.includes('instagram.com')
       try {
-        pageText = ytId ? await fetchYouTubeTranscript(ytId) : await fetchPageText(url)
+        if (!isInstagram) pageText = ytId ? await fetchYouTubeTranscript(ytId) : await fetchPageText(url)
       } catch { pageText = '' }
+
+      if (isInstagram) {
+        return new Response(JSON.stringify({ error: 'Instagram links cannot be accessed directly. Open the post, copy the caption text, then use the Paste Text tab.' }), {
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        })
+      }
 
       const sourceLabel = ytId ? 'YouTube video transcript' : 'page content'
 
@@ -137,6 +159,7 @@ ${pageText
   ? `${sourceLabel}:\n${pageText}`
   : `(Content could not be fetched. Use your knowledge of this URL to reconstruct the recipe if you know it. Otherwise return {"error": "Could not extract a recipe from this page. Try the Paste Text tab instead."})`
 }
+${pantry}
 
 Return ONLY this JSON (no markdown).
 ${SCHEMA}`

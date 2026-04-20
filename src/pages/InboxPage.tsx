@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { SavedRecipe, RecipeIngredient, Difficulty } from '../types/database'
 
+const SKIP_WATER = new Set(['water', 'warm water', 'cold water', 'hot water', 'water (for boiling)', 'boiling water'])
+
 interface ExtractedRecipe {
   title: string
   description: string
@@ -10,7 +12,7 @@ interface ExtractedRecipe {
   region_detail: string | null
   difficulty: Difficulty
   time_minutes: number
-  ingredients: { name: string; quantity: string }[]
+  ingredients: { name: string; quantity: string; in_pantry?: boolean }[]
   instructions: string[]
   why_this: string
 }
@@ -42,20 +44,20 @@ function ImportedRecipeCard({ recipe, onView }: { recipe: SavedRecipe; onView: (
   )
 }
 
-function RecipePreviewSheet({ recipe, url, pantryNames, onSave, onClose }: {
+function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
   recipe: ExtractedRecipe
   url: string
-  pantryNames: Set<string>
   onSave: () => void
   onClose: () => void
 }) {
   const [saved, setSaved] = useState(false)
   const { user } = useAuth()
 
+  // Use in_pantry from AI (which handles synonyms), fall back to false. Always mark water as in_pantry.
   const ingredients: RecipeIngredient[] = recipe.ingredients.map(i => ({
     name: i.name,
     quantity: i.quantity,
-    in_pantry: pantryNames.has(i.name.toLowerCase()),
+    in_pantry: SKIP_WATER.has(i.name.toLowerCase()) ? true : (i.in_pantry ?? false),
   }))
   const inPantry = ingredients.filter(i => i.in_pantry)
   const missing = ingredients.filter(i => !i.in_pantry)
@@ -225,9 +227,10 @@ export default function InboxPage() {
     setError('')
     setExtracted(null)
 
+    const pantryList = Array.from(pantryNames)
     const body = mode === 'text'
-      ? { text: pastedText.trim(), url: url.trim() || undefined }
-      : { url: url.trim() }
+      ? { text: pastedText.trim(), url: url.trim() || undefined, pantry_items: pantryList }
+      : { url: url.trim(), pantry_items: pantryList }
 
     const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', { body })
     setExtracting(false)
@@ -362,7 +365,7 @@ export default function InboxPage() {
 
       {showPreview && extracted && (
         <RecipePreviewSheet
-          recipe={extracted} url={extractedUrl} pantryNames={pantryNames}
+          recipe={extracted} url={extractedUrl}
           onSave={() => { fetchImports(); setUrl(''); setPastedText('') }}
           onClose={() => setShowPreview(false)}
         />
@@ -377,12 +380,11 @@ export default function InboxPage() {
             region_detail: viewingRecipe.region_detail ?? null,
             difficulty: viewingRecipe.difficulty,
             time_minutes: viewingRecipe.time_minutes ?? 0,
-            ingredients: (viewingRecipe.ingredients ?? []).map(i => ({ name: i.name, quantity: i.quantity })),
+            ingredients: (viewingRecipe.ingredients ?? []).map(i => ({ name: i.name, quantity: i.quantity, in_pantry: i.in_pantry })),
             instructions: viewingRecipe.instructions ?? [],
             why_this: viewingRecipe.why_this ?? '',
           }}
           url={viewingRecipe.source_url ?? ''}
-          pantryNames={pantryNames}
           onSave={() => {}}
           onClose={() => setViewingRecipe(null)}
         />
