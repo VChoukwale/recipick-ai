@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import type { AiRecipe } from '../../types/database'
 
 interface Props {
@@ -22,6 +25,8 @@ function MatchBar({ pct }: { pct: number }) {
 const SKIP_MISSING = new Set(['water', 'warm water', 'cold water', 'hot water', 'water (for boiling)'])
 
 export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Props) {
+  const { user } = useAuth()
+  const [addedToList, setAddedToList] = useState(false)
   const inPantry = recipe.ingredients.filter(i => i.in_pantry)
   const rawMissing = recipe.missing_ingredients?.length > 0
     ? recipe.missing_ingredients
@@ -113,9 +118,29 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
           {/* Missing — uses missing_ingredients directly */}
           {missing.length > 0 && (
             <div className="mb-5">
-              <h3 className="font-display font-700 text-sm text-stone-500 dark:text-stone-400 mb-2 flex items-center gap-1.5">
-                <span className="text-orange-400">+</span> You'll need ({missing.length})
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display font-700 text-sm text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
+                  <span className="text-orange-400">+</span> You'll need ({missing.length})
+                </h3>
+                {user && (
+                  <button
+                    onClick={async () => {
+                      if (addedToList) return
+                      await supabase.from('grocery_list').insert(
+                        missing.map(m => ({ user_id: user.id, name: m.name, is_checked: false }))
+                      )
+                      setAddedToList(true)
+                    }}
+                    className={`text-xs font-display font-600 px-2.5 py-1 rounded-full border transition-all ${
+                      addedToList
+                        ? 'border-emerald-300 dark:border-emerald-700 text-emerald-500 dark:text-emerald-400'
+                        : 'border-orange-200 dark:border-orange-800 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                    }`}
+                  >
+                    {addedToList ? '✓ Added to list' : '+ Add to list'}
+                  </button>
+                )}
+              </div>
               <div className="space-y-2">
                 {missing.map((m, i) => (
                   <div key={i} className="bg-orange-50 dark:bg-orange-900/20 rounded-xl px-3 py-2">
