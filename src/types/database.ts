@@ -1,4 +1,18 @@
 export type DietaryPreference = 'vegetarian' | 'vegetarian_with_eggs' | 'vegan'
+
+export interface AiRecipe {
+  title: string
+  description: string
+  cuisine: string
+  region_detail: string | null
+  difficulty: Difficulty
+  time_minutes: number
+  ingredients: RecipeIngredient[]
+  missing_ingredients: { name: string; substitution: string }[]
+  match_percentage: number
+  instructions: string[]
+  why_this: string
+}
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced'
 export type DayStatus = 'home_all_day' | 'busy_until' | 'late_night' | 'quick_only'
 export type Difficulty = 'easy' | 'medium' | 'hard'
@@ -19,6 +33,7 @@ export type PantryCategory =
   | 'dips'
   | 'canned'
   | 'protein'
+  | 'supplements'
   | 'other'
 
 export interface Profile {

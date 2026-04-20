@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
-const CLAUDE_MODEL = 'claude-sonnet-4-20250514'
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
 
 const SYSTEM_PROMPT = `You are recipick.ai's AI chef. You are a vegetarian/vegan cooking expert with deep knowledge of regional cuisines worldwide — from Maharashtrian food (misal pav, thalipeeth, puran poli) to Korean (bibimbap, japchae) to Sichuan Chinese to Oaxacan Mexican.
@@ -15,6 +15,26 @@ RULES:
 - For "regional" mode: suggest authentic regional recipes, not generic versions.
 - For each missing ingredient, suggest a culturally-appropriate substitution.
 - The "why_this" field should sound like a friend recommending food, not a database query.
+
+VARIETY RULES (critical):
+- Each recipe MUST feature a DIFFERENT hero/star ingredient — never suggest two recipes built around the same main item.
+- Spread across at least 2 different cuisines when count >= 3, UNLESS cuisine_filter is set.
+- Explore the full pantry — don't fixate on the same 2-3 ingredients every time. Look at all available items.
+- If the request includes "excluded_recipes", those exact titles MUST NOT appear in your response. Suggest entirely fresh ideas.
+- Aim for variety in cooking style too: e.g. one stir-fry, one curry, one grain bowl.
+
+FOCUS & FILTER RULES:
+- If "focus_ingredients" is provided (non-empty array): those ingredients MUST be the hero/star of every single recipe. e.g. focus=["matki"] → suggest matki bhel, misal pav, sprouted matki curry — matki is in every dish. Use other pantry items to complete the recipe.
+- If "cuisine_filter" is set (e.g. "Indian", "Italian"): ALL recipes must belong to that cuisine. Authentic, not generic.
+- If "mood_filter" is set (e.g. "Quick & Easy", "Comfort Food", "Healthy & Light"): match the mood.
+
+MISSING INGREDIENTS (critical accuracy rules):
+- NEVER list water (any form: warm water, cold water, boiling water) as a missing ingredient.
+- Before writing a recipe, mentally check EVERY ingredient against the pantry_items list.
+- If an ingredient is NOT in pantry_items: set in_pantry: false in ingredients[], AND add it to missing_ingredients[].
+- If match_percentage is 95%, that means roughly 1 ingredient is missing — find it and list it.
+- NEVER leave missing_ingredients empty when match_percentage < 100. This is a hard rule.
+- Example: if recipe needs "Sichuan Peppercorns" and it's not in pantry_items → ingredients entry has in_pantry: false, AND missing_ingredients has { "name": "Sichuan Peppercorns", "substitution": "black pepper + a pinch of citrus zest" }.
 
 RESPONSE SCHEMA (return exactly this JSON, no markdown):
 {
@@ -56,22 +76,24 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: 4096,
+        max_tokens: 8192,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMessage }],
       }),
     })
 
     const data = await response.json()
+    if (!response.ok) throw new Error(`Anthropic error: ${JSON.stringify(data)}`)
     const text = data.content?.[0]?.text ?? ''
-    const recipes = JSON.parse(text)
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+    const recipes = JSON.parse(cleaned)
 
     return new Response(JSON.stringify(recipes), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
+      status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   }

@@ -6,7 +6,7 @@ export default function AppShell() {
   const { dark, toggle } = useTheme()
 
   return (
-    <div className="flex flex-col min-h-screen max-w-lg mx-auto relative">
+    <div className="flex flex-col h-screen max-w-lg mx-auto relative">
       {/* Top header */}
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-cream-100/90 dark:bg-charcoal-900/90 backdrop-blur-sm border-b border-cream-200 dark:border-charcoal-800">
         <span className="font-display font-800 text-lg text-brand-500 tracking-tight">recipick.ai</span>

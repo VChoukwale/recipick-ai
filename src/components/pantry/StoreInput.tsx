@@ -10,6 +10,7 @@ const PRESET_STORES = [
   'Safeway',
   'Aldi',
   'Sprouts',
+  'Stop & Shop',
   'Amazon Fresh',
   'Local Market',
 ]

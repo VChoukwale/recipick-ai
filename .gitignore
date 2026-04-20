@@ -32,3 +32,9 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Claude Code (contains tokens/permissions)
+.claude/settings.local.json
+
+# Supabase temp
+supabase/.temp/

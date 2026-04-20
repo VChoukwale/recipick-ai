@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import type { PantryCategory } from '../../types/database'
+import type { PantryItem, PantryCategory } from '../../types/database'
 import { CATEGORY_META, CATEGORY_ORDER } from './categoryMeta'
 import QuantityInput from './QuantityInput'
 import StoreInput from './StoreInput'
@@ -14,9 +14,10 @@ interface Props {
   }) => void
   onClose: () => void
   suggestions: string[]
+  existingItems: PantryItem[]
 }
 
-export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
+export default function AddItemSheet({ onAdd, onClose, suggestions, existingItems }: Props) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState<PantryCategory>('other')
   const [secondaryCategories, setSecondaryCategories] = useState<PantryCategory[]>([])
@@ -24,17 +25,29 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
   const [quantity, setQuantity] = useState('')
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [duplicateItem, setDuplicateItem] = useState<PantryItem | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
   useEffect(() => {
-    if (name.length < 2) { setFilteredSuggestions([]); setShowSuggestions(false); return }
-    const lower = name.toLowerCase()
+    if (name.length < 2) {
+      setFilteredSuggestions([])
+      setShowSuggestions(false)
+      setDuplicateItem(null)
+      return
+    }
+    const lower = name.toLowerCase().trim()
+
+    // Check for duplicate
+    const found = existingItems.find(i => i.name.toLowerCase() === lower)
+    setDuplicateItem(found ?? null)
+
+    // Autocomplete suggestions
     const matches = suggestions.filter(s => s.toLowerCase().includes(lower)).slice(0, 6)
     setFilteredSuggestions(matches)
     setShowSuggestions(matches.length > 0)
-  }, [name, suggestions])
+  }, [name, suggestions, existingItems])
 
   function toggleSecondary(cat: PantryCategory) {
     setSecondaryCategories(prev =>
@@ -54,10 +67,10 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
     })
     setName(''); setStore(''); setQuantity('')
     setCategory('other'); setSecondaryCategories([])
+    setDuplicateItem(null)
     inputRef.current?.focus()
   }
 
-  // Available secondary categories = all except the primary one
   const secondaryOptions = CATEGORY_ORDER.filter(c => c !== category)
 
   return (
@@ -74,7 +87,7 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
+            {/* Name input */}
             <div className="relative">
               <input
                 ref={inputRef}
@@ -96,6 +109,23 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
                 </div>
               )}
             </div>
+
+            {/* Duplicate warning */}
+            {duplicateItem && (
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 animate-fade-in">
+                <span className="text-base flex-shrink-0 mt-0.5">⚠️</span>
+                <div>
+                  <p className="text-sm font-display font-700 text-amber-700 dark:text-amber-300">
+                    Already in your pantry!
+                  </p>
+                  <p className="text-xs font-body text-amber-600 dark:text-amber-400 mt-0.5">
+                    "{duplicateItem.name}" is already added
+                    {duplicateItem.store_name ? ` from ${duplicateItem.store_name}` : ''}.
+                    You can still add it with different details.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Primary category */}
             <div>
@@ -122,7 +152,7 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
             {/* Secondary categories */}
             <div>
               <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
-                Also appears in <span className="font-400 text-stone-400">(optional — for items like paneer = dairy + protein)</span>
+                Also appears in <span className="font-400 text-stone-400">(optional — e.g. paneer = dairy + protein)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {secondaryOptions.map(cat => {
@@ -145,7 +175,7 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
               </div>
             </div>
 
-            {/* Store — optional */}
+            {/* Store */}
             <div>
               <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
                 Store <span className="font-400 text-stone-400">(optional)</span>
@@ -153,7 +183,7 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
               <StoreInput value={store} onChange={setStore} />
             </div>
 
-            {/* Quantity + unit — optional */}
+            {/* Quantity */}
             <div>
               <label className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-1.5 block">
                 Quantity <span className="font-400 text-stone-400">(optional)</span>
@@ -161,9 +191,12 @@ export default function AddItemSheet({ onAdd, onClose, suggestions }: Props) {
               <QuantityInput value={quantity} onChange={setQuantity} />
             </div>
 
-            <button type="submit" disabled={!name.trim()}
-              className="w-full btn-primary py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
-              Add to pantry
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="w-full btn-primary py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {duplicateItem ? '+ Add anyway' : 'Add to pantry'}
             </button>
           </form>
         </div>

@@ -19,7 +19,7 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         onClick={() => onToggleAvailable(item.id, !item.is_available)}
         className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
           item.is_available
-            ? 'bg-sage-400 border-sage-400'
+            ? 'bg-emerald-500 border-emerald-500'
             : 'border-stone-300 dark:border-stone-600'
         }`}
       >
