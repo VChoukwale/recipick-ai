@@ -13,8 +13,30 @@ const STATUS_MESSAGE: Record<DayStatus, string> = {
   quick_only:   'Fast and delicious ⚡',
 }
 
-const CUISINES = ['Any', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French']
+const CUISINES = ['Any', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
 const MOODS = ['Any mood', 'Quick & Easy', 'Comfort Food', 'Healthy & Light', 'Street Food', 'Festive', 'One-Pot']
+
+const REGIONS: Record<string, string[]> = {
+  Indian:          ['Maharashtra', 'Punjab', 'Tamil Nadu', 'Kerala', 'Bengal', 'Goa', 'Rajasthan', 'Gujarat', 'Andhra Pradesh', 'Karnataka', 'Hyderabadi', 'Kashmiri', 'Bihari', 'Odia', 'Assamese'],
+  Italian:         ['Sicilian', 'Neapolitan', 'Roman', 'Venetian', 'Tuscan', 'Sardinian', 'Ligurian', 'Piedmontese', 'Umbrian', 'Calabrian'],
+  Chinese:         ['Sichuan', 'Cantonese', 'Hunan', 'Shanghainese', 'Beijing', 'Fujian', 'Yunnan', 'Xinjiang', 'Hakka'],
+  Mexican:         ['Oaxacan', 'Yucatecan', 'Veracruz', 'Pueblan', 'Norteño', 'Mexico City', 'Jalisco', 'Baja'],
+  Japanese:        ['Osaka', 'Tokyo', 'Kyoto', 'Hokkaido', 'Fukuoka', 'Okinawan', 'Nagoya', 'Hiroshima'],
+  Korean:          ['Seoul', 'Jeolla', 'Gyeongsang', 'Jeju Island', 'Gangwon'],
+  Thai:            ['Northern Thai', 'Southern Thai', 'Central Thai', 'Isan (Northeast)', 'Bangkok'],
+  Mediterranean:   ['Greek', 'Lebanese', 'Moroccan', 'Spanish', 'Turkish', 'Egyptian', 'Libyan'],
+  'Middle Eastern':['Lebanese', 'Persian', 'Turkish', 'Egyptian', 'Syrian', 'Yemeni', 'Israeli', 'Iraqi', 'Jordanian'],
+  Greek:           ['Cretan', 'Macedonian', 'Athenian', 'Ionian Islands', 'Thessaloniki'],
+  French:          ['Provençal', 'Lyonnaise', 'Breton', 'Alsatian', 'Basque', 'Parisian', 'Bordelaise'],
+  American:        ['Southern', 'Cajun/Creole', 'New England', 'Tex-Mex', 'Southwest', 'Pacific Northwest', 'Hawaiian'],
+  Vietnamese:      ['Hanoi', 'Ho Chi Minh City', 'Hue', 'Hoi An', 'Mekong Delta'],
+  Ethiopian:       ['Addis Ababa', 'Tigray', 'Oromia', 'Amhara'],
+  Spanish:         ['Catalan', 'Andalusian', 'Basque', 'Galician', 'Valencian', 'Castilian', 'Canarian'],
+  Turkish:         ['Istanbul', 'Aegean', 'Black Sea', 'Southeast Anatolian', 'Central Anatolian'],
+  Moroccan:        ['Marrakech', 'Fez', 'Casablanca', 'Tangier', 'Berber'],
+  Lebanese:        ['Beirut', 'Mountain', 'South Lebanese', 'Bekaa Valley'],
+  Peruvian:        ['Lima', 'Arequipa', 'Cusco', 'Amazon', 'Andean'],
+}
 
 interface PantryChip { id: string; name: string; is_star_ingredient: boolean }
 
@@ -36,9 +58,11 @@ export default function HomePage() {
   const [showPicker, setShowPicker] = useState(false)
   const [ingredientSearch, setIngredientSearch] = useState('')
 
-  // Cuisine & mood
+  // Cuisine, region & mood
   const [cuisine, setCuisine] = useState('Any')
+  const [region, setRegion] = useState('')
   const [mood, setMood] = useState('Any mood')
+  const [dishSearch, setDishSearch] = useState('')
 
   useEffect(() => {
     try {
@@ -118,6 +142,8 @@ export default function HomePage() {
         busy_until_time: busyUntilTime || null,
         preferred_cuisines: profile?.preferred_cuisines ?? [],
         cuisine_filter: cuisine !== 'Any' ? cuisine : null,
+        region_filter: region || null,
+        dish_query: dishSearch.trim() || null,
         mood_filter: mood !== 'Any mood' ? mood : null,
         count: 3,
         excluded_recipes: excludedRecipes,
@@ -180,11 +206,11 @@ export default function HomePage() {
         </div>
 
         {/* Cuisine */}
-        <div className="mb-3">
+        <div className="mb-2">
           <p className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-2">Cuisine</p>
           <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
             {CUISINES.map(c => (
-              <button key={c} onClick={() => setCuisine(c)}
+              <button key={c} onClick={() => { setCuisine(c); setRegion('') }}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
                   cuisine === c
                     ? 'bg-brand-500 border-brand-500 text-white'
@@ -194,8 +220,33 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Region — slides in when a cuisine is selected */}
+        {cuisine !== 'Any' && REGIONS[cuisine] && (
+          <div className="mb-2">
+            <p className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 mb-2">
+              Region <span className="font-400 text-stone-300 dark:text-stone-600">· {cuisine}</span>
+            </p>
+            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+              <button onClick={() => setRegion('')}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
+                  region === ''
+                    ? 'bg-brand-400 border-brand-400 text-white'
+                    : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400 hover:border-brand-300'
+                }`}>Any</button>
+              {REGIONS[cuisine].map(r => (
+                <button key={r} onClick={() => setRegion(r)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
+                    region === r
+                      ? 'bg-brand-400 border-brand-400 text-white'
+                      : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400 hover:border-brand-300'
+                  }`}>{r}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Mood */}
-        <div className="mb-4">
+        <div className="mb-3">
           <p className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-2">Mood</p>
           <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
             {MOODS.map(m => (
@@ -206,6 +257,23 @@ export default function HomePage() {
                     : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400 hover:border-sage-300'
                 }`}>{m}</button>
             ))}
+          </div>
+        </div>
+
+        {/* Dish / ingredient search */}
+        <div className="mb-4">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔎</span>
+            <input
+              value={dishSearch}
+              onChange={e => setDishSearch(e.target.value)}
+              placeholder="Search a dish or ingredient (optional)…"
+              className="input-field pl-9 text-sm"
+            />
+            {dishSearch && (
+              <button onClick={() => setDishSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs">✕</button>
+            )}
           </div>
         </div>
 
@@ -318,8 +386,9 @@ export default function HomePage() {
           <>
             <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-3 text-center">
               {STATUS_MESSAGE[dayStatus]}
-              {cuisine !== 'Any' && <span className="ml-1">· {cuisine}</span>}
+              {cuisine !== 'Any' && <span className="ml-1">· {region ? `${region} (${cuisine})` : cuisine}</span>}
               {mood !== 'Any mood' && <span className="ml-1">· {mood}</span>}
+              {dishSearch.trim() && <span className="ml-1">· "{dishSearch.trim()}"</span>}
               {focusIds.size > 0 && <span className="ml-1">· hero: {focusIngredientNames.join(', ')}</span>}
             </p>
             <div className="space-y-3">

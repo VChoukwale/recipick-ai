@@ -26,6 +26,8 @@ VARIETY RULES (critical):
 FOCUS & FILTER RULES:
 - If "focus_ingredients" is provided (non-empty array): those ingredients MUST be the hero/star of every single recipe. e.g. focus=["matki"] → suggest matki bhel, misal pav, sprouted matki curry — matki is in every dish. Use other pantry items to complete the recipe.
 - If "cuisine_filter" is set (e.g. "Indian", "Italian"): ALL recipes must belong to that cuisine. Authentic, not generic.
+- If "region_filter" is set (e.g. "Maharashtra", "Sichuan", "Neapolitan"): ALL recipes must be authentic to that SPECIFIC sub-region. Go deep — suggest dishes that are genuinely iconic to that place, not just the parent cuisine. E.g. region_filter="Maharashtra" → misal pav, thalipeeth, varan bhaat, kothimbir vadi, puran poli — NOT generic Indian curry. region_filter="Sichuan" → mapo tofu, kung pao, dan dan noodles, NOT generic stir-fry. Include the region name in region_detail field.
+- If "dish_query" is set: the user is searching for a specific dish, ingredient, or style. Suggest recipes that match or are closely inspired by this query. E.g. dish_query="bibimbap" → Korean rice bowl variations. dish_query="jackfruit" → recipes where jackfruit is the star. dish_query="fermented" → recipes using fermented ingredients.
 - If "mood_filter" is set (e.g. "Quick & Easy", "Comfort Food", "Healthy & Light"): match the mood.
 
 MISSING INGREDIENTS (critical accuracy rules):
