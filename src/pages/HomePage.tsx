@@ -131,6 +131,20 @@ export default function HomePage() {
     .filter(i => focusIds.has(i.id))
     .map(i => i.name)
 
+  const starItems = pantryItems.filter(i => i.is_star_ingredient)
+  const focusedStarNames = pantryItems
+    .filter(i => focusIds.has(i.id) && i.is_star_ingredient)
+    .map(i => i.name)
+  const isStarMode = focusedStarNames.length > 0 && focusIds.size === focusedStarNames.length
+
+  function toggleStarMode() {
+    if (isStarMode) {
+      setFocusIds(new Set())
+    } else {
+      setFocusIds(new Set(starItems.map(i => i.id)))
+    }
+  }
+
   async function callAiChef(excludedRecipes: string[], append: boolean) {
     const { data, error: fnError } = await supabase.functions.invoke('ai-chef', {
       body: {
@@ -277,19 +291,44 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Star Mode quick toggle — visible when star ingredients exist */}
+        {starItems.length > 0 && (
+          <div className="mb-3 flex items-center gap-2">
+            <button
+              onClick={toggleStarMode}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-700 border transition-all duration-200 ${
+                isStarMode
+                  ? 'bg-amber-400 border-amber-400 text-white shadow-sm'
+                  : 'bg-white dark:bg-charcoal-800 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:border-amber-400'
+              }`}
+            >
+              ⭐ Star Mode
+            </button>
+            {isStarMode && (
+              <span className="text-xs font-body text-amber-600 dark:text-amber-400">
+                hero: {focusedStarNames.join(', ')}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Ingredient focus picker */}
         {pantryItems.length > 0 && (
-          <div className="mb-4 bg-white dark:bg-charcoal-800 rounded-2xl border border-cream-200 dark:border-charcoal-700 overflow-hidden">
+          <div className={`mb-4 bg-white dark:bg-charcoal-800 rounded-2xl border overflow-hidden transition-colors duration-200 ${
+            isStarMode
+              ? 'border-amber-200 dark:border-amber-800'
+              : 'border-cream-200 dark:border-charcoal-700'
+          }`}>
             <button
               onClick={() => setShowPicker(p => !p)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-base flex-shrink-0">🎯</span>
+                <span className="text-base flex-shrink-0">{isStarMode ? '⭐' : '🎯'}</span>
                 <span className="font-display font-700 text-sm text-stone-700 dark:text-stone-200">
-                  Cook with specific ingredients?
+                  {isStarMode ? 'Star Mode active' : 'Cook with specific ingredients?'}
                 </span>
-                {focusIds.size > 0 && (
+                {focusIds.size > 0 && !isStarMode && (
                   <span className="flex-shrink-0 text-xs font-display font-600 px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400">
                     {focusIds.size} selected
                   </span>
@@ -301,16 +340,10 @@ export default function HomePage() {
             {showPicker && (
               <div className="px-4 pb-4">
                 <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-3">
-                  Tap ingredients you want to cook with — recipes will be built around them as the hero.
-                  {focusIds.size === 0 && ' Leaving empty uses your full pantry.'}
+                  {isStarMode
+                    ? 'Every recipe will be built around your star ingredient as the hero.'
+                    : 'Tap ingredients you want to cook with — recipes will be built around them as the hero. Leaving empty uses your full pantry.'}
                 </p>
-
-                {/* Star ingredient callout */}
-                {pantryItems.some(i => i.is_star_ingredient) && (
-                  <div className="mb-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs font-body text-amber-700 dark:text-amber-300">
-                    ⭐ Star ingredient auto-selected as hero
-                  </div>
-                )}
 
                 {/* Search */}
                 <div className="relative mb-3">
@@ -365,11 +398,17 @@ export default function HomePage() {
         <button
           onClick={handleAskAI}
           disabled={loading || loadingMore}
-          className="w-full btn-primary flex items-center justify-center gap-2 mb-5"
+          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all ${
+            isStarMode
+              ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-md shadow-amber-200/50 dark:shadow-amber-900/30 disabled:opacity-50'
+              : 'btn-primary'
+          }`}
         >
           {loading
             ? <><span className="animate-simmer text-lg">🍳</span><span>Cooking up ideas…</span></>
-            : <><span className="text-lg">✨</span><span>What should I cook?</span></>}
+            : isStarMode
+              ? <><span className="text-lg">⭐</span><span>Cook with {focusedStarNames[0]}{focusedStarNames.length > 1 ? ` +${focusedStarNames.length - 1}` : ''}</span></>
+              : <><span className="text-lg">✨</span><span>What should I cook?</span></>}
         </button>
 
         {error && <p className="text-sm text-red-500 text-center mb-4 font-body">{error}</p>}
