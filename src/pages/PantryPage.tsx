@@ -183,43 +183,39 @@ export default function PantryPage() {
   return (
     <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
       {/* Header */}
-      <div className="px-4 pt-5 pb-3 bg-cream-100 dark:bg-charcoal-900">
+      <div className="px-4 pt-4 pb-3 bg-cream-100 dark:bg-charcoal-900">
         <div className="flex items-center justify-between mb-1">
-          <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Your Pantry</h1>
+          <div>
+            <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Your Pantry</h1>
+            <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">
+              {availableCount} of {items.length} items available
+              {starItem && (
+                <span className="ml-2 inline-flex items-center gap-1 text-amber-500 font-display font-600">
+                  · ⭐ {starItem.name}
+                </span>
+              )}
+            </p>
+          </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center text-xl shadow-sm hover:bg-brand-600 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-display font-700 text-sm px-4 py-2 rounded-full shadow-md transition-all duration-150"
           >
-            +
+            <span className="text-lg leading-none">+</span> Add
           </button>
         </div>
 
-        {/* Summary row */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-body text-stone-400 dark:text-stone-500">
-            {availableCount} of {items.length} available
-          </span>
-          {starItem && (
-            <span className="flex items-center gap-1 text-xs font-display font-600 text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-              ⭐ {starItem.name}
-            </span>
-          )}
-        </div>
-
         {/* Search */}
-        <div className="relative">
+        <div className="relative mt-3">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔍</span>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search your pantry…"
-            className="input-field pl-9"
+            className="input-field pl-9 shadow-sm"
           />
           {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-            >
+            <button onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
               ✕
             </button>
           )}

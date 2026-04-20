@@ -32,6 +32,14 @@
   body {
     @apply min-h-screen antialiased;
     background-color: var(--bg-base);
+    /* Subtle warm dot pattern for light mode */
+    background-image: radial-gradient(circle, #E8713A0A 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -41,31 +49,37 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-display font-700 rounded-2xl px-6 py-3 transition-all duration-150 shadow-sm active:scale-95;
+    @apply bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-display font-700 rounded-2xl px-6 py-3 transition-all duration-150 shadow-md hover:shadow-lg active:scale-95;
   }
 
   .btn-secondary {
-    @apply bg-cream-100 dark:bg-charcoal-800 hover:bg-cream-200 dark:hover:bg-charcoal-800 text-brand-600 dark:text-brand-400 font-display font-600 rounded-2xl px-6 py-3 transition-all duration-150 active:scale-95;
+    @apply bg-cream-100 dark:bg-charcoal-800 hover:bg-cream-200 dark:hover:bg-charcoal-700 text-brand-600 dark:text-brand-400 font-display font-600 rounded-2xl px-6 py-3 transition-all duration-150 active:scale-95 border border-cream-200 dark:border-charcoal-700;
   }
 
   .card {
-    @apply bg-white dark:bg-charcoal-800 rounded-3xl shadow-sm border border-cream-200 dark:border-charcoal-800 p-4;
+    @apply bg-white dark:bg-charcoal-800 rounded-3xl shadow-md hover:shadow-lg transition-shadow border border-cream-200/60 dark:border-charcoal-700/60 p-4;
   }
 
   .input-field {
-    @apply w-full bg-cream-100 dark:bg-charcoal-800 border border-cream-200 dark:border-charcoal-800 rounded-2xl px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all;
+    @apply w-full bg-white dark:bg-charcoal-800 border border-cream-200 dark:border-charcoal-700 rounded-2xl px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm;
   }
 
-  /* Bottom nav safe area */
   .bottom-nav-padding {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  /* Page section header */
+  .section-title {
+    @apply font-display font-800 text-2xl text-stone-800 dark:text-stone-100;
+  }
+
+  .section-subtitle {
+    @apply font-body text-sm text-stone-400 dark:text-stone-500 mt-0.5;
   }
 }
 
 /* Smooth scroll */
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; }

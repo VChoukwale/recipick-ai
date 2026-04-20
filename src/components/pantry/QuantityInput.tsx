@@ -4,16 +4,16 @@ interface Props {
 }
 
 const UNITS = [
-  { group: 'Count',  options: ['pcs', 'can', 'cans', 'bottle', 'pack', 'bag', 'box', 'bunch', 'loaf'] },
   { group: 'Weight', options: ['g', 'kg', 'lb', 'oz'] },
   { group: 'Volume', options: ['ml', 'L', 'cup', 'tbsp', 'tsp'] },
+  { group: 'Count',  options: ['pcs', 'can', 'bottle', 'pack', 'bag', 'box', 'bunch', 'loaf'] },
 ]
 
 // Parse "500 g" → { amount: "500", unit: "g" }
 function parse(val: string): { amount: string; unit: string } {
   const match = val.trim().match(/^([\d.]+)\s*(.*)$/)
   if (match) return { amount: match[1], unit: match[2].trim() }
-  return { amount: val, unit: 'pcs' }
+  return { amount: val, unit: '' }
 }
 
 export default function QuantityInput({ value, onChange }: Props) {
@@ -21,7 +21,8 @@ export default function QuantityInput({ value, onChange }: Props) {
 
   function update(newAmount: string, newUnit: string) {
     const amt = newAmount.trim()
-    onChange(amt ? `${amt} ${newUnit}` : '')
+    if (!amt) { onChange(''); return }
+    onChange(newUnit ? `${amt} ${newUnit}` : amt)
   }
 
   return (
@@ -40,6 +41,7 @@ export default function QuantityInput({ value, onChange }: Props) {
         onChange={e => update(amount, e.target.value)}
         className="input-field flex-1"
       >
+        <option value="">Select unit</option>
         {UNITS.map(group => (
           <optgroup key={group.group} label={group.group}>
             {group.options.map(u => (
