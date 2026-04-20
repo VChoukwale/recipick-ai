@@ -53,15 +53,24 @@
   }
 
   .btn-secondary {
-    @apply bg-cream-100 dark:bg-charcoal-800 hover:bg-cream-200 dark:hover:bg-charcoal-700 text-brand-600 dark:text-brand-400 font-display font-600 rounded-2xl px-6 py-3 transition-all duration-150 active:scale-95 border border-cream-200 dark:border-charcoal-700;
+    @apply bg-cream-100 hover:bg-cream-200 text-brand-600 font-display font-600 rounded-2xl px-6 py-3 transition-all duration-150 active:scale-95 border border-cream-200;
+  }
+  .dark .btn-secondary {
+    @apply bg-charcoal-800 text-brand-400 border-charcoal-700;
   }
 
   .card {
-    @apply bg-white dark:bg-charcoal-800 rounded-3xl shadow-md hover:shadow-lg transition-shadow border border-cream-200/60 dark:border-charcoal-700/60 p-4;
+    @apply bg-white rounded-3xl shadow-md hover:shadow-lg transition-shadow border border-cream-200 p-4;
+  }
+  .dark .card {
+    @apply bg-charcoal-800 border-charcoal-700;
   }
 
   .input-field {
-    @apply w-full bg-white dark:bg-charcoal-800 border border-cream-200 dark:border-charcoal-700 rounded-2xl px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm;
+    @apply w-full bg-white border border-cream-200 rounded-2xl px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm;
+  }
+  .dark .input-field {
+    @apply bg-charcoal-800 border-charcoal-700;
   }
 
   .bottom-nav-padding {
@@ -70,11 +79,17 @@
 
   /* Page section header */
   .section-title {
-    @apply font-display font-800 text-2xl text-stone-800 dark:text-stone-100;
+    @apply font-display font-800 text-2xl text-stone-800;
+  }
+  .dark .section-title {
+    @apply text-stone-100;
   }
 
   .section-subtitle {
-    @apply font-body text-sm text-stone-400 dark:text-stone-500 mt-0.5;
+    @apply font-body text-sm text-stone-400 mt-0.5;
+  }
+  .dark .section-subtitle {
+    @apply text-stone-500;
   }
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { PantryItem, PantryCategory } from '../../types/database'
-import { CATEGORY_META, CATEGORY_ACCENT } from './categoryMeta'
+import { CATEGORY_META, CATEGORY_ACCENT, CATEGORY_BG, CATEGORY_HOVER } from './categoryMeta'
 import PantryItemRow from './PantryItemRow'
 
 interface Props {
@@ -16,14 +16,16 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_META[category]
   const accent = CATEGORY_ACCENT[category]
+  const bg = CATEGORY_BG[category]
+  const hover = CATEGORY_HOVER[category]
   const availableCount = items.filter(i => i.is_available).length
 
   return (
-    <div className={`bg-white dark:bg-charcoal-800 rounded-2xl overflow-hidden shadow-md border-l-4 ${accent} border border-cream-200/60 dark:border-charcoal-700/60 transition-shadow hover:shadow-lg`}>
+    <div className={`bg-white dark:bg-charcoal-800 rounded-2xl overflow-hidden shadow-md border-l-4 ${accent} border-t border-r border-b border-cream-200 dark:border-t-charcoal-700 dark:border-r-charcoal-700 dark:border-b-charcoal-700 transition-shadow hover:shadow-lg`}>
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cream-50 dark:hover:bg-charcoal-700/50 transition-colors duration-150"
+        className={`w-full flex items-center justify-between px-4 py-3.5 transition-colors duration-150 cursor-pointer ${bg} ${hover}`}
       >
         <div className="flex items-center gap-2.5">
           <span className="text-xl">{meta.emoji}</span>
