@@ -1,7 +1,15 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { PantryItem, PantryCategory } from '../../types/database'
+
+// Web Speech API type shim
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition
+    webkitSpeechRecognition: typeof SpeechRecognition
+  }
+}
 
 interface Message {
   role: 'user' | 'assistant'
@@ -22,8 +30,13 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [listening, setListening] = useState(false)
+  const [voiceSupported] = useState(() =>
+    typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+  )
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -32,6 +45,52 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 300)
   }, [])
+
+  const handleVoice = useCallback(() => {
+    if (!voiceSupported) return
+
+    if (listening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+    recognitionRef.current = recognition
+
+    recognition.onstart = () => setListening(true)
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(r => r[0].transcript)
+        .join('')
+      setInput(transcript)
+    }
+
+    recognition.onend = () => {
+      setListening(false)
+      recognitionRef.current = null
+      setInput(prev => {
+        if (prev.trim()) {
+          setTimeout(() => {
+            const form = inputRef.current?.closest('form') as HTMLFormElement | null
+            form?.requestSubmit()
+          }, 100)
+        }
+        return prev
+      })
+    }
+
+    recognition.onerror = () => {
+      setListening(false)
+      recognitionRef.current = null
+    }
+
+    recognition.start()
+  }, [voiceSupported, listening])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -207,6 +266,19 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
               className="input-field flex-1 text-sm"
               disabled={loading}
             />
+            <button
+              type="button"
+              onClick={voiceSupported ? handleVoice : () => alert('Voice input is not supported in this browser. Try Chrome on Android or desktop.')}
+              disabled={loading}
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-all active:scale-95"
+              style={listening
+                ? { background: '#dc2626', boxShadow: '0 0 0 4px rgba(220,38,38,0.25)' }
+                : { background: 'var(--s1)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }
+              }
+              title={listening ? 'Stop listening' : 'Speak'}
+            >
+              {listening ? '⏹' : '🎙'}
+            </button>
             <button
               type="submit"
               disabled={loading || !input.trim()}
