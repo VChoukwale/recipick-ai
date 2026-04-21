@@ -6,6 +6,7 @@ import { CATEGORY_ORDER, CATEGORY_META } from '../components/pantry/categoryMeta
 import PantrySection from '../components/pantry/PantrySection'
 import AddItemSheet from '../components/pantry/AddItemSheet'
 import EditItemSheet from '../components/pantry/EditItemSheet'
+import PantryChat from '../components/pantry/PantryChat'
 
 export default function PantryPage() {
   const { user } = useAuth()
@@ -17,6 +18,7 @@ export default function PantryPage() {
   const [vocabulary, setVocabulary] = useState<string[]>([])
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [activeCategory, setActiveCategory] = useState<PantryCategory | null>(null)
+  const [showChat, setShowChat] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLDivElement>(null)
   const isNavigatingRef = useRef(false)
@@ -319,6 +321,17 @@ export default function PantryPage() {
         </button>
       )}
 
+      {/* AI Chat FAB */}
+      <button
+        onClick={() => setShowChat(true)}
+        className="fixed bottom-20 left-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)', boxShadow: '0 4px 20px rgba(232,113,58,0.40)', color: '#fff' }}
+        title="Update pantry with AI"
+      >
+        <span className="text-base leading-none">✨</span>
+        <span className="text-sm font-display font-700">Update with AI</span>
+      </button>
+
       {showAdd && (
         <AddItemSheet
           onAdd={async (fields) => { await handleAdd(fields) }}
@@ -333,6 +346,14 @@ export default function PantryPage() {
           item={editingItem}
           onSave={handleEdit}
           onClose={() => setEditingItem(null)}
+        />
+      )}
+
+      {showChat && (
+        <PantryChat
+          pantryItems={items}
+          onPantryUpdate={fetchItems}
+          onClose={() => setShowChat(false)}
         />
       )}
     </div>
