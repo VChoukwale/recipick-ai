@@ -352,7 +352,7 @@ export default function OnboardingPage() {
         {/* ── Step 4: All done ── */}
         {step === 4 && (
           <div className="text-center animate-fade-in">
-            <div className="text-7xl mb-6 animate-simmer">🎉</div>
+            <div className="text-7xl mb-6 animate-simmer">🍳</div>
             <h2 className="font-display text-3xl font-800 text-stone-800 dark:text-stone-100 mb-3">
               Your kitchen is ready!
             </h2>
