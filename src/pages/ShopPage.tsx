@@ -99,6 +99,45 @@ export default function ShopPage() {
     const newVal = !item.is_checked
     setItems(prev => prev.map(i => i.id === id ? { ...i, is_checked: newVal } : i))
     await supabase.from('grocery_list').update({ is_checked: newVal }).eq('id', id)
+
+    if (newVal) {
+      // Add to pantry
+      const { data: existing } = await supabase
+        .from('pantry_items')
+        .select('id')
+        .eq('user_id', user!.id)
+        .ilike('name', item.name)
+        .maybeSingle()
+
+      if (!existing) {
+        const { data: newPantryItem } = await supabase.from('pantry_items').insert({
+          user_id: user!.id,
+          name: item.name,
+          category: 'other',
+          is_available: true,
+          is_favorite: false,
+          is_star_ingredient: false,
+          ai_tags: [],
+        }).select().single()
+
+        showToast(`✓ ${item.name} added to pantry`)
+
+        // Async AI categorization
+        if (newPantryItem) {
+          supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
+            if (data?.category) {
+              supabase.from('pantry_items')
+                .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
+                .eq('id', (newPantryItem as { id: string }).id)
+            }
+          })
+        }
+      } else {
+        // Already in pantry — just make sure it's available
+        await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
+        showToast(`✓ ${item.name} marked available in pantry`)
+      }
+    }
   }
 
   async function handleDelete(id: string) {
