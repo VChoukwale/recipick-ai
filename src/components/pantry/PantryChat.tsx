@@ -4,10 +4,23 @@ import { useAuth } from '../../contexts/AuthContext'
 import type { PantryItem, PantryCategory } from '../../types/database'
 
 // Web Speech API type shim
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start(): void
+  stop(): void
+  onstart: (() => void) | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+  onresult: ((event: ISpeechRecognitionEvent) => void) | null
+}
+interface ISpeechRecognitionResult { 0: { transcript: string } }
+interface ISpeechRecognitionEvent { results: ISpeechRecognitionResult[] }
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
+    SpeechRecognition: new () => ISpeechRecognition
+    webkitSpeechRecognition: new () => ISpeechRecognition
   }
 }
 
@@ -36,7 +49,7 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
   )
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<ISpeechRecognition | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
