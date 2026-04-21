@@ -12,9 +12,10 @@ interface Props {
   onDelete: (id: string) => void
   dietConflictCount?: number
   dietLabel?: string
+  conflictItemIds?: Set<string>
 }
 
-export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete, dietConflictCount = 0, dietLabel = '' }: Props) {
+export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete, dietConflictCount = 0, dietLabel = '', conflictItemIds }: Props) {
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_META[category]
   const accent = CATEGORY_ACCENT[category]
@@ -55,6 +56,7 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
               onToggleStar={onToggleStar}
               onEdit={onEdit}
               onDelete={onDelete}
+              isConflict={conflictItemIds?.has(item.id) ?? false}
             />
           ))}
         </div>

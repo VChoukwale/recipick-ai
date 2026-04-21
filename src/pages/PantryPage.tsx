@@ -283,8 +283,8 @@ export default function PantryPage() {
             {visibleCategories.map(cat => {
               const diet = profile?.dietary_preference ?? 'non_vegetarian'
               const sectionItems = grouped.get(cat)!
-              const conflictCount = diet === 'non_vegetarian' ? 0
-                : sectionItems.filter(i => pantryViolatesDiet(i.name, diet)).length
+              const conflictIds = diet === 'non_vegetarian' ? new Set<string>()
+                : new Set(sectionItems.filter(i => i.is_available && pantryViolatesDiet(i.name, diet)).map(i => i.id))
               return (
                 <PantrySection
                   key={cat}
@@ -294,8 +294,9 @@ export default function PantryPage() {
                   onToggleStar={handleToggleStar}
                   onEdit={setEditingItem}
                   onDelete={handleDelete}
-                  dietConflictCount={conflictCount}
+                  dietConflictCount={conflictIds.size}
                   dietLabel={pantryDietLabel(diet)}
+                  conflictItemIds={conflictIds}
                 />
               )
             })}

@@ -7,9 +7,10 @@ interface Props {
   onToggleStar: (id: string) => void
   onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
+  isConflict?: boolean
 }
 
-export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete }: Props) {
+export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete, isConflict = false }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
@@ -19,11 +20,15 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         onClick={() => onToggleAvailable(item.id, !item.is_available)}
         className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
           item.is_available
-            ? 'bg-emerald-500 border-emerald-500'
+            ? isConflict
+              ? 'bg-orange-500 border-orange-500'
+              : 'bg-emerald-500 border-emerald-500'
             : 'border-stone-300 dark:border-stone-600'
         }`}
       >
-        {item.is_available && <span className="text-white text-xs font-bold">✓</span>}
+        {item.is_available && (
+          <span className="text-white text-xs font-bold">{isConflict ? '!' : '✓'}</span>
+        )}
       </button>
 
       {/* Item info */}

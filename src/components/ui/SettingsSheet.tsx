@@ -64,6 +64,7 @@ export default function SettingsSheet({ onClose }: Props) {
   const [conflictItems, setConflictItems] = useState<{ id: string; name: string }[]>([])
   const [fixingConflicts, setFixingConflicts] = useState(false)
   const prevDietaryRef = useRef<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
+  const conflictRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (profile) {
@@ -101,7 +102,12 @@ export default function SettingsSheet({ onClose }: Props) {
         .eq('user_id', user.id)
         .eq('is_available', true)
       const conflicts = (data ?? []).filter((item: { id: string; name: string }) => violatesDiet(item.name, dietary))
-      if (conflicts.length > 0) setConflictItems(conflicts)
+      if (conflicts.length > 0) {
+        setConflictItems(conflicts)
+        setTimeout(() => {
+          conflictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }, 100)
+      }
     }
   }
 
@@ -254,20 +260,13 @@ export default function SettingsSheet({ onClose }: Props) {
             )}
           </div>
 
-          {/* Save */}
-          <button onClick={handleSave} disabled={saving}
-            className="w-full py-3.5 rounded-2xl font-display font-700 text-sm transition-all"
-            style={saved
-              ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
-              : { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 3px 12px rgba(232,113,58,0.35)' }
-            }>
-            {saving ? 'Saving…' : saved ? '✓ Preferences saved!' : 'Save preferences'}
-          </button>
-
-          {/* Diet conflict alert */}
+          {/* Diet conflict alert — shown above Save so it's immediately visible */}
           {conflictItems.length > 0 && (
-            <div className="rounded-2xl p-4" style={{ background: '#fff7ed', border: '1px solid #fed7aa' }}>
-              <p className="font-display font-700 text-sm text-orange-700 mb-1">Pantry items don't match your new diet</p>
+            <div ref={conflictRef} className="rounded-2xl p-4" style={{ background: '#fff7ed', border: '2px solid #fb923c' }}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-base">⚠️</span>
+                <p className="font-display font-700 text-sm text-orange-700">Pantry items don't match your new diet</p>
+              </div>
               <p className="text-xs font-body text-orange-600 leading-relaxed mb-3">
                 <strong>{conflictItems.map(i => i.name).join(', ')}</strong> {conflictItems.length === 1 ? 'isn\'t' : 'aren\'t'} suitable for your updated preference. Mark {conflictItems.length === 1 ? 'it' : 'them'} as unavailable so they won't appear in recipe suggestions?
               </p>
@@ -284,6 +283,16 @@ export default function SettingsSheet({ onClose }: Props) {
               </div>
             </div>
           )}
+
+          {/* Save */}
+          <button onClick={handleSave} disabled={saving}
+            className="w-full py-3.5 rounded-2xl font-display font-700 text-sm transition-all"
+            style={saved
+              ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+              : { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 3px 12px rgba(232,113,58,0.35)' }
+            }>
+            {saving ? 'Saving…' : saved ? '✓ Preferences saved!' : 'Save preferences'}
+          </button>
 
           {/* Sign out */}
           <button onClick={handleSignOut}
