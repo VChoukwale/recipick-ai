@@ -272,7 +272,7 @@ export default function HomePage() {
           <div className="px-3 pt-3 pb-3">
             <button type="button" onClick={() => setShowCuisine(v => !v)}
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
-              style={{ color: 'var(--t3)' }}>
+              style={{ color: 'var(--t1)' }}>
               <span>Cuisine</span>
               {cuisine !== 'Any' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{cuisine}</span>}
               <span className="ml-auto text-[12px]">{showCuisine ? '▲' : '▼'}</span>
@@ -334,7 +334,7 @@ export default function HomePage() {
           <div className="px-3 pt-2.5 pb-3">
             <button type="button" onClick={() => setShowMood(v => !v)}
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
-              style={{ color: 'var(--t3)' }}>
+              style={{ color: 'var(--t1)' }}>
               <span>Mood</span>
               {mood !== 'Any mood' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#50705022', color: '#507050' }}>{mood}</span>}
               <span className="ml-auto text-[12px]">{showMood ? '▲' : '▼'}</span>
@@ -360,7 +360,7 @@ export default function HomePage() {
           <div className="px-3 pt-2.5 pb-3">
             <button type="button" onClick={() => setShowMealType(v => !v)}
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
-              style={{ color: 'var(--t3)' }}>
+              style={{ color: 'var(--t1)' }}>
               <span>Meal Type</span>
               {mealType && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{MEAL_TYPES.find(mt => mt.value === mealType)?.label}</span>}
               <span className="ml-auto text-[12px]">{showMealType ? '▲' : '▼'}</span>
@@ -386,7 +386,7 @@ export default function HomePage() {
           <div className="px-3 pt-2.5 pb-3">
             <button type="button" onClick={() => setShowEquipment(v => !v)}
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
-              style={{ color: 'var(--t3)' }}>
+              style={{ color: 'var(--t1)' }}>
               <span>Equipment</span>
               {equipment.length > 0 && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{equipment.length} selected</span>}
               <span className="ml-auto text-[12px]">{showEquipment ? '▲' : '▼'}</span>
