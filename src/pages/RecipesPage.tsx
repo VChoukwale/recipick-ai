@@ -31,7 +31,7 @@ const DIFFICULTIES: { label: string; value: Difficulty | 'all' }[] = [
 
 function SourceBadge({ source }: { source: string }) {
   if (source === 'ai_generated')
-    return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">✨ AI</span>
+    return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-500">✨ AI</span>
   if (source === 'web_import')
     return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">🌐 Web</span>
   return null
@@ -122,7 +122,7 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
 
       <div className="flex" style={{ borderTop: '1px solid var(--bdr-s)' }}>
         <button onClick={onView}
-          className="flex-1 py-2.5 text-sm font-display font-600 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-charcoal-700/50 transition-colors">
+          className="flex-1 py-2.5 text-sm font-display font-600 text-brand-500 hover:bg-brand-50 dark:hover:bg-charcoal-700/50 transition-colors">
           See Recipe →
         </button>
         <div className="w-px" style={{ background: 'var(--bdr-s)' }} />
@@ -247,7 +247,7 @@ export default function RecipesPage() {
             <button key={d.value} onClick={() => setDifficultyFilter(difficultyFilter === d.value ? 'all' : d.value)}
               className={`px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                 difficultyFilter === d.value
-                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  ? 'bg-stone-600 dark:bg-stone-300 border-stone-600 dark:border-stone-300 text-white dark:text-stone-900'
                   : ''
               }`}
               style={difficultyFilter !== d.value ? { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' } : undefined}
@@ -261,7 +261,7 @@ export default function RecipesPage() {
               <button key={c} onClick={() => setCuisineFilter(cuisineFilter === c ? 'All' : c)}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                   cuisineFilter === c
-                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    ? 'bg-brand-500 border-brand-500 text-white'
                     : ''
                 }`}
                 style={cuisineFilter !== c ? { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' } : undefined}
