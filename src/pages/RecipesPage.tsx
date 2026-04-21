@@ -65,12 +65,19 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
+    <div className={`rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200 ${recipe.rating === -1 ? 'opacity-70' : ''}`} style={{ background: 'var(--s2)', border: recipe.rating === -1 ? '1px solid #dc262630' : '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-2 mb-1.5">
-          <h3 className="font-display font-700 text-base leading-snug flex-1" style={{ color: 'var(--t1)' }}>
-            {recipe.title}
-          </h3>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display font-700 text-base leading-snug" style={{ color: 'var(--t1)' }}>
+              {recipe.title}
+            </h3>
+            {recipe.rating === -1 && (
+              <span className="inline-block text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 mt-0.5">
+                👎 Not for me
+              </span>
+            )}
+          </div>
           <button onClick={onToggleFavorite}
             className={`flex-shrink-0 text-lg transition-all duration-200 ${recipe.is_favorite ? 'animate-glow-gold' : 'opacity-30 hover:opacity-60'}`}>
             {recipe.is_favorite ? '⭐' : '☆'}

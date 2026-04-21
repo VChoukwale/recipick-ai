@@ -32,6 +32,8 @@ VARIETY RULES (critical):
 - Spread across at least 2 different cuisines when count >= 3, UNLESS cuisine_filter is set.
 - Explore the full pantry — don't fixate on the same 2-3 ingredients every time. Look at all available items.
 - If the request includes "excluded_recipes", those exact titles MUST NOT appear in your response. Suggest entirely fresh ideas.
+- If "disliked_recipes" is provided: NEVER suggest those titles again, AND avoid similar flavor profiles, cooking styles, or ingredient combinations that made the user dislike them. E.g. if user disliked a very spicy Sichuan dish, don't suggest another very spicy Sichuan dish.
+- If "liked_recipes" is provided: use these as signals for the user's taste preferences — lean toward similar cuisines, cooking styles, flavor profiles, or ingredient combinations they already enjoyed. Don't repeat the same dish, but let their taste history guide variety.
 - Aim for variety in cooking style too: e.g. one stir-fry, one curry, one grain bowl.
 
 FOCUS & FILTER RULES:

@@ -107,6 +107,8 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<AiRecipe | null>(null)
   const [savedTitles, setSavedTitles] = useState<Set<string>>(new Set())
+  const [likedTitles, setLikedTitles] = useState<string[]>([])
+  const [dislikedTitles, setDislikedTitles] = useState<string[]>([])
   const [error, setError] = useState('')
   const [hasAsked, setHasAsked] = useState(false)
   const [cooldown, setCooldown] = useState(false)
@@ -151,6 +153,20 @@ export default function HomePage() {
       setBusyUntilTime(profile.busy_until_time ?? '')
     }
   }, [profile?.id])
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('saved_recipes')
+      .select('title, rating')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        const rows = (data ?? []) as { title: string; rating: number }[]
+        setSavedTitles(new Set(rows.map(r => r.title)))
+        setLikedTitles(rows.filter(r => r.rating === 1).map(r => r.title))
+        setDislikedTitles(rows.filter(r => r.rating === -1).map(r => r.title))
+      })
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -254,7 +270,9 @@ export default function HomePage() {
         meal_type_filter: mealType || null,
         equipment_filter: equipment.length > 0 ? equipment : null,
         count: 3,
-        excluded_recipes: excludedRecipes,
+        excluded_recipes: [...excludedRecipes, ...dislikedTitles],
+        liked_recipes: likedTitles,
+        disliked_recipes: dislikedTitles,
       },
     })
     const { data, error: fnError } = await Promise.race([fetchPromise, timeoutPromise])
