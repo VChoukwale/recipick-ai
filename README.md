@@ -46,6 +46,60 @@ It installs from the browser like a native app. No App Store, no sign-up frictio
 
 ---
 
+## AI integration
+
+Every AI feature in recipick.ai runs server-side via Supabase Edge Functions. The Anthropic API key never reaches the browser — the client only talks to Supabase, which holds the key as a secret.
+
+There are four distinct AI touchpoints, each using the right model for the job:
+
+<table>
+  <thead>
+    <tr>
+      <th width="220">Edge Function</th>
+      <th width="120">Model</th>
+      <th>What it does & why</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ai-chef</code></td>
+      <td>Claude Haiku</td>
+      <td>Core recipe engine. Receives the full pantry, dietary preference, day status, cuisine/region/mood filters, and focus ingredients. Returns 3 structured recipes with match percentages, substitutions, and step-by-step instructions. Haiku is fast enough for real-time UX and the prompt does the heavy reasoning work.</td>
+    </tr>
+    <tr>
+      <td><code>ai-extract-recipe</code></td>
+      <td>Claude Haiku</td>
+      <td>Extracts a structured recipe from any pasted text or URL. For YouTube links it scrapes the page HTML to pull caption tracks and runs the transcript through Claude. Respects the user's dietary preference — a non-vegetarian user can import a chicken recipe; a vegan user gets a rejection with a clear message. Pantry synonym matching (curd = yogurt, rava = semolina) is handled entirely in the prompt.</td>
+    </tr>
+    <tr>
+      <td><code>ai-categorize</code></td>
+      <td>Claude Haiku</td>
+      <td>When a pantry item is added, Claude assigns it to one of 16 categories (fresh produce, dairy, spices, etc.) and generates searchable AI tags. Runs silently in the background — the user sees instant feedback while categorization happens async. Haiku is intentional here: this is a 10-token output task and Sonnet would be wasteful.</td>
+    </tr>
+    <tr>
+      <td><code>ai-grocery-categorize</code></td>
+      <td>Claude Haiku</td>
+      <td>Same pattern as pantry categorization, applied to grocery list items. Assigns store-section categories (Produce, Dairy, Frozen, etc.) to help with physical shopping order.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Prompt engineering decisions
+
+**Structured JSON output** — every prompt ends with an explicit schema and the instruction "Return ONLY this JSON, no markdown." Claude Haiku occasionally wraps output in code fences, so all responses are stripped of ` ```json ` wrappers before parsing.
+
+**Dietary safety as a hard rule** — the `ai-chef` system prompt states dietary rules at the top and marks them as non-negotiable. `ai-extract-recipe` dynamically injects the user's preference into the prompt so the rejection logic is diet-aware, not hardcoded.
+
+**Variety enforcement** — the chef prompt explicitly instructs Claude to use a different hero ingredient per recipe, spread across at least 2 cuisines when generating 3+ results, and avoid any titles listed in `excluded_recipes`. This prevents the AI from defaulting to the same 2-3 dishes every session.
+
+**Regional depth** — the region filter prompt distinguishes between parent cuisine and sub-region. `region_filter="Maharashtra"` triggers suggestions like misal pav, thalipeeth, and kothimbir vadi — not generic curry. This works because the instruction tells Claude to go deep on dishes iconic to that specific place, not the broader cuisine.
+
+**Pantry synonym resolution** — the extract function lists common synonym pairs in the prompt (capsicum = bell pepper, aubergine = eggplant, groundnut oil = peanut oil) so `in_pantry` flags are accurate even when recipe ingredient names differ from how the user typed them.
+
+**Missing ingredient accuracy** — a specific rule enforces that `missing_ingredients` can never be empty when `match_percentage < 100`. Without this, Claude sometimes returns an optimistic match score without listing what's actually missing.
+
+---
+
 ## Tech stack
 
 | Layer | Tech |
