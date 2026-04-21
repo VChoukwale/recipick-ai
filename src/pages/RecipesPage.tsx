@@ -48,10 +48,10 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardPro
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
-    <div className="bg-white dark:bg-charcoal-800 rounded-2xl shadow-sm border border-stone-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-2 mb-1.5">
-          <h3 className="font-display font-700 text-base text-stone-800 dark:text-stone-100 leading-snug flex-1">
+          <h3 className="font-display font-700 text-base leading-snug flex-1" style={{ color: 'var(--t1)' }}>
             {recipe.title}
           </h3>
           <button onClick={onToggleFavorite}
@@ -69,7 +69,7 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardPro
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-stone-400 dark:text-stone-500">
+        <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--t3)' }}>
           {recipe.time_minutes && <span>⏱ {recipe.time_minutes} min</span>}
           <span className={`capitalize font-body ${
             recipe.difficulty === 'easy' ? 'text-emerald-600 dark:text-emerald-400'
@@ -88,19 +88,19 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardPro
         </div>
       </div>
 
-      <div className="flex border-t border-cream-100 dark:border-charcoal-700/50">
+      <div className="flex" style={{ borderTop: '1px solid var(--bdr-s)' }}>
         <button onClick={onView}
           className="flex-1 py-2.5 text-sm font-display font-600 text-brand-600 dark:text-brand-400 hover:bg-cream-50 dark:hover:bg-charcoal-700/50 transition-colors">
           See Recipe →
         </button>
-        <div className="w-px bg-cream-100 dark:bg-charcoal-700/50" />
+        <div className="w-px" style={{ background: 'var(--bdr-s)' }} />
         {confirmDelete ? (
           <>
             <button onClick={onDelete}
               className="flex-1 py-2.5 text-sm font-display font-600 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
               Remove
             </button>
-            <div className="w-px bg-cream-100 dark:bg-charcoal-700/50" />
+            <div className="w-px" style={{ background: 'var(--bdr-s)' }} />
             <button onClick={() => setConfirmDelete(false)}
               className="flex-1 py-2.5 text-sm font-display font-600 text-stone-400 hover:bg-cream-50 dark:hover:bg-charcoal-700/50 transition-colors">
               Cancel
@@ -180,18 +180,18 @@ export default function RecipesPage() {
       <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-transparent transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Vault</h1>
-            <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">
+            <h1 className="font-display font-800 text-2xl" style={{ color: 'var(--t1)' }}>Recipe Vault</h1>
+            <p className="text-sm font-body mt-0.5" style={{ color: 'var(--t3)' }}>
               {recipes.length} saved{favoriteCount > 0 ? ` · ${favoriteCount} ⭐ favorited` : ''}
             </p>
           </div>
           {favoriteCount > 0 && (
             <button onClick={() => setFavoritesOnly(f => !f)}
-              className={`text-xs font-display font-700 px-3 py-1.5 rounded-full border transition-all ${
-                favoritesOnly
-                  ? 'bg-amber-400 border-amber-400 text-white'
-                  : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
-              }`}>⭐ Favorites</button>
+              className="text-xs font-display font-700 px-3 py-1.5 rounded-full border transition-all"
+              style={favoritesOnly
+                ? { background: '#F59E0B', borderColor: '#F59E0B', color: '#fff' }
+                : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' }
+              }>⭐ Favorites</button>
           )}
         </div>
 
@@ -211,8 +211,10 @@ export default function RecipesPage() {
               className={`px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                 difficultyFilter === d.value
                   ? 'bg-stone-700 dark:bg-stone-200 border-stone-700 dark:border-stone-200 text-white dark:text-stone-900'
-                  : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
-              }`}>{d.label}</button>
+                  : ''
+              }`}
+              style={difficultyFilter !== d.value ? { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' } : undefined}
+            >{d.label}</button>
           ))}
         </div>
 
@@ -223,8 +225,10 @@ export default function RecipesPage() {
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                   cuisineFilter === c
                     ? 'bg-brand-500 border-brand-500 text-white'
-                    : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
-                }`}>{c}</button>
+                    : ''
+                }`}
+                style={cuisineFilter !== c ? { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' } : undefined}
+              >{c}</button>
             ))}
           </div>
         )}

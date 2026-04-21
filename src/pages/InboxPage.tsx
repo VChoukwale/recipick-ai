@@ -20,13 +20,13 @@ interface ExtractedRecipe {
 
 function ImportedRecipeCard({ recipe, onView }: { recipe: SavedRecipe; onView: () => void }) {
   return (
-    <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-stone-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-start gap-2 mb-1">
-          <h3 className="font-display font-700 text-sm text-stone-800 dark:text-stone-100 leading-snug flex-1">{recipe.title}</h3>
+          <h3 className="font-display font-700 text-sm leading-snug flex-1" style={{ color: 'var(--t1)' }}>{recipe.title}</h3>
           <span className="flex-shrink-0 text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-sage-50 dark:bg-sage-900/30 text-sage-600 dark:text-sage-400">🌐 Web</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500">
+        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--t3)' }}>
           {recipe.cuisine_type && <span className="px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 font-body">{recipe.cuisine_type}</span>}
           {recipe.time_minutes && <span>⏱ {recipe.time_minutes} min</span>}
           <span className={`capitalize font-body ${
@@ -36,7 +36,7 @@ function ImportedRecipeCard({ recipe, onView }: { recipe: SavedRecipe; onView: (
           }`}>{recipe.difficulty}</span>
         </div>
       </div>
-      <div className="border-t border-cream-100 dark:border-charcoal-700/50">
+      <div className="" style={{ borderTop: '1px solid var(--bdr-s)' }}>
         <button onClick={onView} className="w-full py-2 text-sm font-display font-600 text-brand-600 dark:text-brand-400 hover:bg-cream-50 dark:hover:bg-charcoal-700/50 transition-colors">
           See Recipe →
         </button>
@@ -88,14 +88,14 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-charcoal-800 rounded-t-3xl max-h-[92vh] flex flex-col shadow-2xl animate-slide-up">
+      <div className="relative rounded-t-3xl max-h-[92vh] flex flex-col shadow-2xl animate-slide-up" style={{ background: 'var(--s2)' }}>
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 bg-stone-200 dark:bg-charcoal-600 rounded-full" />
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bdr-m)' }} />
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 pb-4">
           <div className="flex items-start justify-between gap-3 pt-2 mb-2">
-            <h2 className="font-display font-800 text-xl text-stone-800 dark:text-stone-100 leading-snug flex-1">{recipe.title}</h2>
+            <h2 className="font-display font-800 text-xl leading-snug flex-1" style={{ color: 'var(--t1)' }}>{recipe.title}</h2>
             <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xl leading-none mt-1 flex-shrink-0">✕</button>
           </div>
 
@@ -122,7 +122,7 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
                 <p className="text-xs text-stone-400 dark:text-stone-500 font-body">Pantry match</p>
                 <span className={`text-xs font-display font-700 ${matchPct >= 75 ? 'text-emerald-500' : 'text-amber-500'}`}>{matchPct}%</span>
               </div>
-              <div className="h-2 bg-cream-200 dark:bg-charcoal-700 rounded-full overflow-hidden">
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--s1)' }}>
                 <div className={`h-full rounded-full ${matchPct >= 90 ? 'bg-emerald-500' : matchPct >= 75 ? 'bg-amber-500' : 'bg-orange-500'}`} style={{ width: `${matchPct}%` }} />
               </div>
             </div>
@@ -136,8 +136,8 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
               <div className="space-y-1.5">
                 {inPantry.map((ing, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
-                    <span className="font-body text-sm text-stone-700 dark:text-stone-300">{ing.name}</span>
-                    <span className="font-body text-xs text-stone-400 dark:text-stone-500">{ing.quantity}</span>
+                    <span className="font-body text-sm" style={{ color: 'var(--t1)' }}>{ing.name}</span>
+                    <span className="font-body text-xs" style={{ color: 'var(--t3)' }}>{ing.quantity}</span>
                   </div>
                 ))}
               </div>
@@ -152,8 +152,8 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
               <div className="space-y-1.5">
                 {missing.map((ing, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-900/20">
-                    <span className="font-body text-sm text-stone-700 dark:text-stone-300">{ing.name}</span>
-                    <span className="font-body text-xs text-stone-400 dark:text-stone-500">{ing.quantity}</span>
+                    <span className="font-body text-sm" style={{ color: 'var(--t1)' }}>{ing.name}</span>
+                    <span className="font-body text-xs" style={{ color: 'var(--t3)' }}>{ing.quantity}</span>
                   </div>
                 ))}
               </div>
@@ -177,7 +177,7 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
           )}
         </div>
 
-        <div className="flex-shrink-0 px-5 py-4 border-t border-cream-100 dark:border-charcoal-700/50">
+        <div className="flex-shrink-0 px-5 py-4" style={{ borderTop: '1px solid var(--bdr-s)' }}>
           <button onClick={handleSave} disabled={saved}
             className={`w-full py-3 rounded-2xl font-display font-700 text-sm transition-all ${
               saved ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'btn-primary'
@@ -240,8 +240,8 @@ export default function InboxPage() {
   return (
     <div className="flex flex-col h-full bg-transparent">
       <div className="px-4 pt-4 pb-3">
-        <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Inbox</h1>
-        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Copy recipe text from anywhere and save it</p>
+        <h1 className="font-display font-800 text-2xl" style={{ color: 'var(--t1)' }}>Recipe Inbox</h1>
+        <p className="text-sm font-body mt-0.5" style={{ color: 'var(--t3)' }}>Copy recipe text from anywhere and save it</p>
       </div>
 
       <div className="px-4 pb-4">
