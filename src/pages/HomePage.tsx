@@ -98,6 +98,10 @@ export default function HomePage() {
   const [dishSearch, setDishSearch] = useState('')
   const [mealType, setMealType] = useState('')
   const [equipment, setEquipment] = useState<string[]>([])
+  const [showCuisine, setShowCuisine] = useState(true)
+  const [showRegion, setShowRegion] = useState(true)
+  const [showMood, setShowMood] = useState(true)
+  const [showMealType, setShowMealType] = useState(true)
   const [showEquipment, setShowEquipment] = useState(false)
 
   useEffect(() => {
@@ -259,161 +263,146 @@ export default function HomePage() {
           <DayStatusPicker value={dayStatus} busyUntilTime={busyUntilTime} onChange={handleDayStatusChange} />
         </div>
 
-        {/* Filter panel — cuisine + region + mood grouped */}
+        {/* Filter panel — all sections collapsible */}
         <div
           className="mb-4 rounded-[18px] overflow-hidden"
           style={{ background: 'var(--s1)', border: '1px solid var(--bdr-s)' }}
         >
-          {/* Cuisine section */}
+          {/* Cuisine */}
           <div className="px-3 pt-3 pb-3">
-            <p
-              className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
-              style={{ color: 'var(--t3)' }}
-            >
-              Cuisine
-            </p>
-            <ScrollRow>
-              {CUISINES.map(c => (
-                <button
-                  key={c}
-                  onClick={() => { setCuisine(cuisine === c ? 'Any' : c); setRegion('') }}
-                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
-                  style={cuisine === c
-                    ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
-                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                  }
-                >
-                  {c}
-                </button>
-              ))}
-            </ScrollRow>
+            <button type="button" onClick={() => setShowCuisine(v => !v)}
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
+              style={{ color: 'var(--t3)' }}>
+              <span>Cuisine</span>
+              {cuisine !== 'Any' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{cuisine}</span>}
+              <span className="ml-auto text-[12px]">{showCuisine ? '▲' : '▼'}</span>
+            </button>
+            {showCuisine && (
+              <div className="mt-2.5">
+                <ScrollRow>
+                  {CUISINES.map(c => (
+                    <button key={c} onClick={() => { setCuisine(cuisine === c ? 'Any' : c); setRegion('') }}
+                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                      style={cuisine === c
+                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                      }>{c}</button>
+                  ))}
+                </ScrollRow>
+              </div>
+            )}
           </div>
 
-          {/* Region — conditional inside the panel */}
+          {/* Region — only when cuisine selected */}
           {cuisine !== 'Any' && REGIONS[cuisine] && (
             <>
               <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
               <div className="px-3 pt-2.5 pb-3">
-                <p
-                  className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
-                  style={{ color: 'var(--t3)' }}
-                >
-                  Region <span className="normal-case font-400">· {cuisine}</span>
-                </p>
-                <ScrollRow>
-                  <button
-                    onClick={() => setRegion('')}
-                    className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
-                    style={region === ''
-                      ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
-                      : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                    }
-                  >
-                    Any
-                  </button>
-                  {REGIONS[cuisine].map(r => (
-                    <button
-                      key={r}
-                      onClick={() => setRegion(region === r ? '' : r)}
-                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
-                      style={region === r
-                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
-                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                      }
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </ScrollRow>
+                <button type="button" onClick={() => setShowRegion(v => !v)}
+                  className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
+                  style={{ color: 'var(--t3)' }}>
+                  <span>Region <span className="normal-case font-400">· {cuisine}</span></span>
+                  {region && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{region}</span>}
+                  <span className="ml-auto text-[12px]">{showRegion ? '▲' : '▼'}</span>
+                </button>
+                {showRegion && (
+                  <div className="mt-2.5">
+                    <ScrollRow>
+                      <button onClick={() => setRegion('')}
+                        className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                        style={region === ''
+                          ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                          : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                        }>Any</button>
+                      {REGIONS[cuisine].map(r => (
+                        <button key={r} onClick={() => setRegion(region === r ? '' : r)}
+                          className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                          style={region === r
+                            ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                            : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                          }>{r}</button>
+                      ))}
+                    </ScrollRow>
+                  </div>
+                )}
               </div>
             </>
           )}
 
-          {/* Divider between cuisine/region and mood */}
+          {/* Mood */}
           <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
-
-          {/* Mood section */}
           <div className="px-3 pt-2.5 pb-3">
-            <p
-              className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
-              style={{ color: 'var(--t3)' }}
-            >
-              Mood
-            </p>
-            <ScrollRow>
-              {MOODS.map(m => (
-                <button
-                  key={m}
-                  onClick={() => setMood(mood === m ? 'Any mood' : m)}
-                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
-                  style={mood === m
-                    ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
-                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                  }
-                >
-                  {m}
-                </button>
-              ))}
-            </ScrollRow>
+            <button type="button" onClick={() => setShowMood(v => !v)}
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
+              style={{ color: 'var(--t3)' }}>
+              <span>Mood</span>
+              {mood !== 'Any mood' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#50705022', color: '#507050' }}>{mood}</span>}
+              <span className="ml-auto text-[12px]">{showMood ? '▲' : '▼'}</span>
+            </button>
+            {showMood && (
+              <div className="mt-2.5">
+                <ScrollRow>
+                  {MOODS.map(m => (
+                    <button key={m} onClick={() => setMood(mood === m ? 'Any mood' : m)}
+                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                      style={mood === m
+                        ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                      }>{m}</button>
+                  ))}
+                </ScrollRow>
+              </div>
+            )}
           </div>
 
-          {/* Meal type section */}
+          {/* Meal Type */}
           <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
           <div className="px-3 pt-2.5 pb-3">
-            <p className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5" style={{ color: 'var(--t3)' }}>
-              Meal Type
-            </p>
-            <ScrollRow>
-              {MEAL_TYPES.map(mt => (
-                <button
-                  key={mt.value}
-                  onClick={() => setMealType(mealType === mt.value ? '' : mt.value)}
-                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
-                  style={mealType === mt.value
-                    ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
-                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                  }
-                >
-                  {mt.label}
-                </button>
-              ))}
-            </ScrollRow>
+            <button type="button" onClick={() => setShowMealType(v => !v)}
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
+              style={{ color: 'var(--t3)' }}>
+              <span>Meal Type</span>
+              {mealType && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{MEAL_TYPES.find(mt => mt.value === mealType)?.label}</span>}
+              <span className="ml-auto text-[12px]">{showMealType ? '▲' : '▼'}</span>
+            </button>
+            {showMealType && (
+              <div className="mt-2.5">
+                <ScrollRow>
+                  {MEAL_TYPES.map(mt => (
+                    <button key={mt.value} onClick={() => setMealType(mealType === mt.value ? '' : mt.value)}
+                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                      style={mealType === mt.value
+                        ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                      }>{mt.label}</button>
+                  ))}
+                </ScrollRow>
+              </div>
+            )}
           </div>
 
-          {/* Equipment section — collapsible */}
+          {/* Equipment */}
           <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
           <div className="px-3 pt-2.5 pb-3">
-            <button
-              type="button"
-              onClick={() => setShowEquipment(v => !v)}
-              className="flex items-center gap-1.5 text-[10px] font-display font-700 uppercase tracking-widest mb-2.5 w-full text-left"
-              style={{ color: 'var(--t3)' }}
-            >
+            <button type="button" onClick={() => setShowEquipment(v => !v)}
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
+              style={{ color: 'var(--t3)' }}>
               <span>Equipment</span>
-              {equipment.length > 0 && (
-                <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>
-                  {equipment.length} selected
-                </span>
-              )}
+              {equipment.length > 0 && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{equipment.length} selected</span>}
               <span className="ml-auto text-[12px]">{showEquipment ? '▲' : '▼'}</span>
             </button>
             {showEquipment && (
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap mt-2.5">
                 {EQUIPMENT_OPTIONS.map(eq => {
                   const active = equipment.includes(eq.value)
                   return (
-                    <button
-                      key={eq.value}
-                      type="button"
+                    <button key={eq.value} type="button"
                       onClick={() => setEquipment(prev => active ? prev.filter(e => e !== eq.value) : [...prev, eq.value])}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={active
                         ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
                         : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
-                      }
-                    >
-                      {eq.label}
-                    </button>
+                      }>{eq.label}</button>
                   )
                 })}
               </div>
