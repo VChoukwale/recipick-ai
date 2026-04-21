@@ -48,7 +48,13 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true)
   const [newItem, setNewItem] = useState('')
   const [adding, setAdding] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
 
   useEffect(() => {
     if (!user) return
@@ -70,6 +76,11 @@ export default function ShopPage() {
     e.preventDefault()
     const name = newItem.trim()
     if (!name) return
+    const duplicate = items.find(i => i.name.toLowerCase() === name.toLowerCase())
+    if (duplicate) {
+      showToast(`"${name}" is already on your list`)
+      return
+    }
     setAdding(true)
     const { data } = await supabase
       .from('grocery_list')
@@ -128,7 +139,7 @@ export default function ShopPage() {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-4 pb-28">
+      <div className="flex-1 overflow-y-auto px-4" style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom, 0px))' }}>
         {loading ? (
           <div className="flex flex-col items-center justify-center h-48">
             <CookingSpinner size="md" label="Loading your list…" />
@@ -162,8 +173,24 @@ export default function ShopPage() {
         )}
       </div>
 
-      {/* Sticky add form */}
-      <div className="absolute bottom-16 left-0 right-0 max-w-lg mx-auto px-4 pb-3 pt-2 backdrop-blur-md" style={{ background: 'var(--s3)', borderTop: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-up)' }}>
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-2xl text-sm font-display font-600 text-white shadow-lg animate-pop"
+             style={{ background: '#E8713A', whiteSpace: 'nowrap' }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Sticky add form — fixed above nav, safe-area aware */}
+      <div
+        className="fixed left-0 right-0 max-w-lg mx-auto px-4 pb-3 pt-2 backdrop-blur-md z-40"
+        style={{
+          bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))',
+          background: 'var(--s3)',
+          borderTop: '1px solid var(--bdr-s)',
+          boxShadow: 'var(--shd-up)',
+        }}
+      >
         <form onSubmit={handleAdd} className="flex gap-2">
           <input
             ref={inputRef}
