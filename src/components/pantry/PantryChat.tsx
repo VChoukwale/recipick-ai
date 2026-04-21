@@ -138,11 +138,11 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative flex flex-col rounded-t-3xl max-h-[75vh]"
-        style={{ background: 'var(--s2)', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)' }}>
+        style={{ background: 'var(--s2)', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)', marginBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}>
 
         {/* Handle + header */}
         <div className="flex-shrink-0 px-5 pt-3 pb-3" style={{ borderBottom: '1px solid var(--bdr-s)' }}>
