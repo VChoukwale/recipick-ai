@@ -69,7 +69,7 @@ serve(async (req) => {
         max_tokens: 512,
         system: SYSTEM_PROMPT,
         tools: TOOLS,
-        tool_choice: { type: 'required' },
+        tool_choice: { type: 'any' },
         messages: [{ role: 'user', content: userContent }],
       }),
     })

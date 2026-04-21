@@ -1,7 +1,16 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import CookingSpinner from '../components/ui/CookingSpinner'
+
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean; interimResults: boolean; lang: string
+  start(): void; stop(): void
+  onstart: (() => void) | null; onend: (() => void) | null
+  onerror: (() => void) | null
+  onresult: ((e: { results: { 0: { transcript: string } }[] }) => void) | null
+}
+declare global { interface Window { SpeechRecognition: new () => ISpeechRecognition; webkitSpeechRecognition: new () => ISpeechRecognition } }
 
 interface GroceryItem {
   id: string
@@ -49,7 +58,26 @@ export default function ShopPage() {
   const [newItem, setNewItem] = useState('')
   const [adding, setAdding] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [listening, setListening] = useState(false)
+  const recognitionRef = useRef<ISpeechRecognition | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleVoice = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) { alert('Voice input is not supported in this browser. Try Chrome.'); return }
+    if (listening) { recognitionRef.current?.stop(); return }
+    const rec = new SR()
+    rec.continuous = false; rec.interimResults = true; rec.lang = 'en-US'
+    recognitionRef.current = rec
+    rec.onstart = () => setListening(true)
+    rec.onresult = (e) => setNewItem(Array.from(e.results).map(r => r[0].transcript).join(''))
+    rec.onend = () => {
+      setListening(false); recognitionRef.current = null
+      setNewItem(prev => { if (prev.trim()) setTimeout(() => inputRef.current?.closest('form')?.requestSubmit(), 100); return prev })
+    }
+    rec.onerror = () => { setListening(false); recognitionRef.current = null }
+    rec.start()
+  }, [listening])
 
   function showToast(msg: string) {
     setToast(msg)
@@ -236,9 +264,22 @@ export default function ShopPage() {
             value={newItem}
             onChange={e => setNewItem(e.target.value)}
             placeholder="Add an item…"
-            className="input-field flex-1"
+            className="input-field flex-1 min-w-0"
+            style={{ width: 'auto' }}
             disabled={adding}
           />
+          <button
+            type="button"
+            onClick={handleVoice}
+            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              listening
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'bg-white dark:bg-charcoal-700 border border-stone-200 dark:border-charcoal-600 text-stone-400 dark:text-stone-400 hover:text-stone-600'
+            }`}
+            title={listening ? 'Stop listening' : 'Voice input'}
+          >
+            🎤
+          </button>
           <button
             type="submit"
             disabled={adding || !newItem.trim()}
