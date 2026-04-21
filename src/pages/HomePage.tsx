@@ -258,7 +258,7 @@ export default function HomePage() {
               {CUISINES.map(c => (
                 <button
                   key={c}
-                  onClick={() => { setCuisine(c); setRegion('') }}
+                  onClick={() => { setCuisine(cuisine === c ? 'Any' : c); setRegion('') }}
                   className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                   style={cuisine === c
                     ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
@@ -326,7 +326,7 @@ export default function HomePage() {
               {MOODS.map(m => (
                 <button
                   key={m}
-                  onClick={() => setMood(m)}
+                  onClick={() => setMood(mood === m ? 'Any mood' : m)}
                   className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                   style={mood === m
                     ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
