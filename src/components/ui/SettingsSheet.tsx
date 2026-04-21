@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { DietaryPreference, SkillLevel } from '../../types/database'
+
+const MEAT_FISH = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
+const DAIRY_EGG = ['egg', 'milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai']
+
+function violatesDiet(name: string, diet: string): boolean {
+  const lower = name.toLowerCase()
+  if (diet === 'vegan') return [...MEAT_FISH, ...DAIRY_EGG].some(k => lower.includes(k))
+  if (diet === 'vegetarian' || diet === 'vegetarian_with_eggs') return MEAT_FISH.some(k => lower.includes(k))
+  return false
+}
 
 const DIETARY_OPTIONS: { value: DietaryPreference; emoji: string; label: string; desc: string }[] = [
   { value: 'vegetarian',           emoji: '🥛', label: 'Vegetarian',       desc: 'No meat or fish · dairy & eggs OK' },
@@ -43,6 +53,9 @@ export default function SettingsSheet({ onClose }: Props) {
   const [cuisines, setCuisines] = useState<string[]>(profile?.preferred_cuisines ?? [])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [conflictItems, setConflictItems] = useState<{ id: string; name: string }[]>([])
+  const [fixingConflicts, setFixingConflicts] = useState(false)
+  const prevDietaryRef = useRef<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
 
   useEffect(() => {
     if (profile) {
@@ -60,6 +73,7 @@ export default function SettingsSheet({ onClose }: Props) {
   async function handleSave() {
     if (!user) return
     setSaving(true)
+    const dietChanged = dietary !== prevDietaryRef.current
     await supabase.from('profiles').update({
       display_name: displayName.trim() || null,
       dietary_preference: dietary,
@@ -67,9 +81,30 @@ export default function SettingsSheet({ onClose }: Props) {
       preferred_cuisines: cuisines,
     }).eq('id', user.id)
     await refreshProfile()
+    prevDietaryRef.current = dietary
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+
+    if (dietChanged && dietary !== 'non_vegetarian') {
+      const { data } = await supabase
+        .from('pantry_items')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .eq('is_available', true)
+      const conflicts = (data ?? []).filter((item: { id: string; name: string }) => violatesDiet(item.name, dietary))
+      if (conflicts.length > 0) setConflictItems(conflicts)
+    }
+  }
+
+  async function handleMarkUnavailable() {
+    if (!user || conflictItems.length === 0) return
+    setFixingConflicts(true)
+    await supabase.from('pantry_items')
+      .update({ is_available: false })
+      .in('id', conflictItems.map(i => i.id))
+    setFixingConflicts(false)
+    setConflictItems([])
   }
 
   async function handleSignOut() {
@@ -220,6 +255,27 @@ export default function SettingsSheet({ onClose }: Props) {
             }>
             {saving ? 'Saving…' : saved ? '✓ Preferences saved!' : 'Save preferences'}
           </button>
+
+          {/* Diet conflict alert */}
+          {conflictItems.length > 0 && (
+            <div className="rounded-2xl p-4" style={{ background: '#fff7ed', border: '1px solid #fed7aa' }}>
+              <p className="font-display font-700 text-sm text-orange-700 mb-1">Pantry items don't match your new diet</p>
+              <p className="text-xs font-body text-orange-600 leading-relaxed mb-3">
+                <strong>{conflictItems.map(i => i.name).join(', ')}</strong> {conflictItems.length === 1 ? 'isn\'t' : 'aren\'t'} suitable for your updated preference. Mark {conflictItems.length === 1 ? 'it' : 'them'} as unavailable so they won't appear in recipe suggestions?
+              </p>
+              <div className="flex gap-2">
+                <button onClick={handleMarkUnavailable} disabled={fixingConflicts}
+                  className="flex-1 py-2 rounded-xl font-display font-700 text-xs text-white transition-all disabled:opacity-60"
+                  style={{ background: '#E8713A' }}>
+                  {fixingConflicts ? 'Updating…' : `Mark unavailable (${conflictItems.length})`}
+                </button>
+                <button onClick={() => setConflictItems([])}
+                  className="px-3 py-2 rounded-xl font-display font-600 text-xs text-orange-600 border border-orange-200">
+                  Keep for now
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Sign out */}
           <button onClick={handleSignOut}

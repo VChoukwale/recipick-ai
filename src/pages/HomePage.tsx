@@ -33,6 +33,23 @@ const STATUS_MESSAGE: Record<DayStatus, string> = {
 }
 
 const CUISINES = ['Any', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
+
+const MEAT_FISH = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
+const DAIRY_EGG = ['egg', 'milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+
+function violatesDiet(name: string, diet: string): boolean {
+  const lower = name.toLowerCase()
+  if (diet === 'vegan') return [...MEAT_FISH, ...DAIRY_EGG].some(k => lower.includes(k))
+  if (diet === 'vegetarian' || diet === 'vegetarian_with_eggs') return MEAT_FISH.some(k => lower.includes(k))
+  return false
+}
+
+function dietLabel(diet: string): string {
+  if (diet === 'vegan') return 'vegan'
+  if (diet === 'vegetarian') return 'vegetarian'
+  if (diet === 'vegetarian_with_eggs') return 'vegetarian'
+  return ''
+}
 const MOODS = ['Any mood', 'Quick & Easy', 'Comfort Food', 'Healthy & Light', 'Street Food', 'Festive', 'One-Pot']
 const MEAL_TYPES = [
   { value: 'breakfast', label: '🌅 Breakfast' },
@@ -84,6 +101,7 @@ export default function HomePage() {
   const [error, setError] = useState('')
   const [hasAsked, setHasAsked] = useState(false)
   const [cooldown, setCooldown] = useState(false)
+  const [dismissedConflict, setDismissedConflict] = useState(false)
 
   // Ingredient focus picker
   const [pantryItems, setPantryItems] = useState<PantryChip[]>([])
@@ -167,6 +185,12 @@ export default function HomePage() {
     return pantryItems.filter(i => i.name.toLowerCase().includes(lower))
   }, [pantryItems, ingredientSearch])
 
+  const pantryConflicts = useMemo(() => {
+    const diet = profile?.dietary_preference ?? 'vegetarian'
+    if (diet === 'non_vegetarian') return []
+    return pantryItems.filter(i => violatesDiet(i.name, diet))
+  }, [pantryItems, profile?.dietary_preference])
+
   const availableCuisines = useMemo(() => {
     const preferred = profile?.preferred_cuisines ?? []
     if (preferred.length === 0) return CUISINES
@@ -199,14 +223,17 @@ export default function HomePage() {
   }
 
   async function callAiChef(excludedRecipes: string[], append: boolean) {
+    const diet = profile?.dietary_preference ?? 'vegetarian'
+    const safePantry = pantryItems.filter(i => !violatesDiet(i.name, diet)).map(i => i.name)
+    const safeFocus = focusIngredientNames.filter(n => !violatesDiet(n, diet))
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 30000)
     )
     const fetchPromise = supabase.functions.invoke('ai-chef', {
       body: {
-        pantry_items: pantryItems.map(i => i.name),
-        focus_ingredients: focusIngredientNames,
-        dietary_preference: profile?.dietary_preference ?? 'vegetarian',
+        pantry_items: safePantry,
+        focus_ingredients: safeFocus,
+        dietary_preference: diet,
         skill_level: profile?.skill_level ?? 'intermediate',
         day_status: dayStatus,
         busy_until_time: busyUntilTime || null,
@@ -230,12 +257,22 @@ export default function HomePage() {
   }
 
   async function handleAskAI() {
+    const diet = profile?.dietary_preference ?? 'vegetarian'
+    const focusViolations = focusIngredientNames.filter(n => violatesDiet(n, diet))
+    const allFocusViolated = focusViolations.length > 0 && focusViolations.length === focusIngredientNames.length
+
+    if (allFocusViolated) {
+      const label = dietLabel(diet)
+      setError(`${focusViolations.join(', ')} ${focusViolations.length === 1 ? 'isn\'t' : 'aren\'t'} part of your ${label} diet. Please remove ${focusViolations.length === 1 ? 'it' : 'them'} from your focus ingredients, or update your diet in ⚙️ Settings.`)
+      return
+    }
+
     setLoading(true); setError(''); setRecipes([]); setHasAsked(true)
     try { await callAiChef([], false) }
     catch (e: unknown) {
       console.error('ai-chef error:', e)
       const isTimeout = e instanceof Error && e.name === 'AbortError'
-      setError(isTimeout ? 'Request timed out. Check your connection and try again.' : 'Something went wrong. Try again?')
+      setError(isTimeout ? 'Request timed out. Check your connection and try again.' : 'Something went wrong. Please try again.')
     }
     finally { setLoading(false); setCooldown(true); setTimeout(() => setCooldown(false), 5000) }
   }
@@ -634,6 +671,19 @@ export default function HomePage() {
               </div>
             )}
           </>
+        )}
+
+        {!dismissedConflict && pantryConflicts.length > 0 && (
+          <div className="mx-1 mb-4 px-4 py-3 rounded-2xl flex items-start gap-3" style={{ background: '#fff7ed', border: '1px solid #fed7aa' }}>
+            <span className="text-lg flex-shrink-0">⚠️</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-display font-700 text-sm text-orange-700">Pantry items not matching your diet</p>
+              <p className="text-xs font-body text-orange-600 mt-0.5 leading-relaxed">
+                <strong>{pantryConflicts.map(i => i.name).join(', ')}</strong> {pantryConflicts.length === 1 ? 'isn\'t' : 'aren\'t'} part of your {dietLabel(profile?.dietary_preference ?? '')} diet and won't be used for suggestions. Update your pantry or change your diet in ⚙️ Settings.
+              </p>
+            </div>
+            <button onClick={() => setDismissedConflict(true)} className="flex-shrink-0 text-orange-400 hover:text-orange-600 text-sm mt-0.5">✕</button>
+          </div>
         )}
 
         {!loading && !hasAsked && pantryItems.length === 0 && (
