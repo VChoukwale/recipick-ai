@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
-const CLAUDE_MODEL = 'claude-sonnet-4-20250514'
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
 
 serve(async (req) => {

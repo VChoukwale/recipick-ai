@@ -100,7 +100,7 @@ serve(async (req) => {
     })
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 200,
+      status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   }

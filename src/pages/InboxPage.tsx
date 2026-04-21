@@ -191,7 +191,7 @@ function RecipePreviewSheet({ recipe, url, onSave, onClose }: {
 }
 
 export default function InboxPage() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [url, setUrl] = useState('')
   const [pastedText, setPastedText] = useState('')
   const [extracting, setExtracting] = useState(false)
@@ -225,7 +225,7 @@ export default function InboxPage() {
     setExtracted(null)
 
     const { data, error: fnError } = await supabase.functions.invoke('ai-extract-recipe', {
-      body: { text: pastedText.trim(), url: url.trim() || undefined, pantry_items: Array.from(pantryNames) },
+      body: { text: pastedText.trim(), url: url.trim() || undefined, pantry_items: Array.from(pantryNames), dietary_preference: profile?.dietary_preference ?? 'vegetarian' },
     })
     setExtracting(false)
 

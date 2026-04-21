@@ -52,6 +52,7 @@ export default function HomePage() {
   const [savedTitles, setSavedTitles] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
   const [hasAsked, setHasAsked] = useState(false)
+  const [cooldown, setCooldown] = useState(false)
 
   // Ingredient focus picker
   const [pantryItems, setPantryItems] = useState<PantryChip[]>([])
@@ -175,7 +176,7 @@ export default function HomePage() {
     setLoading(true); setError(''); setRecipes([]); setHasAsked(true)
     try { await callAiChef([], false) }
     catch (e) { console.error('ai-chef error:', e); setError('Something went wrong. Try again?') }
-    finally { setLoading(false) }
+    finally { setLoading(false); setCooldown(true); setTimeout(() => setCooldown(false), 5000) }
   }
 
   async function handleLoadMore() {
@@ -452,7 +453,7 @@ export default function HomePage() {
         {/* CTA */}
         <button
           onClick={handleAskAI}
-          disabled={loading || loadingMore}
+          disabled={loading || loadingMore || cooldown}
           className="w-full py-4 rounded-2xl font-display font-700 text-[15px] text-white flex items-center justify-center gap-2.5 mb-5 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-50"
           style={{
             background: focusIds.size > 0
@@ -465,9 +466,11 @@ export default function HomePage() {
         >
           {loading
             ? <><span className="text-lg animate-spin">🍳</span><span>Cooking up ideas…</span></>
-            : focusIds.size > 0
-              ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
-              : <><span className="text-lg">✨</span><span>What should I cook?</span></>
+            : cooldown
+              ? <><span className="text-lg">⏳</span><span>Wait a moment…</span></>
+              : focusIds.size > 0
+                ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
+                : <><span className="text-lg">✨</span><span>What should I cook?</span></>
           }
         </button>
 

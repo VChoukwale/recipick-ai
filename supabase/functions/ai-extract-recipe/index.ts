@@ -116,7 +116,15 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { url, text, pantry_items = [] } = body
+    const { url, text, pantry_items = [], dietary_preference = 'vegetarian' } = body
+
+    const dietaryRule = dietary_preference === 'vegan'
+      ? 'No animal products (no meat, fish, dairy, or eggs).'
+      : dietary_preference === 'vegetarian_with_eggs'
+        ? 'No meat or fish. Eggs are OK.'
+        : dietary_preference === 'non_vegetarian'
+          ? 'All foods allowed.'
+          : 'No meat or fish. Dairy and eggs are OK.'
 
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     if (!anthropicKey) throw new Error('ANTHROPIC_API_KEY not set')
@@ -126,7 +134,10 @@ serve(async (req) => {
     const pantry = pantryBlock(pantry_items)
 
     if (text) {
-      prompt = `Extract a vegetarian/vegan recipe from this text. The app is vegetarian/vegan only — if the recipe contains meat or fish, return {"error": "This recipe contains meat or fish and cannot be imported."}.
+      const rejectionClause = dietary_preference === 'non_vegetarian'
+        ? ''
+        : ' If the recipe contains meat or fish, return {"error": "This recipe contains meat or fish and cannot be imported."}.'
+      prompt = `Extract a recipe following this dietary rule: ${dietaryRule}${rejectionClause}
 
 Text:
 ${text.slice(0, 15000)}
@@ -152,7 +163,10 @@ ${SCHEMA}`
 
       const sourceLabel = ytId ? 'YouTube video transcript' : 'page content'
 
-      prompt = `Extract a vegetarian/vegan recipe from this source. The app is vegetarian/vegan only — if the recipe contains meat or fish, return {"error": "This recipe contains meat or fish and cannot be imported."}.
+      const rejectionClauseUrl = dietary_preference === 'non_vegetarian'
+        ? ''
+        : ' If the recipe contains meat or fish, return {"error": "This recipe contains meat or fish and cannot be imported."}.'
+      prompt = `Extract a recipe following this dietary rule: ${dietaryRule}${rejectionClauseUrl}
 
 URL: ${url}
 ${pageText
