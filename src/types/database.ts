@@ -87,6 +87,8 @@ export interface SavedRecipe {
   why_this: string | null
   substitutions: Record<string, string> | null
   created_at: string
+  tried: boolean
+  rating: number
 }
 
 export interface RecipeIngredient {

@@ -42,9 +42,10 @@ interface CardProps {
   onView: () => void
   onToggleFavorite: () => void
   onDelete: () => void
+  onUpdateFeedback: (tried: boolean, rating: number) => void
 }
 
-function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardProps) {
+function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateFeedback }: CardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
@@ -85,6 +86,37 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardPro
               }>{recipe.match_percentage}% match</span>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Tried + rating row */}
+      <div className="px-4 pb-3 flex items-center gap-3">
+        <button
+          onClick={() => onUpdateFeedback(!recipe.tried, recipe.rating)}
+          className="flex items-center gap-1.5 text-xs font-display font-600 px-2.5 py-1 rounded-full transition-all"
+          style={recipe.tried
+            ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+            : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
+        >
+          {recipe.tried ? '✓ Tried' : '○ Not tried'}
+        </button>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <button
+            onClick={() => onUpdateFeedback(recipe.tried, recipe.rating === 1 ? 0 : 1)}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all"
+            style={recipe.rating === 1
+              ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+              : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
+            title="I liked this"
+          >👍</button>
+          <button
+            onClick={() => onUpdateFeedback(recipe.tried, recipe.rating === -1 ? 0 : -1)}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all"
+            style={recipe.rating === -1
+              ? { background: '#dc262618', color: '#dc2626', border: '1px solid #dc262630' }
+              : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
+            title="Not for me"
+          >👎</button>
         </div>
       </div>
 
@@ -150,6 +182,11 @@ export default function RecipesPage() {
     const newVal = !recipe.is_favorite
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favorite: newVal } : r))
     await supabase.from('saved_recipes').update({ is_favorite: newVal }).eq('id', id)
+  }
+
+  async function handleUpdateFeedback(id: string, tried: boolean, rating: number) {
+    setRecipes(prev => prev.map(r => r.id === id ? { ...r, tried, rating } : r))
+    await supabase.from('saved_recipes').update({ tried, rating }).eq('id', id)
   }
 
   async function handleDelete(id: string) {
@@ -266,6 +303,7 @@ export default function RecipesPage() {
                 onView={() => setSelectedRecipe(recipe)}
                 onToggleFavorite={() => handleToggleFavorite(recipe.id)}
                 onDelete={() => handleDelete(recipe.id)}
+                onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
               />
             ))}
           </div>
