@@ -28,7 +28,7 @@ It installs from the browser like a native app. No App Store, no sign-up frictio
 <table>
   <thead>
     <tr>
-      <th width="220">Feature</th>
+      <th width="280">Feature</th>
       <th>Description</th>
     </tr>
   </thead>
