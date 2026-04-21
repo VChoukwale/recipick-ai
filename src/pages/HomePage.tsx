@@ -416,7 +416,7 @@ export default function HomePage() {
           <input
             value={dishSearch}
             onChange={e => setDishSearch(e.target.value)}
-            placeholder="Search a dish or ingredient (optional)…"
+            placeholder="Looking for a specific dish or recipe? (optional)"
             className="input-field pl-10"
           />
           {dishSearch && (

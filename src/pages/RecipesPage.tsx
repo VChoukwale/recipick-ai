@@ -31,7 +31,7 @@ const DIFFICULTIES: { label: string; value: Difficulty | 'all' }[] = [
 
 function SourceBadge({ source }: { source: string }) {
   if (source === 'ai_generated')
-    return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-500">✨ AI</span>
+    return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-sage-50 dark:bg-sage-900/30 text-sage-600 dark:text-sage-400">✨ AI</span>
   if (source === 'web_import')
     return <span className="text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-sage-50 dark:bg-sage-900/30 text-sage-600 dark:text-sage-400">🌐 Web</span>
   return null
@@ -64,7 +64,7 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
         <div className="flex items-center gap-2 flex-wrap mb-2.5">
           <SourceBadge source={recipe.source} />
           {recipe.cuisine_type && (
-            <span className="text-xs font-body px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400">
+            <span className="text-xs font-body px-2 py-0.5 rounded-full bg-sage-50 dark:bg-sage-900/20 text-sage-600 dark:text-sage-400">
               {recipe.cuisine_type}{recipe.region_detail ? ` · ${recipe.region_detail}` : ''}
             </span>
           )}
@@ -122,7 +122,7 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
 
       <div className="flex" style={{ borderTop: '1px solid var(--bdr-s)' }}>
         <button onClick={onView}
-          className="flex-1 py-2.5 text-sm font-display font-600 text-brand-600 dark:text-brand-400 hover:bg-cream-50 dark:hover:bg-charcoal-700/50 transition-colors">
+          className="flex-1 py-2.5 text-sm font-display font-600 text-sage-600 dark:text-sage-400 hover:bg-sage-50 dark:hover:bg-charcoal-700/50 transition-colors">
           See Recipe →
         </button>
         <div className="w-px" style={{ background: 'var(--bdr-s)' }} />
@@ -261,7 +261,7 @@ export default function RecipesPage() {
               <button key={c} onClick={() => setCuisineFilter(cuisineFilter === c ? 'All' : c)}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                   cuisineFilter === c
-                    ? 'bg-brand-500 border-brand-500 text-white'
+                    ? 'bg-sage-600 border-sage-600 text-white'
                     : ''
                 }`}
                 style={cuisineFilter !== c ? { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t3)' } : undefined}
@@ -293,7 +293,7 @@ export default function RecipesPage() {
             <p className="text-sm font-body text-stone-400">No recipes match your filters</p>
             {hasFilters && (
               <button onClick={() => { setSearch(''); setDifficultyFilter('all'); setCuisineFilter('All'); setFavoritesOnly(false) }}
-                className="text-xs text-brand-500 font-display font-600 mt-1">Clear all filters</button>
+                className="text-xs text-sage-600 dark:text-sage-400 font-display font-600 mt-1">Clear all filters</button>
             )}
           </div>
         ) : (
