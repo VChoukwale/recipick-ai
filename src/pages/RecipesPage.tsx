@@ -47,6 +47,22 @@ interface CardProps {
 
 function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateFeedback }: CardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showRatingHint, setShowRatingHint] = useState(false)
+
+  function handleRatingClick(newRating: number) {
+    if (!recipe.tried) {
+      setShowRatingHint(true)
+      setTimeout(() => setShowRatingHint(false), 2500)
+      return
+    }
+    onUpdateFeedback(recipe.tried, recipe.rating === newRating ? 0 : newRating)
+  }
+
+  function handleToggleTried() {
+    const newTried = !recipe.tried
+    // Clear rating when un-marking tried
+    onUpdateFeedback(newTried, newTried ? recipe.rating : 0)
+  }
 
   return (
     <div className="rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
@@ -90,34 +106,41 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
       </div>
 
       {/* Tried + rating row */}
-      <div className="px-4 pb-3 flex items-center gap-3">
-        <button
-          onClick={() => onUpdateFeedback(!recipe.tried, recipe.rating)}
-          className="flex items-center gap-1.5 text-xs font-display font-600 px-2.5 py-1 rounded-full transition-all"
-          style={recipe.tried
-            ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
-            : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
-        >
-          {recipe.tried ? '✓ Tried' : '○ Not tried'}
-        </button>
-        <div className="flex items-center gap-1.5 ml-auto">
+      <div className="px-4 pb-3">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => onUpdateFeedback(recipe.tried, recipe.rating === 1 ? 0 : 1)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all"
-            style={recipe.rating === 1
+            onClick={handleToggleTried}
+            className="flex items-center gap-1.5 text-xs font-display font-600 px-2.5 py-1 rounded-full transition-all"
+            style={recipe.tried
               ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
               : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
-            title="I liked this"
-          >👍</button>
-          <button
-            onClick={() => onUpdateFeedback(recipe.tried, recipe.rating === -1 ? 0 : -1)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all"
-            style={recipe.rating === -1
-              ? { background: '#dc262618', color: '#dc2626', border: '1px solid #dc262630' }
-              : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
-            title="Not for me"
-          >👎</button>
+          >
+            {recipe.tried ? '✓ Tried' : '○ Not tried'}
+          </button>
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              onClick={() => handleRatingClick(1)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : ''}`}
+              style={recipe.rating === 1
+                ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+                : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
+              title={recipe.tried ? 'I liked this' : 'Mark as tried first'}
+            >👍</button>
+            <button
+              onClick={() => handleRatingClick(-1)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : ''}`}
+              style={recipe.rating === -1
+                ? { background: '#dc262618', color: '#dc2626', border: '1px solid #dc262630' }
+                : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
+              title={recipe.tried ? 'Not for me' : 'Mark as tried first'}
+            >👎</button>
+          </div>
         </div>
+        {showRatingHint && (
+          <p className="text-[11px] font-body text-orange-500 mt-1.5 text-right animate-fade-in">
+            Mark as tried first, then rate it!
+          </p>
+        )}
       </div>
 
       <div className="flex" style={{ borderTop: '1px solid var(--bdr-s)' }}>
