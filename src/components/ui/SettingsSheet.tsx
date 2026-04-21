@@ -3,20 +3,33 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { DietaryPreference, SkillLevel } from '../../types/database'
 
-const DIETARY_OPTIONS: { value: DietaryPreference; label: string; desc: string }[] = [
-  { value: 'vegetarian',            label: '🥛 Vegetarian',        desc: 'No meat or fish, dairy & eggs OK' },
-  { value: 'vegetarian_with_eggs',  label: '🥚 Eggitarian',        desc: 'Vegetarian + eggs' },
-  { value: 'vegan',                 label: '🌱 Vegan',             desc: 'No animal products at all' },
-  { value: 'non_vegetarian',        label: '🍗 Non-vegetarian',    desc: 'All foods including meat & fish' },
+const DIETARY_OPTIONS: { value: DietaryPreference; emoji: string; label: string; desc: string }[] = [
+  { value: 'vegetarian',           emoji: '🥛', label: 'Vegetarian',       desc: 'No meat or fish · dairy & eggs OK' },
+  { value: 'vegetarian_with_eggs', emoji: '🥚', label: 'Eggitarian',       desc: 'Vegetarian + eggs' },
+  { value: 'vegan',                emoji: '🌱', label: 'Vegan',            desc: 'No animal products at all' },
+  { value: 'non_vegetarian',       emoji: '🍗', label: 'Non-vegetarian',   desc: 'All foods including meat & fish' },
 ]
 
-const SKILL_OPTIONS: { value: SkillLevel; label: string; desc: string }[] = [
-  { value: 'beginner',      label: '🌱 Beginner',      desc: 'Simple recipes, short steps' },
-  { value: 'intermediate',  label: '🍳 Intermediate',  desc: 'Comfortable with most techniques' },
-  { value: 'advanced',      label: '👨‍🍳 Advanced',      desc: 'Bring on the complexity' },
+const SKILL_OPTIONS: { value: SkillLevel; emoji: string; label: string; desc: string }[] = [
+  { value: 'beginner',     emoji: '🌱', label: 'Beginner',     desc: 'Simple recipes' },
+  { value: 'intermediate', emoji: '🍳', label: 'Intermediate', desc: 'Most techniques' },
+  { value: 'advanced',     emoji: '👨‍🍳', label: 'Advanced',    desc: 'Full complexity' },
 ]
 
-const ALL_CUISINES = ['Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
+const ALL_CUISINES = [
+  'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean',
+  'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French',
+  'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian',
+]
+
+function SectionHeader({ emoji, label, color }: { emoji: string; label: string; color: 'orange' | 'green' }) {
+  return (
+    <div className={`flex items-center gap-2 mb-3 pb-2 border-b ${color === 'orange' ? 'border-orange-100 dark:border-orange-900/30' : 'border-emerald-100 dark:border-emerald-900/30'}`}>
+      <span className={`text-sm w-6 h-6 rounded-lg flex items-center justify-center ${color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>{emoji}</span>
+      <span className={`font-display font-700 text-sm ${color === 'orange' ? 'text-orange-600 dark:text-orange-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{label}</span>
+    </div>
+  )
+}
 
 interface Props {
   onClose: () => void
@@ -64,38 +77,46 @@ export default function SettingsSheet({ onClose }: Props) {
     onClose()
   }
 
+  const initials = (profile?.display_name ?? user?.email ?? '?').slice(0, 2).toUpperCase()
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-charcoal-800 rounded-t-3xl max-h-[88vh] flex flex-col shadow-2xl animate-slide-up">
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 bg-stone-200 dark:bg-charcoal-600 rounded-full" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative rounded-t-3xl max-h-[92vh] flex flex-col shadow-2xl animate-slide-up" style={{ background: 'var(--s0)' }}>
+
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-0 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bdr-m)' }} />
         </div>
 
-        <div className="overflow-y-auto flex-1 px-5 pb-4">
-          {/* Header */}
-          <div className="flex items-center justify-between pt-2 mb-5">
-            <h2 className="font-display font-800 text-xl text-stone-800 dark:text-stone-100">Settings</h2>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xl">✕</button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-3 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--bdr-s)' }}>
+          <h2 className="font-display font-800 text-xl" style={{ color: 'var(--t1)' }}>Your Preferences</h2>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors hover:opacity-70"
+            style={{ background: 'var(--s2)', color: 'var(--t3)' }}>✕</button>
+        </div>
 
-          {/* Account info */}
-          <div className="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-cream-50 dark:bg-charcoal-700 border border-cream-200 dark:border-charcoal-600">
-            <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center text-lg">
-              {profile?.display_name?.[0]?.toUpperCase() ?? '👤'}
+        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+
+          {/* Account card */}
+          <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)' }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display font-800 text-base flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
+              {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display font-700 text-sm text-stone-800 dark:text-stone-100 truncate">
+              <p className="font-display font-700 text-base leading-tight truncate" style={{ color: 'var(--t1)' }}>
                 {profile?.display_name || user?.email?.split('@')[0] || 'Chef'}
               </p>
-              <p className="text-xs font-body text-stone-400 dark:text-stone-500 truncate">{user?.email}</p>
+              <p className="text-xs font-body truncate mt-0.5" style={{ color: 'var(--t3)' }}>{user?.email}</p>
             </div>
           </div>
 
-          {/* Display name */}
-          <div className="mb-5">
-            <label className="block text-xs font-display font-700 text-stone-500 dark:text-stone-400 mb-2">Display name</label>
+          {/* Profile section */}
+          <div className="rounded-2xl p-4" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+            <SectionHeader emoji="✏️" label="Profile" color="orange" />
+            <label className="block text-xs font-display font-600 mb-1.5" style={{ color: 'var(--t3)' }}>Display name</label>
             <input
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
@@ -104,87 +125,111 @@ export default function SettingsSheet({ onClose }: Props) {
             />
           </div>
 
-          {/* Dietary preference */}
-          <div className="mb-5">
-            <label className="block text-xs font-display font-700 text-stone-500 dark:text-stone-400 mb-2">Dietary preference</label>
-            <div className="space-y-2">
-              {DIETARY_OPTIONS.map(opt => (
-                <button key={opt.value} onClick={() => setDietary(opt.value)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border text-left transition-all ${
-                    dietary === opt.value
-                      ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-300 dark:border-brand-700'
-                      : 'bg-white dark:bg-charcoal-700 border-cream-200 dark:border-charcoal-600 hover:border-brand-200'
-                  }`}>
-                  <span className="flex-shrink-0 text-lg">{opt.label.split(' ')[0]}</span>
-                  <div>
-                    <p className="font-display font-700 text-sm text-stone-700 dark:text-stone-200">{opt.label.split(' ').slice(1).join(' ')}</p>
-                    <p className="text-xs font-body text-stone-400 dark:text-stone-500">{opt.desc}</p>
-                  </div>
-                  {dietary === opt.value && <span className="ml-auto text-brand-500 text-sm">✓</span>}
-                </button>
-              ))}
+          {/* Food preferences section */}
+          <div className="rounded-2xl p-4" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+            <SectionHeader emoji="🥗" label="Food Preferences" color="green" />
+
+            {/* Dietary */}
+            <p className="text-xs font-display font-600 mb-2" style={{ color: 'var(--t3)' }}>Dietary preference</p>
+            <div className="space-y-2 mb-4">
+              {DIETARY_OPTIONS.map(opt => {
+                const active = dietary === opt.value
+                return (
+                  <button key={opt.value} onClick={() => setDietary(opt.value)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all"
+                    style={active
+                      ? { background: '#16a34a10', borderColor: '#16a34a40', color: 'var(--t1)' }
+                      : { background: 'var(--s1)', borderColor: 'var(--bdr-m)', color: 'var(--t1)' }
+                    }>
+                    <span className={`text-xl w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${active ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-transparent'}`}>
+                      {opt.emoji}
+                    </span>
+                    <div className="flex-1">
+                      <p className="font-display font-700 text-sm" style={{ color: active ? '#16a34a' : 'var(--t1)' }}>{opt.label}</p>
+                      <p className="text-xs font-body" style={{ color: 'var(--t3)' }}>{opt.desc}</p>
+                    </div>
+                    {active && (
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] font-700">✓</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Skill level */}
+            <p className="text-xs font-display font-600 mb-2" style={{ color: 'var(--t3)' }}>Cooking skill</p>
+            <div className="grid grid-cols-3 gap-2">
+              {SKILL_OPTIONS.map(opt => {
+                const active = skill === opt.value
+                return (
+                  <button key={opt.value} onClick={() => setSkill(opt.value)}
+                    className="py-3 px-2 rounded-xl border text-center transition-all"
+                    style={active
+                      ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', borderColor: '#E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.3)' }
+                      : { background: 'var(--s1)', borderColor: 'var(--bdr-m)', color: 'var(--t2)' }
+                    }>
+                    <div className="text-xl mb-1">{opt.emoji}</div>
+                    <div className="text-xs font-display font-700 leading-tight">{opt.label}</div>
+                    <div className="text-[10px] font-body mt-0.5 opacity-70">{opt.desc}</div>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Skill level */}
-          <div className="mb-6">
-            <label className="block text-xs font-display font-700 text-stone-500 dark:text-stone-400 mb-2">Cooking skill</label>
-            <div className="flex gap-2">
-              {SKILL_OPTIONS.map(opt => (
-                <button key={opt.value} onClick={() => setSkill(opt.value)}
-                  className={`flex-1 py-2.5 px-2 rounded-2xl border text-center transition-all ${
-                    skill === opt.value
-                      ? 'bg-brand-500 border-brand-500 text-white'
-                      : 'bg-white dark:bg-charcoal-700 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400'
-                  }`}>
-                  <div className="text-lg mb-0.5">{opt.label.split(' ')[0]}</div>
-                  <div className="text-[10px] font-display font-700 leading-tight">{opt.label.split(' ').slice(1).join(' ')}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Preferred cuisines */}
-          <div className="mb-6">
-            <label className="block text-xs font-display font-700 text-stone-500 dark:text-stone-400 mb-1">Preferred cuisines</label>
-            <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-2">
-              Only these will appear on your Home screen. Leave empty to see all.
+          {/* Cuisine preferences section */}
+          <div className="rounded-2xl p-4" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+            <SectionHeader emoji="🌍" label="Cuisine Preferences" color="green" />
+            <p className="text-xs font-body mb-3" style={{ color: 'var(--t3)' }}>
+              Select your favourites — only these show on your Home screen. Leave empty to see all cuisines.
             </p>
             <div className="flex flex-wrap gap-2">
-              {ALL_CUISINES.map(c => (
-                <button key={c} onClick={() => toggleCuisine(c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all ${
-                    cuisines.includes(c)
-                      ? 'bg-brand-500 border-brand-500 text-white'
-                      : 'bg-white dark:bg-charcoal-700 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400'
-                  }`}>
-                  {c}
-                </button>
-              ))}
+              {ALL_CUISINES.map(c => {
+                const active = cuisines.includes(c)
+                return (
+                  <button key={c} onClick={() => toggleCuisine(c)}
+                    className="px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all"
+                    style={active
+                      ? { background: '#16a34a', borderColor: '#16a34a', color: '#fff', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }
+                      : { background: 'var(--s1)', borderColor: 'var(--bdr-m)', color: 'var(--t2)' }
+                    }>
+                    {c}
+                  </button>
+                )
+              })}
             </div>
             {cuisines.length > 0 && (
-              <button onClick={() => setCuisines([])}
-                className="mt-2 text-xs font-body text-stone-400 dark:text-stone-500 underline">
-                Clear all
-              </button>
+              <div className="flex items-center justify-between mt-3 pt-2.5" style={{ borderTop: '1px solid var(--bdr-s)' }}>
+                <span className="text-xs font-body text-emerald-600 dark:text-emerald-400 font-600">
+                  {cuisines.length} selected
+                </span>
+                <button onClick={() => setCuisines([])}
+                  className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 hover:text-red-400 transition-colors">
+                  Clear all
+                </button>
+              </div>
             )}
           </div>
 
           {/* Save */}
           <button onClick={handleSave} disabled={saving}
-            className={`w-full py-3 rounded-2xl font-display font-700 text-sm transition-all mb-3 ${
-              saved
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                : 'btn-primary'
-            }`}>
-            {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save changes'}
+            className="w-full py-3.5 rounded-2xl font-display font-700 text-sm transition-all"
+            style={saved
+              ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+              : { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 3px 12px rgba(232,113,58,0.35)' }
+            }>
+            {saving ? 'Saving…' : saved ? '✓ Preferences saved!' : 'Save preferences'}
           </button>
 
           {/* Sign out */}
           <button onClick={handleSignOut}
-            className="w-full py-3 rounded-2xl font-display font-700 text-sm border border-red-100 dark:border-red-900/30 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+            className="w-full py-3 rounded-2xl font-display font-600 text-sm border transition-colors mb-2"
+            style={{ borderColor: 'var(--bdr-m)', color: 'var(--t3)' }}
+            onMouseEnter={e => { (e.target as HTMLElement).style.color = '#ef4444'; (e.target as HTMLElement).style.borderColor = '#fecaca' }}
+            onMouseLeave={e => { (e.target as HTMLElement).style.color = 'var(--t3)'; (e.target as HTMLElement).style.borderColor = 'var(--bdr-m)' }}>
             Sign out
           </button>
+
         </div>
       </div>
     </div>
