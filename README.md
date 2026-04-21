@@ -25,16 +25,24 @@ It installs from the browser like a native app. No App Store, no sign-up frictio
 
 ## What it does
 
-| Feature | Description |
-|---|---|
-| 🤖 **AI Chef** | Pick your energy level, cuisine, and mood. Get recipes ranked by pantry match percentage, with substitutions for anything missing. |
-| 🧺 **Smart Pantry** | Add ingredients once across 16 categories. Star the ones you want to cook around. |
-| ⭐ **Star Ingredient Mode** | Select one or more ingredients and every recipe suggestion is built around them as the hero. |
-| 🌍 **Regional Cuisine Explorer** | Go beyond "Indian" or "Chinese". Ask for Maharashtrian, Sichuan, Oaxacan. The AI knows the difference. |
-| 📥 **Recipe Inbox** | Paste any recipe from anywhere. The AI extracts all ingredients and scores it against your pantry before you save it. |
-| 📖 **Recipe Vault** | All saved recipes in one place, filterable by cuisine, difficulty, and favorites. |
-| 🛒 **Grocery Run** | Missing ingredients go to your grocery list in one tap. Check them off as you shop. |
-| ⚙️ **Settings** | Vegetarian, eggitarian, vegan, or non-vegetarian. Cooking skill level. All adjustable anytime. |
+<table>
+  <thead>
+    <tr>
+      <th width="220">Feature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>🤖 <b>AI Chef</b></td><td>Pick your energy level, cuisine, and mood. Get recipes ranked by pantry match percentage, with substitutions for anything missing.</td></tr>
+    <tr><td>🧺 <b>Smart Pantry</b></td><td>Add ingredients once across 16 categories. Star the ones you want to cook around.</td></tr>
+    <tr><td>⭐ <b>Star Ingredient Mode</b></td><td>Select one or more ingredients and every recipe suggestion is built around them as the hero.</td></tr>
+    <tr><td>🌍 <b>Regional Cuisine Explorer</b></td><td>Go beyond "Indian" or "Chinese". Ask for Maharashtrian, Sichuan, Oaxacan. The AI knows the difference.</td></tr>
+    <tr><td>📥 <b>Recipe Inbox</b></td><td>Paste any recipe from anywhere. The AI extracts all ingredients and scores it against your pantry before you save it.</td></tr>
+    <tr><td>📖 <b>Recipe Vault</b></td><td>All saved recipes in one place, filterable by cuisine, difficulty, and favorites.</td></tr>
+    <tr><td>🛒 <b>Grocery Run</b></td><td>Missing ingredients go to your grocery list in one tap. Check them off as you shop.</td></tr>
+    <tr><td>⚙️ <b>Settings</b></td><td>Vegetarian, eggitarian, vegan, or non-vegetarian. Cooking skill level. All adjustable anytime.</td></tr>
+  </tbody>
+</table>
 
 ---
 
