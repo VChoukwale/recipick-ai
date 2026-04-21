@@ -4,18 +4,26 @@ import { useAuth } from '../../contexts/AuthContext'
 import type { DietaryPreference, SkillLevel } from '../../types/database'
 
 const MEAT_FISH = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
-const DAIRY_EGG = ['egg', 'milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai']
+const DAIRY_KEYWORDS = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+
+function hasEggInName(name: string): boolean {
+  return /\beggs?\b/i.test(name)
+}
 
 function violatesDiet(name: string, diet: string): boolean {
   const lower = name.toLowerCase()
-  if (diet === 'vegan') return [...MEAT_FISH, ...DAIRY_EGG].some(k => lower.includes(k))
-  if (diet === 'vegetarian' || diet === 'vegetarian_with_eggs') return MEAT_FISH.some(k => lower.includes(k))
+  const isMeatFish = MEAT_FISH.some(k => lower.includes(k))
+  const isDairy = DAIRY_KEYWORDS.some(k => lower.includes(k))
+  const isEgg = hasEggInName(lower)
+  if (diet === 'vegan') return isMeatFish || isDairy || isEgg
+  if (diet === 'vegetarian') return isMeatFish || isEgg
+  if (diet === 'vegetarian_with_eggs') return isMeatFish
   return false
 }
 
 const DIETARY_OPTIONS: { value: DietaryPreference; emoji: string; label: string; desc: string }[] = [
-  { value: 'vegetarian',           emoji: '🥛', label: 'Vegetarian',       desc: 'No meat or fish · dairy & eggs OK' },
-  { value: 'vegetarian_with_eggs', emoji: '🥚', label: 'Eggitarian',       desc: 'Vegetarian + eggs' },
+  { value: 'vegetarian',           emoji: '🥛', label: 'Vegetarian',       desc: 'No meat, fish or eggs · dairy OK' },
+  { value: 'vegetarian_with_eggs', emoji: '🥚', label: 'Eggitarian',       desc: 'No meat or fish · eggs & dairy OK' },
   { value: 'vegan',                emoji: '🌱', label: 'Vegan',            desc: 'No animal products at all' },
   { value: 'non_vegetarian',       emoji: '🍗', label: 'Non-vegetarian',   desc: 'All foods including meat & fish' },
 ]

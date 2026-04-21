@@ -10,9 +10,11 @@ interface Props {
   onToggleStar: (id: string) => void
   onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
+  dietConflictCount?: number
+  dietLabel?: string
 }
 
-export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete }: Props) {
+export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete, dietConflictCount = 0, dietLabel = '' }: Props) {
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_META[category]
   const accent = CATEGORY_ACCENT[category]
@@ -33,6 +35,11 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
           <span className="text-xs font-body px-2 py-0.5 rounded-full bg-cream-100 dark:bg-charcoal-700 text-stone-400 dark:text-stone-500">
             {availableCount}/{items.length}
           </span>
+          {dietConflictCount > 0 && (
+            <span className="text-[10px] font-display font-700 px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+              ⚠️ {dietConflictCount} not {dietLabel}
+            </span>
+          )}
         </div>
         <span className={`text-stone-400 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>

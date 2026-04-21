@@ -230,8 +230,8 @@ export default function OnboardingPage() {
             <p className="font-display font-700 text-stone-700 dark:text-stone-300 text-sm mb-2">I eat…</p>
             <div className="grid grid-cols-1 gap-2 mb-6">
               {([
-                { value: 'vegetarian',           label: 'Vegetarian', desc: 'No meat or fish, no eggs', icon: '🥦' },
-                { value: 'vegetarian_with_eggs',  label: 'Vegetarian + Eggs', desc: 'No meat or fish, eggs are fine', icon: '🥚' },
+                { value: 'vegetarian',           label: 'Vegetarian', desc: 'No meat, fish or eggs · dairy OK', icon: '🥛' },
+                { value: 'vegetarian_with_eggs',  label: 'Eggitarian', desc: 'No meat or fish · eggs & dairy OK', icon: '🥚' },
                 { value: 'vegan',                 label: 'Vegan', desc: 'No animal products at all', icon: '🌱' },
               ] as { value: DietaryPreference; label: string; desc: string; icon: string }[]).map(opt => (
                 <button

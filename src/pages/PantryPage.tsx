@@ -2,6 +2,25 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { PantryItem, PantryCategory } from '../types/database'
+
+const MEAT_FISH_P = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
+const DAIRY_P = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+function pantryViolatesDiet(name: string, diet: string): boolean {
+  const lower = name.toLowerCase()
+  const isMeat = MEAT_FISH_P.some(k => lower.includes(k))
+  const isDairy = DAIRY_P.some(k => lower.includes(k))
+  const isEgg = /\beggs?\b/i.test(lower)
+  if (diet === 'vegan') return isMeat || isDairy || isEgg
+  if (diet === 'vegetarian') return isMeat || isEgg
+  if (diet === 'vegetarian_with_eggs') return isMeat
+  return false
+}
+function pantryDietLabel(diet: string): string {
+  if (diet === 'vegan') return 'vegan'
+  if (diet === 'vegetarian') return 'vegetarian'
+  if (diet === 'vegetarian_with_eggs') return 'eggitarian'
+  return ''
+}
 import { CATEGORY_ORDER, CATEGORY_META } from '../components/pantry/categoryMeta'
 import PantrySection from '../components/pantry/PantrySection'
 import AddItemSheet from '../components/pantry/AddItemSheet'
@@ -9,7 +28,7 @@ import EditItemSheet from '../components/pantry/EditItemSheet'
 import PantryChat from '../components/pantry/PantryChat'
 
 export default function PantryPage() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [items, setItems] = useState<PantryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -261,17 +280,25 @@ export default function PantryPage() {
           </div>
         ) : (
           <div className="space-y-3 pt-2">
-            {visibleCategories.map(cat => (
-              <PantrySection
-                key={cat}
-                category={cat}
-                items={grouped.get(cat)!}
-                onToggleAvailable={handleToggleAvailable}
-                onToggleStar={handleToggleStar}
-                onEdit={setEditingItem}
-                onDelete={handleDelete}
-              />
-            ))}
+            {visibleCategories.map(cat => {
+              const diet = profile?.dietary_preference ?? 'non_vegetarian'
+              const sectionItems = grouped.get(cat)!
+              const conflictCount = diet === 'non_vegetarian' ? 0
+                : sectionItems.filter(i => pantryViolatesDiet(i.name, diet)).length
+              return (
+                <PantrySection
+                  key={cat}
+                  category={cat}
+                  items={sectionItems}
+                  onToggleAvailable={handleToggleAvailable}
+                  onToggleStar={handleToggleStar}
+                  onEdit={setEditingItem}
+                  onDelete={handleDelete}
+                  dietConflictCount={conflictCount}
+                  dietLabel={pantryDietLabel(diet)}
+                />
+              )
+            })}
           </div>
         )}
       </div>

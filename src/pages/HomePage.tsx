@@ -35,19 +35,28 @@ const STATUS_MESSAGE: Record<DayStatus, string> = {
 const CUISINES = ['Any', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
 
 const MEAT_FISH = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
-const DAIRY_EGG = ['egg', 'milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+const DAIRY_KEYWORDS = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+
+function hasEggInName(name: string): boolean {
+  // word-boundary match so "eggplant" is NOT flagged
+  return /\beggs?\b/i.test(name)
+}
 
 function violatesDiet(name: string, diet: string): boolean {
   const lower = name.toLowerCase()
-  if (diet === 'vegan') return [...MEAT_FISH, ...DAIRY_EGG].some(k => lower.includes(k))
-  if (diet === 'vegetarian' || diet === 'vegetarian_with_eggs') return MEAT_FISH.some(k => lower.includes(k))
+  const isMeatFish = MEAT_FISH.some(k => lower.includes(k))
+  const isDairy = DAIRY_KEYWORDS.some(k => lower.includes(k))
+  const isEgg = hasEggInName(lower)
+  if (diet === 'vegan') return isMeatFish || isDairy || isEgg
+  if (diet === 'vegetarian') return isMeatFish || isEgg        // dairy OK, no eggs
+  if (diet === 'vegetarian_with_eggs') return isMeatFish       // eggs + dairy OK
   return false
 }
 
 function dietLabel(diet: string): string {
   if (diet === 'vegan') return 'vegan'
-  if (diet === 'vegetarian') return 'vegetarian'
-  if (diet === 'vegetarian_with_eggs') return 'vegetarian'
+  if (diet === 'vegetarian') return 'vegetarian (no eggs)'
+  if (diet === 'vegetarian_with_eggs') return 'eggitarian'
   return ''
 }
 const MOODS = ['Any mood', 'Quick & Easy', 'Comfort Food', 'Healthy & Light', 'Street Food', 'Festive', 'One-Pot']
