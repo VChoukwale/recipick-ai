@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { DayStatus, AiRecipe } from '../types/database'
@@ -6,6 +6,24 @@ import DayStatusPicker from '../components/home/DayStatusPicker'
 import RecipeCard from '../components/home/RecipeCard'
 import RecipeDetailSheet from '../components/home/RecipeDetailSheet'
 import CookingSpinner from '../components/ui/CookingSpinner'
+
+function ScrollRow({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 160, behavior: 'smooth' })
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => scroll(-1)}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-md transition-opacity hover:opacity-90"
+        style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }}>‹</button>
+      <div ref={ref} className="flex gap-2 overflow-x-auto scrollbar-none px-7">
+        {children}
+      </div>
+      <button type="button" onClick={() => scroll(1)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-md transition-opacity hover:opacity-90"
+        style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }}>›</button>
+    </div>
+  )
+}
 
 const STATUS_MESSAGE: Record<DayStatus, string> = {
   home_all_day: 'Take your time today ✨',
@@ -236,7 +254,7 @@ export default function HomePage() {
             >
               Cuisine
             </p>
-            <div className="flex gap-2 overflow-x-auto scrollbar-none">
+            <ScrollRow>
               {CUISINES.map(c => (
                 <button
                   key={c}
@@ -250,7 +268,7 @@ export default function HomePage() {
                   {c}
                 </button>
               ))}
-            </div>
+            </ScrollRow>
           </div>
 
           {/* Region — conditional inside the panel */}
@@ -264,7 +282,7 @@ export default function HomePage() {
                 >
                   Region <span className="normal-case font-400">· {cuisine}</span>
                 </p>
-                <div className="flex gap-2 overflow-x-auto scrollbar-none">
+                <ScrollRow>
                   <button
                     onClick={() => setRegion('')}
                     className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
@@ -288,7 +306,7 @@ export default function HomePage() {
                       {r}
                     </button>
                   ))}
-                </div>
+                </ScrollRow>
               </div>
             </>
           )}
@@ -304,7 +322,7 @@ export default function HomePage() {
             >
               Mood
             </p>
-            <div className="flex gap-2 overflow-x-auto scrollbar-none">
+            <ScrollRow>
               {MOODS.map(m => (
                 <button
                   key={m}
@@ -318,7 +336,7 @@ export default function HomePage() {
                   {m}
                 </button>
               ))}
-            </div>
+            </ScrollRow>
           </div>
         </div>
 
