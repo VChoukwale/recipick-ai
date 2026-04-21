@@ -10,9 +10,21 @@ function hasEggInName(name: string): boolean {
   return /\beggs?\b/i.test(name)
 }
 
+const PLANT_BASED_MARKERS = ['plant based', 'plant-based', 'plant protein', 'vegan', 'mock ', 'faux ', 'beyond meat', 'impossible burger', 'tofu', 'tempeh', 'seitan', 'jackfruit']
+function isPlantBased(lower: string): boolean {
+  return PLANT_BASED_MARKERS.some(m => lower.includes(m))
+}
+
+const SPICE_INDICATORS = ['masala', 'spice mix', 'spice blend', 'spice rub', 'seasoning', 'curry powder', 'marinade', 'tadka', 'tempering']
+function isSpiceProduct(name: string): boolean {
+  return SPICE_INDICATORS.some(s => name.includes(s))
+}
+
 function violatesDiet(name: string, diet: string): boolean {
   const lower = name.toLowerCase()
-  const isMeatFish = MEAT_FISH.some(k => lower.includes(k))
+  if (isPlantBased(lower)) return false
+  const spice = isSpiceProduct(lower)
+  const isMeatFish = !spice && MEAT_FISH.some(k => lower.includes(k))
   const isDairy = DAIRY_KEYWORDS.some(k => lower.includes(k))
   const isEgg = hasEggInName(lower)
   if (diet === 'vegan') return isMeatFish || isDairy || isEgg

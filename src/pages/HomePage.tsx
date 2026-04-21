@@ -38,18 +38,31 @@ const MEAT_FISH = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 
 const DAIRY_KEYWORDS = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
 
 function hasEggInName(name: string): boolean {
-  // word-boundary match so "eggplant" is NOT flagged
   return /\beggs?\b/i.test(name)
+}
+
+// Plant-based / vegan-branded products are safe for every diet
+const PLANT_BASED_MARKERS = ['plant based', 'plant-based', 'plant protein', 'vegan', 'mock ', 'faux ', 'beyond meat', 'impossible burger', 'tofu', 'tempeh', 'seitan', 'jackfruit']
+function isPlantBased(lower: string): boolean {
+  return PLANT_BASED_MARKERS.some(m => lower.includes(m))
+}
+
+// Spice/masala packets are vegetarian even when named after a meat dish
+const SPICE_INDICATORS = ['masala', 'spice mix', 'spice blend', 'spice rub', 'seasoning', 'curry powder', 'marinade', 'tadka', 'tempering']
+function isSpiceProduct(name: string): boolean {
+  return SPICE_INDICATORS.some(s => name.includes(s))
 }
 
 function violatesDiet(name: string, diet: string): boolean {
   const lower = name.toLowerCase()
-  const isMeatFish = MEAT_FISH.some(k => lower.includes(k))
+  if (isPlantBased(lower)) return false          // plant-based = fine for all diets
+  const spice = isSpiceProduct(lower)
+  const isMeatFish = !spice && MEAT_FISH.some(k => lower.includes(k))
   const isDairy = DAIRY_KEYWORDS.some(k => lower.includes(k))
   const isEgg = hasEggInName(lower)
   if (diet === 'vegan') return isMeatFish || isDairy || isEgg
-  if (diet === 'vegetarian') return isMeatFish || isEgg        // dairy OK, no eggs
-  if (diet === 'vegetarian_with_eggs') return isMeatFish       // eggs + dairy OK
+  if (diet === 'vegetarian') return isMeatFish || isEgg
+  if (diet === 'vegetarian_with_eggs') return isMeatFish
   return false
 }
 

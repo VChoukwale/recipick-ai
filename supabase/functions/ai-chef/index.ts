@@ -16,6 +16,7 @@ RULES:
 
 DIETARY CONFLICT HANDLING (critical):
 - pantry_items may contain ingredients the user bought before changing their diet (e.g. eggs in a vegan's pantry). IGNORE any pantry item that violates the dietary_preference — do not include it in any recipe, do not list it as an available ingredient.
+- IMPORTANT EXCEPTIONS — these are ALWAYS safe regardless of diet: (1) Plant-based / vegan-branded products ("Plant based chicken", "Vegan sausage", "Beyond Meat", "Impossible Burger", "Tofu", "Tempeh", "Seitan") — they contain no animal products. (2) Spice/masala packets ("Fish Curry Masala", "Chicken 65 Masala", "Tandoori Masala") — store-bought masalas are vegetarian spice blends, the meat word is the dish name not the ingredient.
 - If focus_ingredients contains items that violate dietary_preference (e.g. egg for a vegan), IGNORE those focus ingredients entirely. Suggest recipes from the remaining pantry items instead. NEVER error or refuse — always return valid recipes.
 - Example: vegan user with egg in pantry → pretend egg does not exist. vegan user with egg as focus → ignore egg, suggest 3 vegan recipes from other pantry items.
 - NEVER generate a recipe that requires an animal product for a vegan user, even if that product is listed in pantry_items or focus_ingredients.

@@ -5,9 +5,13 @@ import type { PantryItem, PantryCategory } from '../types/database'
 
 const MEAT_FISH_P = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
 const DAIRY_P = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
+const PLANT_BASED_P = ['plant based', 'plant-based', 'plant protein', 'vegan', 'mock ', 'faux ', 'beyond meat', 'impossible burger', 'tofu', 'tempeh', 'seitan', 'jackfruit']
+const SPICE_IND_P = ['masala', 'spice mix', 'spice blend', 'spice rub', 'seasoning', 'curry powder', 'marinade', 'tadka', 'tempering']
 function pantryViolatesDiet(name: string, diet: string): boolean {
   const lower = name.toLowerCase()
-  const isMeat = MEAT_FISH_P.some(k => lower.includes(k))
+  if (PLANT_BASED_P.some(m => lower.includes(m))) return false
+  const spice = SPICE_IND_P.some(s => lower.includes(s))
+  const isMeat = !spice && MEAT_FISH_P.some(k => lower.includes(k))
   const isDairy = DAIRY_P.some(k => lower.includes(k))
   const isEgg = /\beggs?\b/i.test(lower)
   if (diet === 'vegan') return isMeat || isDairy || isEgg
