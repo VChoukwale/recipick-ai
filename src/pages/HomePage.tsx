@@ -39,7 +39,7 @@ const MEAL_TYPES = [
   { value: 'lunch', label: '☀️ Lunch' },
   { value: 'dinner', label: '🌙 Dinner' },
   { value: 'snack', label: '🍿 Snack' },
-  { value: 'drink', label: '🥤 Drink / Smoothie' },
+  { value: 'drink', label: '🥤 Drinks' },
 ]
 const EQUIPMENT_OPTIONS = [
   { value: 'stove', label: '🔥 Stove' },
