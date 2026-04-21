@@ -296,7 +296,7 @@ export default function HomePage() {
                   {REGIONS[cuisine].map(r => (
                     <button
                       key={r}
-                      onClick={() => setRegion(r)}
+                      onClick={() => setRegion(region === r ? '' : r)}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={region === r
                         ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }

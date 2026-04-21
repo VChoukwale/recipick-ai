@@ -207,7 +207,7 @@ export default function RecipesPage() {
 
         <div className="flex gap-2 mt-3">
           {DIFFICULTIES.map(d => (
-            <button key={d.value} onClick={() => setDifficultyFilter(d.value)}
+            <button key={d.value} onClick={() => setDifficultyFilter(difficultyFilter === d.value ? 'all' : d.value)}
               className={`px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                 difficultyFilter === d.value
                   ? 'bg-stone-700 dark:bg-stone-200 border-stone-700 dark:border-stone-200 text-white dark:text-stone-900'
@@ -221,7 +221,7 @@ export default function RecipesPage() {
         {cuisineOptions.length > 2 && (
           <div className="flex gap-2 mt-2 overflow-x-auto scrollbar-none pb-0.5">
             {cuisineOptions.map(c => (
-              <button key={c} onClick={() => setCuisineFilter(c)}
+              <button key={c} onClick={() => setCuisineFilter(cuisineFilter === c ? 'All' : c)}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                   cuisineFilter === c
                     ? 'bg-brand-500 border-brand-500 text-white'
