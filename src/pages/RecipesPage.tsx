@@ -120,17 +120,17 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
           <div className="flex items-center gap-1.5 ml-auto">
             <button
               onClick={() => handleRatingClick(1)}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : ''}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-base transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : 'hover:scale-110 active:scale-95'} ${recipe.rating === 1 ? 'scale-110' : ''}`}
               style={recipe.rating === 1
-                ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+                ? { background: '#16a34a', color: '#fff', border: '2px solid #16a34a', boxShadow: '0 2px 8px rgba(22,163,74,0.45)' }
                 : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
               title={recipe.tried ? 'I liked this' : 'Mark as tried first'}
             >👍</button>
             <button
               onClick={() => handleRatingClick(-1)}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : ''}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-base transition-all ${!recipe.tried ? 'opacity-30 cursor-default' : 'hover:scale-110 active:scale-95'} ${recipe.rating === -1 ? 'scale-110' : ''}`}
               style={recipe.rating === -1
-                ? { background: '#dc262618', color: '#dc2626', border: '1px solid #dc262630' }
+                ? { background: '#dc2626', color: '#fff', border: '2px solid #dc2626', boxShadow: '0 2px 8px rgba(220,38,38,0.45)' }
                 : { background: 'var(--s1)', color: 'var(--t3)', border: '1px solid var(--bdr-m)' }}
               title={recipe.tried ? 'Not for me' : 'Mark as tried first'}
             >👎</button>
