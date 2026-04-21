@@ -98,10 +98,10 @@ export default function HomePage() {
   const [dishSearch, setDishSearch] = useState('')
   const [mealType, setMealType] = useState('')
   const [equipment, setEquipment] = useState<string[]>([])
-  const [showCuisine, setShowCuisine] = useState(true)
-  const [showRegion, setShowRegion] = useState(true)
-  const [showMood, setShowMood] = useState(true)
-  const [showMealType, setShowMealType] = useState(true)
+  const [showCuisine, setShowCuisine] = useState(false)
+  const [showRegion, setShowRegion] = useState(false)
+  const [showMood, setShowMood] = useState(false)
+  const [showMealType, setShowMealType] = useState(false)
   const [showEquipment, setShowEquipment] = useState(false)
 
   useEffect(() => {
@@ -293,20 +293,20 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Region — only when cuisine selected */}
-          {cuisine !== 'Any' && REGIONS[cuisine] && (
-            <>
-              <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
-              <div className="px-3 pt-2.5 pb-3">
+          {/* Region — nested sub-section, only visible when cuisine is open and selected */}
+          {cuisine !== 'Any' && REGIONS[cuisine] && showCuisine && (
+            <div className="mx-3 mb-2.5 rounded-xl overflow-hidden" style={{ background: 'var(--s0)', border: '1px solid var(--bdr-s)' }}>
+              <div className="px-3 pt-2 pb-2">
                 <button type="button" onClick={() => setShowRegion(v => !v)}
-                  className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
-                  style={{ color: 'var(--t3)' }}>
-                  <span>Region <span className="normal-case font-400">· {cuisine}</span></span>
+                  className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest"
+                  style={{ color: 'var(--t1)' }}>
+                  <span style={{ color: 'var(--t3)' }}>↳</span>
+                  <span>Region</span>
                   {region && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{region}</span>}
                   <span className="ml-auto text-[12px]">{showRegion ? '▲' : '▼'}</span>
                 </button>
                 {showRegion && (
-                  <div className="mt-2.5">
+                  <div className="mt-2">
                     <ScrollRow>
                       <button onClick={() => setRegion('')}
                         className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
@@ -326,7 +326,7 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
-            </>
+            </div>
           )}
 
           {/* Mood */}
