@@ -17,8 +17,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (!user) return <Navigate to="/auth" replace />
 
-  // New user — send to onboarding
-  if (profile && !profile.onboarding_completed) {
+  // No profile yet or onboarding incomplete — send to onboarding
+  if (!profile || !profile.onboarding_completed) {
     return <Navigate to="/onboarding" replace />
   }
 

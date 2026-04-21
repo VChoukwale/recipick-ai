@@ -605,6 +605,18 @@ export default function HomePage() {
           </>
         )}
 
+        {!loading && !hasAsked && pantryItems.length === 0 && (
+          <div className="mx-1 mb-4 px-4 py-3 rounded-2xl flex items-start gap-3" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)' }}>
+            <span className="text-xl flex-shrink-0">🥄</span>
+            <div>
+              <p className="font-display font-700 text-sm" style={{ color: 'var(--t1)' }}>Your pantry is empty</p>
+              <p className="text-xs font-body mt-0.5" style={{ color: 'var(--t3)' }}>
+                Add ingredients to your pantry for personalised recipe matches. You can still generate ideas below.
+              </p>
+            </div>
+          </div>
+        )}
+
         {!loading && !hasAsked && (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
             <CookingSpinner size="lg" />
