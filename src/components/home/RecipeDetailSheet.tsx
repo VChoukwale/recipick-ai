@@ -27,6 +27,8 @@ const SKIP_MISSING = new Set(['water', 'warm water', 'cold water', 'hot water', 
 export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Props) {
   const { user } = useAuth()
   const [addedToList, setAddedToList] = useState(false)
+  const [addingToList, setAddingToList] = useState(false)
+  const [addListMsg, setAddListMsg] = useState('')
   const inPantry = recipe.ingredients.filter(i => i.in_pantry)
   const rawMissing = recipe.missing_ingredients?.length > 0
     ? recipe.missing_ingredients
@@ -136,22 +138,51 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
                   <span className="text-orange-400">+</span> You'll need ({missing.length})
                 </h3>
                 {user && (
-                  <button
-                    onClick={async () => {
-                      if (addedToList) return
-                      await supabase.from('grocery_list').insert(
-                        missing.map(m => ({ user_id: user.id, name: m.name, is_checked: false }))
-                      )
-                      setAddedToList(true)
-                    }}
-                    className={`text-xs font-display font-600 px-2.5 py-1 rounded-full border transition-all ${
-                      addedToList
-                        ? 'border-emerald-300 dark:border-emerald-700 text-emerald-500 dark:text-emerald-400'
-                        : 'border-orange-200 dark:border-orange-800 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                    }`}
-                  >
-                    {addedToList ? '✓ Added to list' : '+ Add to list'}
-                  </button>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <button
+                      disabled={addedToList || addingToList}
+                      onClick={async () => {
+                        if (addedToList || addingToList) return
+                        setAddingToList(true)
+                        try {
+                          const { data: existing } = await supabase
+                            .from('grocery_list')
+                            .select('name')
+                            .eq('user_id', user.id)
+                          const existingNames = new Set((existing ?? []).map((r: { name: string }) => r.name.toLowerCase()))
+                          const toAdd = missing.filter(m => !existingNames.has(m.name.toLowerCase()))
+                          if (toAdd.length > 0) {
+                            await supabase.from('grocery_list').insert(
+                              toAdd.map(m => ({ user_id: user.id, name: m.name, is_checked: false }))
+                            )
+                          }
+                          const skipped = missing.length - toAdd.length
+                          setAddListMsg(
+                            toAdd.length === 0
+                              ? 'Already on list'
+                              : skipped > 0
+                              ? `Added ${toAdd.length} · ${skipped} already listed`
+                              : ''
+                          )
+                          setAddedToList(true)
+                        } catch {
+                          setAddListMsg('Failed — try again')
+                        } finally {
+                          setAddingToList(false)
+                        }
+                      }}
+                      className={`text-xs font-display font-600 px-2.5 py-1 rounded-full border transition-all ${
+                        addedToList
+                          ? 'border-emerald-300 dark:border-emerald-700 text-emerald-500 dark:text-emerald-400'
+                          : 'border-orange-200 dark:border-orange-800 text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 disabled:opacity-50'
+                      }`}
+                    >
+                      {addingToList ? '…' : addedToList ? '✓ Added to list' : '+ Add to list'}
+                    </button>
+                    {addListMsg && (
+                      <span className="text-[10px] font-body text-stone-400 dark:text-stone-500">{addListMsg}</span>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="space-y-2">

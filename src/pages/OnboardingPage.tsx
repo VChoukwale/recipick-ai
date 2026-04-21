@@ -101,6 +101,7 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   // Step 2 state
   const [dietary, setDietary] = useState<DietaryPreference>('vegetarian')
@@ -127,35 +128,42 @@ export default function OnboardingPage() {
   async function handleFinish() {
     if (!user) return
     setSaving(true)
+    setSaveError('')
 
-    // Save profile preferences
-    await supabase
-      .from('profiles')
-      .update({
-        dietary_preference: dietary,
-        skill_level: skill,
-        preferred_cuisines: cuisines,
-        onboarding_completed: true,
-      })
-      .eq('id', user.id)
+    try {
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({
+          dietary_preference: dietary,
+          skill_level: skill,
+          preferred_cuisines: cuisines,
+          onboarding_completed: true,
+        })
+        .eq('id', user.id)
 
-    // Save checked pantry items
-    if (checkedItems.size > 0) {
-      const allItems = STARTER_PANTRY.flatMap(s => s.items)
-      const toInsert = allItems
-        .filter(item => checkedItems.has(item.name))
-        .map(item => ({
-          user_id: user.id,
-          name: item.name,
-          category: item.category,
-          is_available: true,
-        }))
+      if (profileErr) throw profileErr
 
-      await supabase.from('pantry_items').insert(toInsert)
+      if (checkedItems.size > 0) {
+        const allItems = STARTER_PANTRY.flatMap(s => s.items)
+        const toInsert = allItems
+          .filter(item => checkedItems.has(item.name))
+          .map(item => ({
+            user_id: user.id,
+            name: item.name,
+            category: item.category,
+            is_available: true,
+          }))
+        const { error: pantryErr } = await supabase.from('pantry_items').insert(toInsert)
+        if (pantryErr) throw pantryErr
+      }
+
+      await refreshProfile()
+      navigate('/', { replace: true })
+    } catch (e) {
+      console.error('onboarding finish error:', e)
+      setSaveError('Something went wrong. Please check your connection and try again.')
+      setSaving(false)
     }
-
-    await refreshProfile()
-    navigate('/', { replace: true })
   }
 
   return (
@@ -365,6 +373,9 @@ export default function OnboardingPage() {
                 : 'You can add pantry items anytime from the Pantry tab.'}
             </p>
 
+            {saveError && (
+              <p className="text-sm text-red-500 text-center font-body mb-2">{saveError}</p>
+            )}
             <button
               onClick={handleFinish}
               disabled={saving}

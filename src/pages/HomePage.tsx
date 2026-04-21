@@ -186,7 +186,10 @@ export default function HomePage() {
   }
 
   async function callAiChef(excludedRecipes: string[], append: boolean) {
-    const { data, error: fnError } = await supabase.functions.invoke('ai-chef', {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 30000)
+    )
+    const fetchPromise = supabase.functions.invoke('ai-chef', {
       body: {
         pantry_items: pantryItems.map(i => i.name),
         focus_ingredients: focusIngredientNames,
@@ -205,6 +208,7 @@ export default function HomePage() {
         excluded_recipes: excludedRecipes,
       },
     })
+    const { data, error: fnError } = await Promise.race([fetchPromise, timeoutPromise])
     if (fnError) throw fnError
     if (data?.error) throw new Error(data.error)
     const newRecipes: AiRecipe[] = data?.recipes ?? []
@@ -215,14 +219,22 @@ export default function HomePage() {
   async function handleAskAI() {
     setLoading(true); setError(''); setRecipes([]); setHasAsked(true)
     try { await callAiChef([], false) }
-    catch (e) { console.error('ai-chef error:', e); setError('Something went wrong. Try again?') }
+    catch (e: unknown) {
+      console.error('ai-chef error:', e)
+      const isTimeout = e instanceof Error && e.name === 'AbortError'
+      setError(isTimeout ? 'Request timed out. Check your connection and try again.' : 'Something went wrong. Try again?')
+    }
     finally { setLoading(false); setCooldown(true); setTimeout(() => setCooldown(false), 5000) }
   }
 
   async function handleLoadMore() {
     setLoadingMore(true); setError('')
     try { await callAiChef(recipes.map(r => r.title), true) }
-    catch (e) { console.error('load more error:', e); setError('Something went wrong. Try again?') }
+    catch (e: unknown) {
+      console.error('load more error:', e)
+      const isTimeout = e instanceof Error && e.name === 'AbortError'
+      setError(isTimeout ? 'Request timed out. Try again.' : 'Something went wrong. Try again?')
+    }
     finally { setLoadingMore(false) }
   }
 
@@ -230,7 +242,7 @@ export default function HomePage() {
     const substitutions = Object.fromEntries(
       (recipe.missing_ingredients ?? []).map(m => [m.name, m.substitution])
     )
-    await supabase.from('saved_recipes').insert({
+    const { error: saveErr } = await supabase.from('saved_recipes').insert({
       user_id: user!.id, title: recipe.title, description: recipe.description,
       cuisine_type: recipe.cuisine, region_detail: recipe.region_detail,
       ingredients: recipe.ingredients, instructions: recipe.instructions,
@@ -238,6 +250,7 @@ export default function HomePage() {
       match_percentage: recipe.match_percentage, why_this: recipe.why_this,
       substitutions, source: 'ai_generated',
     })
+    if (saveErr) { setError('Could not save recipe. Try again.'); return }
     setSavedTitles(prev => new Set([...prev, recipe.title]))
   }
 

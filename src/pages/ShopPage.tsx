@@ -110,15 +110,21 @@ export default function ShopPage() {
       return
     }
     setAdding(true)
-    const { data } = await supabase
-      .from('grocery_list')
-      .insert({ user_id: user!.id, name, is_checked: false })
-      .select()
-      .single()
-    if (data) setItems(prev => [...prev, data as GroceryItem])
-    setNewItem('')
-    setAdding(false)
-    inputRef.current?.focus()
+    try {
+      const { data, error } = await supabase
+        .from('grocery_list')
+        .insert({ user_id: user!.id, name, is_checked: false })
+        .select()
+        .single()
+      if (error) throw error
+      if (data) setItems(prev => [...prev, data as GroceryItem])
+      setNewItem('')
+      inputRef.current?.focus()
+    } catch {
+      showToast('Could not add item. Check your connection.')
+    } finally {
+      setAdding(false)
+    }
   }
 
   async function handleToggle(id: string) {
@@ -126,44 +132,50 @@ export default function ShopPage() {
     if (!item) return
     const newVal = !item.is_checked
     setItems(prev => prev.map(i => i.id === id ? { ...i, is_checked: newVal } : i))
-    await supabase.from('grocery_list').update({ is_checked: newVal }).eq('id', id)
+    const { error: toggleErr } = await supabase.from('grocery_list').update({ is_checked: newVal }).eq('id', id)
+    if (toggleErr) {
+      setItems(prev => prev.map(i => i.id === id ? { ...i, is_checked: item.is_checked } : i))
+      showToast('Could not update item. Check your connection.')
+      return
+    }
 
     if (newVal) {
-      // Add to pantry
-      const { data: existing } = await supabase
-        .from('pantry_items')
-        .select('id')
-        .eq('user_id', user!.id)
-        .ilike('name', item.name)
-        .maybeSingle()
+      try {
+        const { data: existing } = await supabase
+          .from('pantry_items')
+          .select('id')
+          .eq('user_id', user!.id)
+          .ilike('name', item.name)
+          .maybeSingle()
 
-      if (!existing) {
-        const { data: newPantryItem } = await supabase.from('pantry_items').insert({
-          user_id: user!.id,
-          name: item.name,
-          category: 'other',
-          is_available: true,
-          is_favorite: false,
-          is_star_ingredient: false,
-          ai_tags: [],
-        }).select().single()
+        if (!existing) {
+          const { data: newPantryItem } = await supabase.from('pantry_items').insert({
+            user_id: user!.id,
+            name: item.name,
+            category: 'other',
+            is_available: true,
+            is_favorite: false,
+            is_star_ingredient: false,
+            ai_tags: [],
+          }).select().single()
 
-        showToast(`✓ ${item.name} added to pantry`)
+          showToast(`✓ ${item.name} added to pantry`)
 
-        // Async AI categorization
-        if (newPantryItem) {
-          supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
-            if (data?.category) {
-              supabase.from('pantry_items')
-                .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
-                .eq('id', (newPantryItem as { id: string }).id)
-            }
-          })
+          if (newPantryItem) {
+            supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
+              if (data?.category) {
+                supabase.from('pantry_items')
+                  .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
+                  .eq('id', (newPantryItem as { id: string }).id)
+              }
+            })
+          }
+        } else {
+          await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
+          showToast(`✓ ${item.name} marked available in pantry`)
         }
-      } else {
-        // Already in pantry — just make sure it's available
-        await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
-        showToast(`✓ ${item.name} marked available in pantry`)
+      } catch {
+        showToast(`Checked off — pantry update failed`)
       }
     }
   }
