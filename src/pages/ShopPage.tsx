@@ -6,7 +6,7 @@ import CookingSpinner from '../components/ui/CookingSpinner'
 interface GroceryItem {
   id: string
   name: string
-  store: string | null
+  store_name: string | null
   is_checked: boolean
   created_at: string
 }
@@ -27,9 +27,9 @@ function GroceryRow({ item, onToggle, onDelete }: { item: GroceryItem; onToggle:
       <span className={`flex-1 font-body text-sm text-stone-700 dark:text-stone-300 ${item.is_checked ? 'line-through text-stone-400 dark:text-stone-500' : ''}`}>
         {item.name}
       </span>
-      {item.store && (
+      {item.store_name && (
         <span className="text-xs font-body px-2 py-0.5 rounded-full bg-sage-50 dark:bg-sage-900/30 text-sage-600 dark:text-sage-400">
-          {item.store}
+          {item.store_name}
         </span>
       )}
       <button
