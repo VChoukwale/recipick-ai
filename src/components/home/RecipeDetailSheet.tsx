@@ -52,7 +52,20 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
             <h2 className="font-display font-800 text-xl text-stone-800 dark:text-stone-100 leading-snug flex-1">
               {recipe.title}
             </h2>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xl leading-none mt-1 flex-shrink-0">✕</button>
+            <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
+              <button
+                onClick={onSave}
+                disabled={saved}
+                className="text-xs font-display font-700 px-3 py-1.5 rounded-full transition-all"
+                style={saved
+                  ? { background: '#16a34a18', color: '#16a34a', border: '1px solid #16a34a30' }
+                  : { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 2px 8px rgba(232,113,58,0.35)' }
+                }
+              >
+                {saved ? '✓ Saved' : '⊕ Save'}
+              </button>
+              <button onClick={onClose} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xl leading-none">✕</button>
+            </div>
           </div>
 
           {/* Tags row */}
