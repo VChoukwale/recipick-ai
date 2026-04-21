@@ -34,6 +34,19 @@ const STATUS_MESSAGE: Record<DayStatus, string> = {
 
 const CUISINES = ['Any', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
 const MOODS = ['Any mood', 'Quick & Easy', 'Comfort Food', 'Healthy & Light', 'Street Food', 'Festive', 'One-Pot']
+const MEAL_TYPES = [
+  { value: 'breakfast', label: '🌅 Breakfast' },
+  { value: 'lunch', label: '☀️ Lunch' },
+  { value: 'dinner', label: '🌙 Dinner' },
+  { value: 'snack', label: '🍿 Snack' },
+  { value: 'drink', label: '🥤 Drink / Smoothie' },
+]
+const EQUIPMENT_OPTIONS = [
+  { value: 'stove', label: '🔥 Stove' },
+  { value: 'oven', label: '🫙 Oven' },
+  { value: 'microwave', label: '📡 Microwave' },
+  { value: 'air_fryer', label: '💨 Air Fryer' },
+]
 
 const REGIONS: Record<string, string[]> = {
   Indian:          ['Maharashtra', 'Punjab', 'Tamil Nadu', 'Kerala', 'Bengal', 'Goa', 'Rajasthan', 'Gujarat', 'Andhra Pradesh', 'Karnataka', 'Hyderabadi', 'Kashmiri', 'Bihari', 'Odia', 'Assamese'],
@@ -83,6 +96,9 @@ export default function HomePage() {
   const [region, setRegion] = useState('')
   const [mood, setMood] = useState('Any mood')
   const [dishSearch, setDishSearch] = useState('')
+  const [mealType, setMealType] = useState('')
+  const [equipment, setEquipment] = useState<string[]>([])
+  const [showEquipment, setShowEquipment] = useState(false)
 
   useEffect(() => {
     try {
@@ -179,6 +195,8 @@ export default function HomePage() {
         region_filter: region || null,
         dish_query: dishSearch.trim() || null,
         mood_filter: mood !== 'Any mood' ? mood : null,
+        meal_type_filter: mealType || null,
+        equipment_filter: equipment.length > 0 ? equipment : null,
         count: 3,
         excluded_recipes: excludedRecipes,
       },
@@ -337,6 +355,69 @@ export default function HomePage() {
                 </button>
               ))}
             </ScrollRow>
+          </div>
+
+          {/* Meal type section */}
+          <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
+          <div className="px-3 pt-2.5 pb-3">
+            <p className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5" style={{ color: 'var(--t3)' }}>
+              Meal Type
+            </p>
+            <ScrollRow>
+              {MEAL_TYPES.map(mt => (
+                <button
+                  key={mt.value}
+                  onClick={() => setMealType(mealType === mt.value ? '' : mt.value)}
+                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                  style={mealType === mt.value
+                    ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
+                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                  }
+                >
+                  {mt.label}
+                </button>
+              ))}
+            </ScrollRow>
+          </div>
+
+          {/* Equipment section — collapsible */}
+          <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
+          <div className="px-3 pt-2.5 pb-3">
+            <button
+              type="button"
+              onClick={() => setShowEquipment(v => !v)}
+              className="flex items-center gap-1.5 text-[10px] font-display font-700 uppercase tracking-widest mb-2.5 w-full text-left"
+              style={{ color: 'var(--t3)' }}
+            >
+              <span>Equipment</span>
+              {equipment.length > 0 && (
+                <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>
+                  {equipment.length} selected
+                </span>
+              )}
+              <span className="ml-auto text-[12px]">{showEquipment ? '▲' : '▼'}</span>
+            </button>
+            {showEquipment && (
+              <div className="flex gap-2 flex-wrap">
+                {EQUIPMENT_OPTIONS.map(eq => {
+                  const active = equipment.includes(eq.value)
+                  return (
+                    <button
+                      key={eq.value}
+                      type="button"
+                      onClick={() => setEquipment(prev => active ? prev.filter(e => e !== eq.value) : [...prev, eq.value])}
+                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                      style={active
+                        ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                      }
+                    >
+                      {eq.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
 
