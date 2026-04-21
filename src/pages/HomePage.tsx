@@ -167,6 +167,19 @@ export default function HomePage() {
     return pantryItems.filter(i => i.name.toLowerCase().includes(lower))
   }, [pantryItems, ingredientSearch])
 
+  const availableCuisines = useMemo(() => {
+    const preferred = profile?.preferred_cuisines ?? []
+    if (preferred.length === 0) return CUISINES
+    return ['Any', ...preferred]
+  }, [profile?.preferred_cuisines])
+
+  useEffect(() => {
+    if (cuisine !== 'Any' && !availableCuisines.includes(cuisine)) {
+      setCuisine('Any')
+      setRegion('')
+    }
+  }, [availableCuisines])
+
   const focusIngredientNames = pantryItems
     .filter(i => focusIds.has(i.id))
     .map(i => i.name)
@@ -293,7 +306,7 @@ export default function HomePage() {
             {showCuisine && (
               <div className="mt-2.5">
                 <ScrollRow>
-                  {CUISINES.map(c => (
+                  {availableCuisines.map(c => (
                     <button key={c} onClick={() => { setCuisine(cuisine === c ? 'Any' : c); setRegion('') }}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={cuisine === c
@@ -302,6 +315,11 @@ export default function HomePage() {
                       }>{c}</button>
                   ))}
                 </ScrollRow>
+                {(profile?.preferred_cuisines ?? []).length > 0 && (
+                  <p className="text-[10px] font-body mt-2 px-1" style={{ color: 'var(--t3)' }}>
+                    Showing your preferred cuisines · Update anytime in ⚙️ Settings
+                  </p>
+                )}
               </div>
             )}
           </div>

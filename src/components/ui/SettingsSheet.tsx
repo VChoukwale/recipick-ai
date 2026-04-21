@@ -16,6 +16,8 @@ const SKILL_OPTIONS: { value: SkillLevel; label: string; desc: string }[] = [
   { value: 'advanced',      label: '👨‍🍳 Advanced',      desc: 'Bring on the complexity' },
 ]
 
+const ALL_CUISINES = ['Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Korean', 'Mediterranean', 'Middle Eastern', 'American', 'Greek', 'French', 'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian']
+
 interface Props {
   onClose: () => void
 }
@@ -25,6 +27,7 @@ export default function SettingsSheet({ onClose }: Props) {
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [dietary, setDietary] = useState<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
   const [skill, setSkill] = useState<SkillLevel>(profile?.skill_level ?? 'intermediate')
+  const [cuisines, setCuisines] = useState<string[]>(profile?.preferred_cuisines ?? [])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -33,8 +36,13 @@ export default function SettingsSheet({ onClose }: Props) {
       setDisplayName(profile.display_name ?? '')
       setDietary(profile.dietary_preference)
       setSkill(profile.skill_level)
+      setCuisines(profile.preferred_cuisines ?? [])
     }
   }, [profile])
+
+  function toggleCuisine(c: string) {
+    setCuisines(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
+  }
 
   async function handleSave() {
     if (!user) return
@@ -43,6 +51,7 @@ export default function SettingsSheet({ onClose }: Props) {
       display_name: displayName.trim() || null,
       dietary_preference: dietary,
       skill_level: skill,
+      preferred_cuisines: cuisines,
     }).eq('id', user.id)
     await refreshProfile()
     setSaving(false)
@@ -133,6 +142,32 @@ export default function SettingsSheet({ onClose }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Preferred cuisines */}
+          <div className="mb-6">
+            <label className="block text-xs font-display font-700 text-stone-500 dark:text-stone-400 mb-1">Preferred cuisines</label>
+            <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-2">
+              Only these will appear on your Home screen. Leave empty to see all.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {ALL_CUISINES.map(c => (
+                <button key={c} onClick={() => toggleCuisine(c)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all ${
+                    cuisines.includes(c)
+                      ? 'bg-brand-500 border-brand-500 text-white'
+                      : 'bg-white dark:bg-charcoal-700 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400'
+                  }`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+            {cuisines.length > 0 && (
+              <button onClick={() => setCuisines([])}
+                className="mt-2 text-xs font-body text-stone-400 dark:text-stone-500 underline">
+                Clear all
+              </button>
+            )}
           </div>
 
           {/* Save */}
