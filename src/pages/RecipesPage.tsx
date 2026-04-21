@@ -65,19 +65,12 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete, onUpdateF
   }
 
   return (
-    <div className={`rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200 ${recipe.rating === -1 ? 'opacity-70' : ''}`} style={{ background: 'var(--s2)', border: recipe.rating === -1 ? '1px solid #dc262630' : '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
+    <div className="rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-sm)' }}>
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-2 mb-1.5">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-display font-700 text-base leading-snug" style={{ color: 'var(--t1)' }}>
-              {recipe.title}
-            </h3>
-            {recipe.rating === -1 && (
-              <span className="inline-block text-[10px] font-display font-700 px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 mt-0.5">
-                👎 Not for me
-              </span>
-            )}
-          </div>
+          <h3 className="font-display font-700 text-base leading-snug flex-1" style={{ color: 'var(--t1)' }}>
+            {recipe.title}
+          </h3>
           <button onClick={onToggleFavorite}
             className={`flex-shrink-0 text-lg transition-all duration-200 ${recipe.is_favorite ? 'animate-glow-gold' : 'opacity-30 hover:opacity-60'}`}>
             {recipe.is_favorite ? '⭐' : '☆'}
@@ -242,6 +235,10 @@ export default function RecipesPage() {
   const favoriteCount = recipes.filter(r => r.is_favorite).length
   const hasFilters = !!(search || difficultyFilter !== 'all' || cuisineFilter !== 'All' || favoritesOnly)
 
+  const notTried     = filtered.filter(r => !r.tried)
+  const triedLiked   = filtered.filter(r => r.tried && r.rating !== -1)
+  const triedDisliked = filtered.filter(r => r.tried && r.rating === -1)
+
   return (
     <div className="flex flex-col h-full bg-transparent">
       <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-transparent transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
@@ -327,15 +324,69 @@ export default function RecipesPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3 pt-3">
-            {filtered.map(recipe => (
-              <VaultRecipeCard key={recipe.id} recipe={recipe}
-                onView={() => setSelectedRecipe(recipe)}
-                onToggleFavorite={() => handleToggleFavorite(recipe.id)}
-                onDelete={() => handleDelete(recipe.id)}
-                onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
-              />
-            ))}
+          <div className="pt-3 space-y-6">
+            {/* Not tried yet */}
+            {notTried.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm">📌</span>
+                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Not tried yet</span>
+                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{notTried.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {notTried.map(recipe => (
+                    <VaultRecipeCard key={recipe.id} recipe={recipe}
+                      onView={() => setSelectedRecipe(recipe)}
+                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
+                      onDelete={() => handleDelete(recipe.id)}
+                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tried & liked */}
+            {triedLiked.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm">✅</span>
+                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Tried & liked</span>
+                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{triedLiked.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {triedLiked.map(recipe => (
+                    <VaultRecipeCard key={recipe.id} recipe={recipe}
+                      onView={() => setSelectedRecipe(recipe)}
+                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
+                      onDelete={() => handleDelete(recipe.id)}
+                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tried & disliked */}
+            {triedDisliked.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm">👎</span>
+                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Didn't enjoy</span>
+                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{triedDisliked.length}</span>
+                </div>
+                <div className="space-y-3 opacity-70">
+                  {triedDisliked.map(recipe => (
+                    <VaultRecipeCard key={recipe.id} recipe={recipe}
+                      onView={() => setSelectedRecipe(recipe)}
+                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
+                      onDelete={() => handleDelete(recipe.id)}
+                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
