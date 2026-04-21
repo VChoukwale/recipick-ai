@@ -159,7 +159,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-charcoal-900 flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#EDE7DC] dark:bg-charcoal-950 flex flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
 
         {/* Progress dots */}

@@ -194,9 +194,9 @@ export default function PantryPage() {
   const hasContent = !loading && filtered.length > 0
 
   return (
-    <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Sticky header */}
-      <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-cream-100 dark:bg-charcoal-900 transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
+      <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-transparent transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
         <div className="flex items-center justify-between mb-1">
           <div>
             <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Your Pantry</h1>
@@ -312,7 +312,7 @@ export default function PantryPage() {
       {showScrollTop && (
         <button
           onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-24 right-9 z-20 w-8 h-8 rounded-full bg-white dark:bg-charcoal-800 shadow-lg border border-cream-200 dark:border-charcoal-700 flex items-center justify-center text-brand-500 hover:bg-brand-50 dark:hover:bg-charcoal-700 transition-all animate-fade-in font-bold text-sm"
+          className="fixed bottom-24 right-9 z-20 w-8 h-8 rounded-full bg-white dark:bg-charcoal-800 shadow-lg border border-stone-200 dark:border-charcoal-700 flex items-center justify-center text-brand-500 hover:bg-brand-50 dark:hover:bg-charcoal-700 transition-all animate-fade-in font-bold text-sm"
           title="Back to top"
         >
           ↑

@@ -48,7 +48,7 @@ function VaultRecipeCard({ recipe, onView, onToggleFavorite, onDelete }: CardPro
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
-    <div className="bg-white dark:bg-charcoal-800 rounded-2xl shadow-sm border border-cream-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white dark:bg-charcoal-800 rounded-2xl shadow-sm border border-stone-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-2 mb-1.5">
           <h3 className="font-display font-700 text-base text-stone-800 dark:text-stone-100 leading-snug flex-1">
@@ -176,8 +176,8 @@ export default function RecipesPage() {
   const hasFilters = !!(search || difficultyFilter !== 'all' || cuisineFilter !== 'All' || favoritesOnly)
 
   return (
-    <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
-      <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-cream-100 dark:bg-charcoal-900 transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
+    <div className="flex flex-col h-full bg-transparent">
+      <div className={`sticky top-0 z-10 px-4 pt-4 pb-3 bg-transparent transition-shadow duration-200 ${showScrollTop ? 'shadow-md shadow-stone-200/60 dark:shadow-black/40' : ''}`}>
         <div className="flex items-center justify-between mb-1">
           <div>
             <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Vault</h1>
@@ -190,7 +190,7 @@ export default function RecipesPage() {
               className={`text-xs font-display font-700 px-3 py-1.5 rounded-full border transition-all ${
                 favoritesOnly
                   ? 'bg-amber-400 border-amber-400 text-white'
-                  : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400'
+                  : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
               }`}>⭐ Favorites</button>
           )}
         </div>
@@ -211,7 +211,7 @@ export default function RecipesPage() {
               className={`px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                 difficultyFilter === d.value
                   ? 'bg-stone-700 dark:bg-stone-200 border-stone-700 dark:border-stone-200 text-white dark:text-stone-900'
-                  : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400'
+                  : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
               }`}>{d.label}</button>
           ))}
         </div>
@@ -223,7 +223,7 @@ export default function RecipesPage() {
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-display font-600 border transition-all ${
                   cuisineFilter === c
                     ? 'bg-brand-500 border-brand-500 text-white'
-                    : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400'
+                    : 'bg-white dark:bg-charcoal-800 border-stone-200 dark:border-charcoal-700 text-stone-500 dark:text-stone-400'
                 }`}>{c}</button>
             ))}
           </div>

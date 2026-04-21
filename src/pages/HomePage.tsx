@@ -205,91 +205,140 @@ export default function HomePage() {
   const firstName = profile?.display_name?.split(' ')[0] ?? 'Chef'
 
   return (
-    <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
-      <div className="px-4 pt-4 pb-3 bg-cream-100 dark:bg-charcoal-900">
-        <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">
+    <div className="flex flex-col h-full" style={{ background: 'var(--s0)' }}>
+      {/* Greeting */}
+      <div className="px-4 pt-5 pb-4" style={{ background: 'var(--s0)' }}>
+        <h1 className="font-display font-800 text-[26px] leading-tight" style={{ color: 'var(--t1)' }}>
           {greeting}, {firstName}! 👋
         </h1>
-        <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">
+        <p className="text-sm font-body mt-1" style={{ color: 'var(--t2)' }}>
           What's your day looking like?
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-24">
-        <div className="mb-4">
+        {/* Day status picker */}
+        <div className="mb-4 mt-1">
           <DayStatusPicker value={dayStatus} busyUntilTime={busyUntilTime} onChange={handleDayStatusChange} />
         </div>
 
-        {/* Cuisine */}
-        <div className="mb-2">
-          <p className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-2">Cuisine</p>
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-            {CUISINES.map(c => (
-              <button key={c} onClick={() => { setCuisine(c); setRegion('') }}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
-                  cuisine === c
-                    ? 'bg-brand-500 border-brand-500 text-white'
-                    : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400 hover:border-brand-300'
-                }`}>{c}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Region — slides in when a cuisine is selected */}
-        {cuisine !== 'Any' && REGIONS[cuisine] && (
-          <div className="mb-2">
-            <p className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 mb-2">
-              Region <span className="font-400 text-stone-300 dark:text-stone-600">· {cuisine}</span>
+        {/* Filter panel — cuisine + region + mood grouped */}
+        <div
+          className="mb-4 rounded-[18px] overflow-hidden"
+          style={{ background: 'var(--s1)', border: '1px solid var(--bdr-s)' }}
+        >
+          {/* Cuisine section */}
+          <div className="px-3 pt-3 pb-3">
+            <p
+              className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
+              style={{ color: 'var(--t3)' }}
+            >
+              Cuisine
             </p>
-            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-              <button onClick={() => setRegion('')}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
-                  region === ''
-                    ? 'bg-brand-400 border-brand-400 text-white'
-                    : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400 hover:border-brand-300'
-                }`}>Any</button>
-              {REGIONS[cuisine].map(r => (
-                <button key={r} onClick={() => setRegion(r)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
-                    region === r
-                      ? 'bg-brand-400 border-brand-400 text-white'
-                      : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-500 dark:text-stone-400 hover:border-brand-300'
-                  }`}>{r}</button>
+            <div className="flex gap-2 overflow-x-auto scrollbar-none">
+              {CUISINES.map(c => (
+                <button
+                  key={c}
+                  onClick={() => { setCuisine(c); setRegion('') }}
+                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                  style={cuisine === c
+                    ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                  }
+                >
+                  {c}
+                </button>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Mood */}
-        <div className="mb-3">
-          <p className="text-xs font-display font-600 text-stone-500 dark:text-stone-400 mb-2">Mood</p>
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-            {MOODS.map(m => (
-              <button key={m} onClick={() => setMood(m)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
-                  mood === m
-                    ? 'bg-sage-500 border-sage-500 text-white'
-                    : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400 hover:border-sage-300'
-                }`}>{m}</button>
-            ))}
+          {/* Region — conditional inside the panel */}
+          {cuisine !== 'Any' && REGIONS[cuisine] && (
+            <>
+              <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
+              <div className="px-3 pt-2.5 pb-3">
+                <p
+                  className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
+                  style={{ color: 'var(--t3)' }}
+                >
+                  Region <span className="normal-case font-400">· {cuisine}</span>
+                </p>
+                <div className="flex gap-2 overflow-x-auto scrollbar-none">
+                  <button
+                    onClick={() => setRegion('')}
+                    className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                    style={region === ''
+                      ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                      : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                    }
+                  >
+                    Any
+                  </button>
+                  {REGIONS[cuisine].map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setRegion(r)}
+                      className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                      style={region === r
+                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                      }
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Divider between cuisine/region and mood */}
+          <div className="h-px mx-3" style={{ background: 'var(--bdr-s)' }} />
+
+          {/* Mood section */}
+          <div className="px-3 pt-2.5 pb-3">
+            <p
+              className="text-[10px] font-display font-700 uppercase tracking-widest mb-2.5"
+              style={{ color: 'var(--t3)' }}
+            >
+              Mood
+            </p>
+            <div className="flex gap-2 overflow-x-auto scrollbar-none">
+              {MOODS.map(m => (
+                <button
+                  key={m}
+                  onClick={() => setMood(m)}
+                  className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
+                  style={mood === m
+                    ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
+                    : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
+                  }
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Dish / ingredient search */}
-        <div className="mb-4">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔎</span>
-            <input
-              value={dishSearch}
-              onChange={e => setDishSearch(e.target.value)}
-              placeholder="Search a dish or ingredient (optional)…"
-              className="input-field pl-9 text-sm"
-            />
-            {dishSearch && (
-              <button onClick={() => setDishSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs">✕</button>
-            )}
-          </div>
+        <div className="mb-4 relative">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base pointer-events-none" style={{ color: 'var(--t3)' }}>🔎</span>
+          <input
+            value={dishSearch}
+            onChange={e => setDishSearch(e.target.value)}
+            placeholder="Search a dish or ingredient (optional)…"
+            className="input-field pl-10"
+          />
+          {dishSearch && (
+            <button
+              onClick={() => setDishSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold"
+              style={{ color: 'var(--t3)' }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Star Mode quick toggle — visible when star ingredients exist */}
@@ -297,16 +346,16 @@ export default function HomePage() {
           <div className="mb-3 flex items-center gap-2">
             <button
               onClick={toggleStarMode}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-700 border transition-all duration-200 ${
-                isStarMode
-                  ? 'bg-amber-400 border-amber-400 text-white shadow-sm'
-                  : 'bg-white dark:bg-charcoal-800 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:border-amber-400'
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-700 transition-all duration-200"
+              style={isStarMode
+                ? { background: '#FBBD23', border: '1px solid #FBBD23', color: '#fff', boxShadow: '0 2px 8px rgba(251,189,35,0.35)' }
+                : { background: 'var(--s2)', border: '1px solid rgba(251,189,35,0.40)', color: '#B08010', boxShadow: 'var(--shd-sm)' }
+              }
             >
               ⭐ Star Mode
             </button>
             {focusIds.size > 0 && (
-              <span className="text-xs font-body text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-body" style={{ color: 'var(--t2)' }}>
                 hero: {focusIngredientNames.join(', ')}
               </span>
             )}
@@ -315,42 +364,51 @@ export default function HomePage() {
 
         {/* Ingredient focus picker */}
         {pantryItems.length > 0 && (
-          <div className={`mb-4 bg-white dark:bg-charcoal-800 rounded-2xl border overflow-hidden transition-colors duration-200 ${
-            focusIds.size > 0
-              ? 'border-amber-200 dark:border-amber-800'
-              : 'border-cream-200 dark:border-charcoal-700'
-          }`}>
+          <div
+            className="mb-4 rounded-[18px] overflow-hidden transition-all duration-200"
+            style={{
+              background: 'var(--s2)',
+              border: `1px solid ${focusIds.size > 0 ? 'rgba(232,113,58,0.35)' : 'var(--bdr-m)'}`,
+              boxShadow: 'var(--shd-sm)',
+            }}
+          >
             <button
               onClick={() => setShowPicker(p => !p)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-base flex-shrink-0">{focusIds.size > 0 ? '⭐' : '🎯'}</span>
-                <span className="font-display font-700 text-sm text-stone-700 dark:text-stone-200">
+                <span className="font-display font-700 text-sm flex-1 min-w-0" style={{ color: 'var(--t1)' }}>
                   {focusIds.size > 0 ? `${focusIds.size} ingredient${focusIds.size > 1 ? 's' : ''} selected` : 'Cook with specific ingredients?'}
                 </span>
               </div>
-              <span className={`text-stone-400 text-xs flex-shrink-0 transition-transform duration-200 ${showPicker ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`text-xs flex-shrink-0 transition-transform duration-200 ${showPicker ? 'rotate-180' : ''}`} style={{ color: 'var(--t3)' }}>▼</span>
             </button>
 
             {showPicker && (
               <div className="px-4 pb-4">
-                <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-3">
+                <p className="text-xs font-body mb-3" style={{ color: 'var(--t3)' }}>
                   Tap ingredients to cook with — recipes will be built around them as the hero. Leaving empty uses your full pantry.
                 </p>
 
                 {/* Search */}
                 <div className="relative mb-3">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs">🔍</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'var(--t3)' }}>🔍</span>
                   <input
                     value={ingredientSearch}
                     onChange={e => setIngredientSearch(e.target.value)}
                     placeholder="Search ingredients…"
-                    className="input-field pl-8 text-sm py-2"
+                    className="input-field pl-8"
+                    style={{ padding: '8px 16px 8px 32px' }}
                   />
                   {ingredientSearch && (
-                    <button onClick={() => setIngredientSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs">✕</button>
+                    <button
+                      onClick={() => setIngredientSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+                      style={{ color: 'var(--t3)' }}
+                    >
+                      ✕
+                    </button>
                   )}
                 </div>
 
@@ -361,25 +419,28 @@ export default function HomePage() {
                       <button
                         key={item.id}
                         onClick={() => toggleFocus(item.id)}
-                        className={`px-2.5 py-1 rounded-full text-xs font-display font-600 border transition-all duration-150 ${
-                          focused
-                            ? item.is_star_ingredient
-                              ? 'bg-amber-400 border-amber-400 text-white'
-                              : 'bg-brand-500 border-brand-500 text-white'
-                            : 'bg-white dark:bg-charcoal-800 border-cream-200 dark:border-charcoal-600 text-stone-600 dark:text-stone-400 hover:border-brand-300'
-                        }`}
+                        className="px-2.5 py-1 rounded-full text-xs font-display font-600 transition-all duration-150"
+                        style={focused
+                          ? item.is_star_ingredient
+                            ? { background: '#FBBD23', border: '1px solid #FBBD23', color: '#fff' }
+                            : { background: '#E8713A', border: '1px solid #E8713A', color: '#fff' }
+                          : { background: 'var(--s1)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }
+                        }
                       >
                         {item.is_star_ingredient && '⭐ '}{item.name}
                       </button>
                     )
                   })}
                   {filteredPickerItems.length === 0 && (
-                    <p className="text-xs text-stone-400 font-body">No items match "{ingredientSearch}"</p>
+                    <p className="text-xs font-body" style={{ color: 'var(--t3)' }}>No items match "{ingredientSearch}"</p>
                   )}
                 </div>
                 {focusIds.size > 0 && (
-                  <button onClick={() => setFocusIds(new Set())}
-                    className="mt-2 text-xs text-stone-400 hover:text-stone-600 font-display font-600">
+                  <button
+                    onClick={() => setFocusIds(new Set())}
+                    className="mt-2 text-xs font-display font-600"
+                    style={{ color: 'var(--t3)' }}
+                  >
                     Clear selection
                   </button>
                 )}
@@ -392,17 +453,22 @@ export default function HomePage() {
         <button
           onClick={handleAskAI}
           disabled={loading || loadingMore}
-          className={`w-full flex items-center justify-center gap-2 mb-5 py-3.5 rounded-2xl font-display font-700 text-base transition-all active:scale-95 disabled:opacity-50 ${
-            focusIds.size > 0
-              ? 'bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-white shadow-lg shadow-amber-300/40 dark:shadow-amber-900/30'
-              : 'btn-primary'
-          }`}
+          className="w-full py-4 rounded-2xl font-display font-700 text-[15px] text-white flex items-center justify-center gap-2.5 mb-5 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-50"
+          style={{
+            background: focusIds.size > 0
+              ? 'linear-gradient(150deg, #FBBD23 0%, #E09518 100%)'
+              : 'linear-gradient(150deg, #F07840 0%, #D85F22 100%)',
+            boxShadow: focusIds.size > 0
+              ? '0 6px 28px rgba(240,185,30,0.38)'
+              : '0 6px 28px rgba(232,113,58,0.40)',
+          }}
         >
           {loading
             ? <><span className="text-lg animate-spin">🍳</span><span>Cooking up ideas…</span></>
             : focusIds.size > 0
               ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
-              : <><span className="text-lg">✨</span><span>What should I cook?</span></>}
+              : <><span className="text-lg">✨</span><span>What should I cook?</span></>
+          }
         </button>
 
         {error && <p className="text-sm text-red-500 text-center mb-4 font-body">{error}</p>}
@@ -415,7 +481,7 @@ export default function HomePage() {
 
         {!loading && recipes.length > 0 && (
           <>
-            <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-3 text-center">
+            <p className="text-xs font-body mb-3 text-center" style={{ color: 'var(--t3)' }}>
               {STATUS_MESSAGE[dayStatus]}
               {cuisine !== 'Any' && <span className="ml-1">· {region ? `${region} (${cuisine})` : cuisine}</span>}
               {mood !== 'Any mood' && <span className="ml-1">· {mood}</span>}
@@ -430,8 +496,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <button onClick={handleLoadMore} disabled={loadingMore}
-              className="w-full mt-4 py-3 rounded-2xl border-2 border-dashed border-brand-300 dark:border-brand-700 text-brand-600 dark:text-brand-400 font-display font-700 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors disabled:opacity-50">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="w-full mt-2 py-3 rounded-2xl font-display font-700 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/10 transition-colors disabled:opacity-50"
+              style={{ border: '2px dashed rgba(232,113,58,0.35)', color: '#E8713A' }}
+            >
               {loadingMore
                 ? <span className="flex items-center justify-center gap-2"><span className="animate-simmer">🍳</span> Finding more ideas…</span>
                 : '✦ Get more recipe ideas'}
@@ -447,8 +517,8 @@ export default function HomePage() {
         {!loading && !hasAsked && (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
             <CookingSpinner size="lg" />
-            <p className="font-display font-700 text-stone-600 dark:text-stone-400">Your AI chef is ready</p>
-            <p className="text-sm font-body text-stone-400 dark:text-stone-500 max-w-xs">
+            <p className="font-display font-700" style={{ color: 'var(--t2)' }}>Your AI chef is ready</p>
+            <p className="text-sm font-body max-w-xs" style={{ color: 'var(--t3)' }}>
               Set your day, pick a cuisine, and tap the button — I'll suggest recipes based on what's in your pantry.
             </p>
           </div>
@@ -457,7 +527,7 @@ export default function HomePage() {
         {!loading && hasAsked && recipes.length === 0 && !error && (
           <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
             <span className="text-4xl">🤔</span>
-            <p className="text-sm font-body text-stone-400 dark:text-stone-500">No recipes found. Try adding more items to your pantry!</p>
+            <p className="text-sm font-body" style={{ color: 'var(--t3)' }}>No recipes found. Try adding more items to your pantry!</p>
           </div>
         )}
       </div>

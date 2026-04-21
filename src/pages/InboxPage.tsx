@@ -20,7 +20,7 @@ interface ExtractedRecipe {
 
 function ImportedRecipeCard({ recipe, onView }: { recipe: SavedRecipe; onView: () => void }) {
   return (
-    <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-cream-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white dark:bg-charcoal-800 rounded-2xl border border-stone-200 dark:border-charcoal-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-start gap-2 mb-1">
           <h3 className="font-display font-700 text-sm text-stone-800 dark:text-stone-100 leading-snug flex-1">{recipe.title}</h3>
@@ -238,7 +238,7 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
+    <div className="flex flex-col h-full bg-transparent">
       <div className="px-4 pt-4 pb-3">
         <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Recipe Inbox</h1>
         <p className="text-sm font-body text-stone-400 dark:text-stone-500 mt-0.5">Copy recipe text from anywhere and save it</p>

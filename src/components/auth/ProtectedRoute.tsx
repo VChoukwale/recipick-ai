@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-100 dark:bg-charcoal-900">
+      <div className="min-h-screen flex items-center justify-center bg-[#EDE7DC] dark:bg-charcoal-950">
         <div className="flex flex-col items-center gap-3">
           <span className="text-4xl animate-simmer">🥘</span>
           <p className="font-display text-brand-500 font-600 text-sm">Getting your kitchen ready…</p>

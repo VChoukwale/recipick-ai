@@ -13,7 +13,7 @@ interface GroceryItem {
 
 function GroceryRow({ item, onToggle, onDelete }: { item: GroceryItem; onToggle: () => void; onDelete: () => void }) {
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 bg-white dark:bg-charcoal-800 rounded-2xl border border-cream-200 dark:border-charcoal-700 transition-opacity ${item.is_checked ? 'opacity-50' : ''}`}>
+    <div className={`flex items-center gap-3 px-4 py-3 bg-white dark:bg-charcoal-800 rounded-2xl border border-stone-200 dark:border-charcoal-700 transition-opacity ${item.is_checked ? 'opacity-50' : ''}`}>
       <button
         onClick={onToggle}
         className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -106,9 +106,9 @@ export default function ShopPage() {
   const checked = items.filter(i => i.is_checked)
 
   return (
-    <div className="flex flex-col h-full bg-cream-100 dark:bg-charcoal-900">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 bg-cream-100 dark:bg-charcoal-900">
+      <div className="px-4 pt-4 pb-3 bg-transparent">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-800 text-2xl text-stone-800 dark:text-stone-100">Grocery Run</h1>
@@ -119,7 +119,7 @@ export default function ShopPage() {
           {checked.length > 0 && (
             <button
               onClick={handleClearChecked}
-              className="text-xs font-display font-700 px-3 py-1.5 rounded-full bg-white dark:bg-charcoal-800 border border-cream-200 dark:border-charcoal-600 text-stone-400 dark:text-stone-500 hover:text-red-400 hover:border-red-200 transition-colors"
+              className="text-xs font-display font-700 px-3 py-1.5 rounded-full bg-white dark:bg-charcoal-800 border border-stone-200 dark:border-charcoal-700 text-stone-400 dark:text-stone-500 hover:text-red-400 hover:border-red-200 transition-colors"
             >
               Clear {checked.length} done
             </button>
@@ -163,7 +163,7 @@ export default function ShopPage() {
       </div>
 
       {/* Sticky add form */}
-      <div className="absolute bottom-16 left-0 right-0 max-w-lg mx-auto px-4 pb-3 pt-2 bg-cream-100/95 dark:bg-charcoal-900/95 backdrop-blur-sm border-t border-cream-200 dark:border-charcoal-700">
+      <div className="absolute bottom-16 left-0 right-0 max-w-lg mx-auto px-4 pb-3 pt-2 backdrop-blur-md" style={{ background: 'var(--s3)', borderTop: '1px solid var(--bdr-s)', boxShadow: 'var(--shd-up)' }}>
         <form onSubmit={handleAdd} className="flex gap-2">
           <input
             ref={inputRef}

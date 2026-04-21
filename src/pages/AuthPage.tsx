@@ -4,7 +4,7 @@ export default function AuthPage() {
   const { signInWithGoogle } = useAuth()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cream-100 dark:bg-charcoal-900 px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EDE7DC] dark:bg-charcoal-950 px-6">
       {/* Logo / brand */}
       <div className="mb-8 text-center animate-fade-in">
         <div className="w-20 h-20 rounded-3xl bg-brand-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
