@@ -152,16 +152,18 @@ export default function CookingAssistant() {
 
   return (
     <>
-      {/* Floating action button */}
-      <button
-        onClick={() => setOpen(true)}
-        className="absolute bottom-20 right-3 z-[45] w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-150"
-        style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)', boxShadow: '0 4px 16px rgba(232,113,58,0.45)' }}
-        title="Ask Sage — your cooking encyclopedia"
-        aria-label="Ask Sage — your cooking encyclopedia"
-      >
-        <span className="text-xl">🌿</span>
-      </button>
+      {/* Floating action button — hidden when chat is open */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="absolute bottom-36 right-3 z-[45] w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-150"
+          style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)', boxShadow: '0 4px 16px rgba(232,113,58,0.45)' }}
+          title="Ask Chef Sage"
+          aria-label="Ask Chef Sage"
+        >
+          <span className="text-xl">👨‍🍳</span>
+        </button>
+      )}
 
       {/* Chat sheet */}
       {open && (
@@ -182,7 +184,7 @@ export default function CookingAssistant() {
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
                   style={{ background: 'linear-gradient(135deg, #E8713A22, #E8713A11)', border: '1px solid #E8713A30' }}>
-                  💡
+                  👨‍🍳
                 </div>
                 <div>
                   <p className="font-display font-700 text-base leading-tight" style={{ color: 'var(--t1)' }}>Chef Sage</p>
@@ -205,12 +207,12 @@ export default function CookingAssistant() {
                   <div className="flex gap-2.5">
                     <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm"
                       style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
-                      <span className="text-xs">💡</span>
+                      <span className="text-xs">👨‍🍳</span>
                     </div>
                     <div className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%]"
                       style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
                       <p className="text-sm font-body leading-relaxed" style={{ color: 'var(--t1)' }}>
-                        Hey! I'm Chef Sage 💡 Ask me anything about cooking — techniques, ingredients, substitutions, storage tips, or anything food-related!
+                        Hey! I'm Chef Sage 👨‍🍳 Ask me anything about cooking — techniques, ingredients, substitutions, storage tips, or anything food-related!
                       </p>
                     </div>
                   </div>
@@ -237,7 +239,7 @@ export default function CookingAssistant() {
                   {msg.role === 'assistant' && (
                     <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-700 text-white mt-0.5"
                       style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
-                      💡
+                      👨‍🍳
                     </div>
                   )}
                   <div
