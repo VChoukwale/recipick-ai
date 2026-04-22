@@ -354,15 +354,17 @@ export default function CookingAssistant() {
                   style={{ color: 'var(--t1)' }}
                 />
 
-                {/* Send button — more visible */}
+                {/* Send button — always orange, dimmed when empty */}
                 <button
                   onClick={() => sendMessage()}
                   disabled={!canSend}
                   className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
-                  style={canSend
-                    ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 2px 8px rgba(232,113,58,0.40)' }
-                    : { background: 'var(--s1)', color: 'var(--t3)', opacity: 0.4 }
-                  }
+                  style={{
+                    background: 'linear-gradient(135deg, #E8713A, #D85F22)',
+                    color: '#fff',
+                    opacity: canSend ? 1 : 0.35,
+                    boxShadow: canSend ? '0 2px 8px rgba(232,113,58,0.40)' : 'none',
+                  }}
                 >
                   <SendIcon />
                 </button>

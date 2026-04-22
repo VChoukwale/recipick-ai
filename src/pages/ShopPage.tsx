@@ -3,6 +3,17 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import CookingSpinner from '../components/ui/CookingSpinner'
 
+function MicIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="8" y1="22" x2="16" y2="22" />
+    </svg>
+  )
+}
+
 interface ISpeechRecognition extends EventTarget {
   continuous: boolean; interimResults: boolean; lang: string
   start(): void; stop(): void
@@ -271,27 +282,35 @@ export default function ShopPage() {
         }}
       >
         <form onSubmit={handleAdd} className="flex gap-2">
-          <input
-            ref={inputRef}
-            value={newItem}
-            onChange={e => setNewItem(e.target.value)}
-            placeholder="Add an item…"
-            className="input-field flex-1 min-w-0"
-            style={{ width: 'auto' }}
-            disabled={adding}
-          />
-          <button
-            type="button"
-            onClick={handleVoice}
-            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-              listening
-                ? 'bg-red-500 text-white animate-pulse'
-                : 'bg-white dark:bg-charcoal-700 border border-stone-200 dark:border-charcoal-600 text-stone-400 dark:text-stone-400 hover:text-stone-600'
-            }`}
-            title={listening ? 'Stop listening' : 'Voice input'}
+          {/* Input with mic inside on the left */}
+          <div
+            className="flex items-center gap-1.5 flex-1 min-w-0 rounded-2xl px-3 py-2 transition-all"
+            style={{
+              background: 'var(--s0)',
+              border: listening ? '1.5px solid #ef4444' : '1.5px solid var(--bdr-m)',
+            }}
           >
-            🎤
-          </button>
+            <button
+              type="button"
+              onClick={handleVoice}
+              className={`flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
+                listening ? 'animate-pulse' : ''
+              }`}
+              style={{ color: listening ? '#ef4444' : '#E8713A' }}
+              title={listening ? 'Stop listening' : 'Voice input'}
+            >
+              <MicIcon size={16} />
+            </button>
+            <input
+              ref={inputRef}
+              value={newItem}
+              onChange={e => setNewItem(e.target.value)}
+              placeholder={listening ? 'Listening…' : 'Add an item…'}
+              className="flex-1 min-w-0 bg-transparent text-sm font-body outline-none"
+              style={{ color: 'var(--t1)' }}
+              disabled={adding}
+            />
+          </div>
           <button
             type="submit"
             disabled={adding || !newItem.trim()}
