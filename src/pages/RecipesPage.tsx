@@ -182,6 +182,11 @@ export default function RecipesPage() {
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [selectedRecipe, setSelectedRecipe] = useState<SavedRecipe | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+
+  function toggleSection(key: string) {
+    setCollapsed(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   useEffect(() => {
     if (!user) return
@@ -324,69 +329,39 @@ export default function RecipesPage() {
             )}
           </div>
         ) : (
-          <div className="pt-3 space-y-6">
-            {/* Not tried yet */}
-            {notTried.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm">📌</span>
-                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Not tried yet</span>
-                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{notTried.length}</span>
-                </div>
-                <div className="space-y-3">
-                  {notTried.map(recipe => (
-                    <VaultRecipeCard key={recipe.id} recipe={recipe}
-                      onView={() => setSelectedRecipe(recipe)}
-                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
-                      onDelete={() => handleDelete(recipe.id)}
-                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
-                    />
-                  ))}
-                </div>
+          <div className="pt-3 space-y-4">
+            {[
+              { key: 'notTried',      items: notTried,      icon: '📌', label: 'Not tried yet',  dim: false },
+              { key: 'triedLiked',    items: triedLiked,    icon: '✅', label: 'Tried & liked',   dim: false },
+              { key: 'triedDisliked', items: triedDisliked, icon: '👎', label: "Didn't enjoy",    dim: true  },
+            ].map(({ key, items, icon, label, dim }) => items.length > 0 && (
+              <div key={key}>
+                <button
+                  onClick={() => toggleSection(key)}
+                  className="w-full flex items-center gap-2 mb-3 group"
+                >
+                  <span className="text-sm">{icon}</span>
+                  <span className="font-display font-700 text-sm flex-1 text-left" style={{ color: 'var(--t2)' }}>{label}</span>
+                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{items.length}</span>
+                  <span
+                    className="text-xs transition-transform duration-200 ml-1"
+                    style={{ color: 'var(--t3)', transform: collapsed[key] ? 'rotate(-90deg)' : 'rotate(0deg)', display: 'inline-block' }}
+                  >▾</span>
+                </button>
+                {!collapsed[key] && (
+                  <div className={`space-y-3 ${dim ? 'opacity-70' : ''}`}>
+                    {items.map(recipe => (
+                      <VaultRecipeCard key={recipe.id} recipe={recipe}
+                        onView={() => setSelectedRecipe(recipe)}
+                        onToggleFavorite={() => handleToggleFavorite(recipe.id)}
+                        onDelete={() => handleDelete(recipe.id)}
+                        onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Tried & liked */}
-            {triedLiked.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm">✅</span>
-                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Tried & liked</span>
-                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{triedLiked.length}</span>
-                </div>
-                <div className="space-y-3">
-                  {triedLiked.map(recipe => (
-                    <VaultRecipeCard key={recipe.id} recipe={recipe}
-                      onView={() => setSelectedRecipe(recipe)}
-                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
-                      onDelete={() => handleDelete(recipe.id)}
-                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tried & disliked */}
-            {triedDisliked.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm">👎</span>
-                  <span className="font-display font-700 text-sm" style={{ color: 'var(--t2)' }}>Didn't enjoy</span>
-                  <span className="text-xs font-body px-2 py-0.5 rounded-full" style={{ background: 'var(--s2)', color: 'var(--t3)', border: '1px solid var(--bdr-s)' }}>{triedDisliked.length}</span>
-                </div>
-                <div className="space-y-3 opacity-70">
-                  {triedDisliked.map(recipe => (
-                    <VaultRecipeCard key={recipe.id} recipe={recipe}
-                      onView={() => setSelectedRecipe(recipe)}
-                      onToggleFavorite={() => handleToggleFavorite(recipe.id)}
-                      onDelete={() => handleDelete(recipe.id)}
-                      onUpdateFeedback={(tried, rating) => handleUpdateFeedback(recipe.id, tried, rating)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         )}
       </div>
