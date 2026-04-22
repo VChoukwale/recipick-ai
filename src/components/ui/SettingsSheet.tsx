@@ -52,11 +52,18 @@ const ALL_CUISINES = [
   'Vietnamese', 'Ethiopian', 'Spanish', 'Turkish', 'Moroccan', 'Lebanese', 'Peruvian',
 ]
 
-function SectionHeader({ emoji, label, color }: { emoji: string; label: string; color: 'orange' | 'green' }) {
+const REACTIONS = [
+  { emoji: '💡', label: 'Suggestion' },
+  { emoji: '👍', label: 'Loving it' },
+  { emoji: '🐛', label: 'Bug' },
+  { emoji: '🤔', label: 'Question' },
+]
+
+function SectionHeader({ emoji, label, color }: { emoji: string; label: string; color: 'orange' | 'green' | 'purple' }) {
   return (
     <div className={`flex items-center gap-2 mb-3 pb-2 border-b ${color === 'orange' ? 'border-orange-100 dark:border-orange-900/30' : 'border-emerald-100 dark:border-emerald-900/30'}`}>
-      <span className={`text-sm w-6 h-6 rounded-lg flex items-center justify-center ${color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>{emoji}</span>
-      <span className={`font-display font-700 text-sm ${color === 'orange' ? 'text-orange-600 dark:text-orange-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{label}</span>
+      <span className={`text-sm w-6 h-6 rounded-lg flex items-center justify-center ${color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/30' : color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>{emoji}</span>
+      <span className={`font-display font-700 text-sm ${color === 'orange' ? 'text-orange-600 dark:text-orange-400' : color === 'purple' ? 'text-purple-600 dark:text-purple-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{label}</span>
     </div>
   )
 }
@@ -77,6 +84,13 @@ export default function SettingsSheet({ onClose }: Props) {
   const [fixingConflicts, setFixingConflicts] = useState(false)
   const prevDietaryRef = useRef<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
   const conflictRef = useRef<HTMLDivElement>(null)
+
+  // Feedback state
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackReaction, setFeedbackReaction] = useState('')
+  const [feedbackMessage, setFeedbackMessage] = useState('')
+  const [feedbackSending, setFeedbackSending] = useState(false)
+  const [feedbackDone, setFeedbackDone] = useState(false)
 
   useEffect(() => {
     if (profile) {
@@ -131,6 +145,25 @@ export default function SettingsSheet({ onClose }: Props) {
       .in('id', conflictItems.map(i => i.id))
     setFixingConflicts(false)
     setConflictItems([])
+  }
+
+  async function handleFeedbackSubmit() {
+    if (!feedbackMessage.trim()) return
+    setFeedbackSending(true)
+    await supabase.functions.invoke('send-feedback', {
+      body: {
+        reaction: feedbackReaction || null,
+        message: feedbackMessage.trim(),
+        user_name: profile?.display_name ?? user?.email?.split('@')[0] ?? 'User',
+        user_email: user?.email ?? null,
+        user_id: user?.id ?? null,
+      },
+    })
+    setFeedbackSending(false)
+    setFeedbackDone(true)
+    setFeedbackMessage('')
+    setFeedbackReaction('')
+    setTimeout(() => { setFeedbackDone(false); setFeedbackOpen(false) }, 2500)
   }
 
   async function handleSignOut() {
@@ -305,6 +338,74 @@ export default function SettingsSheet({ onClose }: Props) {
             }>
             {saving ? 'Saving…' : saved ? '✓ Preferences saved!' : 'Save preferences'}
           </button>
+
+          {/* Feedback */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+            <button
+              onClick={() => { setFeedbackOpen(o => !o); setFeedbackDone(false) }}
+              className="w-full flex items-center justify-between px-4 py-3.5 transition-opacity hover:opacity-80"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-xl flex items-center justify-center text-sm bg-purple-100 dark:bg-purple-900/30">💬</span>
+                <div className="text-left">
+                  <p className="font-display font-700 text-sm text-purple-600 dark:text-purple-400">Share Feedback</p>
+                  <p className="text-[11px] font-body" style={{ color: 'var(--t3)' }}>Suggestions, bugs, or just say hi</p>
+                </div>
+              </div>
+              <span className="text-xs transition-transform duration-200" style={{ color: 'var(--t3)', display: 'inline-block', transform: feedbackOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+            </button>
+
+            {feedbackOpen && (
+              <div className="px-4 pb-4 pt-1" style={{ borderTop: '1px solid var(--bdr-s)' }}>
+                {feedbackDone ? (
+                  <div className="py-4 text-center">
+                    <p className="text-2xl mb-1.5">🎉</p>
+                    <p className="font-display font-700 text-sm" style={{ color: 'var(--t1)' }}>Thanks so much!</p>
+                    <p className="text-xs font-body mt-0.5" style={{ color: 'var(--t3)' }}>Your feedback has been sent</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Reaction picker */}
+                    <div className="flex gap-2 mt-3 mb-3">
+                      {REACTIONS.map(r => (
+                        <button
+                          key={r.emoji}
+                          onClick={() => setFeedbackReaction(prev => prev === r.emoji ? '' : r.emoji)}
+                          className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border text-center transition-all"
+                          style={feedbackReaction === r.emoji
+                            ? { background: '#7c3aed18', borderColor: '#7c3aed50', boxShadow: '0 0 0 2px #7c3aed30' }
+                            : { background: 'var(--s1)', borderColor: 'var(--bdr-m)' }
+                          }
+                        >
+                          <span className="text-lg leading-none">{r.emoji}</span>
+                          <span className="text-[9px] font-display font-600" style={{ color: feedbackReaction === r.emoji ? '#7c3aed' : 'var(--t3)' }}>{r.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Message */}
+                    <textarea
+                      value={feedbackMessage}
+                      onChange={e => setFeedbackMessage(e.target.value)}
+                      placeholder="Tell us what you think, what's missing, or what you love…"
+                      rows={3}
+                      className="w-full text-sm font-body rounded-xl px-3 py-2.5 outline-none resize-none"
+                      style={{ background: 'var(--s1)', border: '1.5px solid var(--bdr-m)', color: 'var(--t1)' }}
+                    />
+
+                    <button
+                      onClick={handleFeedbackSubmit}
+                      disabled={!feedbackMessage.trim() || feedbackSending}
+                      className="w-full mt-2.5 py-2.5 rounded-xl font-display font-700 text-sm text-white transition-all disabled:opacity-40"
+                      style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', boxShadow: feedbackMessage.trim() ? '0 2px 10px rgba(124,58,237,0.30)' : 'none' }}
+                    >
+                      {feedbackSending ? 'Sending…' : 'Send feedback'}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Sign out */}
           <button onClick={handleSignOut}
