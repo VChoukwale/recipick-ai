@@ -287,7 +287,7 @@ export default function HomePage() {
     // Only pass recently-used ingredients when no specific focus is chosen (free exploration)
     const recentHeroes = safeFocus.length === 0 ? getRecentIngredients() : []
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 30000)
+      setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 60000)
     )
     const fetchPromise = supabase.functions.invoke('ai-chef', {
       body: {
