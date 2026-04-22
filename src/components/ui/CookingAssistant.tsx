@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useCookingAssistant } from '../../contexts/CookingAssistantContext'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -55,7 +56,7 @@ function renderMarkdown(text: string): React.ReactNode {
 }
 
 export default function CookingAssistant() {
-  const [open, setOpen] = useState(false)
+  const { open, setOpen } = useCookingAssistant()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -152,19 +153,6 @@ export default function CookingAssistant() {
 
   return (
     <>
-      {/* Floating action button — hidden when chat is open */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="absolute bottom-36 right-3 z-[45] w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-150"
-          style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)', boxShadow: '0 4px 16px rgba(232,113,58,0.45)' }}
-          title="Ask Chef Sage"
-          aria-label="Ask Chef Sage"
-        >
-          <span className="text-xl">👨‍🍳</span>
-        </button>
-      )}
-
       {/* Chat sheet */}
       {open && (
         <div className="absolute inset-0 z-50 flex flex-col justify-end">

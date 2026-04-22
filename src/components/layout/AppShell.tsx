@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import SettingsSheet from '../ui/SettingsSheet'
 import CookingAssistant from '../ui/CookingAssistant'
+import { CookingAssistantProvider } from '../../contexts/CookingAssistantContext'
 import { useTheme } from '../../hooks/useTheme'
 
 export default function AppShell() {
@@ -10,6 +11,7 @@ export default function AppShell() {
   const [showSettings, setShowSettings] = useState(false)
 
   return (
+    <CookingAssistantProvider>
     <div className="app-shell-outer min-h-screen flex items-start justify-center">
       {/* App card — elevated above the desktop gradient */}
       <div
@@ -54,5 +56,6 @@ export default function AppShell() {
 
       {showSettings && <SettingsSheet onClose={() => setShowSettings(false)} />}
     </div>
+    </CookingAssistantProvider>
   )
 }

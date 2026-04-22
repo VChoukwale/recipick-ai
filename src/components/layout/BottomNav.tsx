@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useCookingAssistant } from '../../contexts/CookingAssistantContext'
 
 const tabs = [
   { to: '/',        icon: '🏠', label: 'Home'    },
@@ -9,6 +10,8 @@ const tabs = [
 ]
 
 export default function BottomNav() {
+  const { open, setOpen } = useCookingAssistant()
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50"
@@ -28,25 +31,37 @@ export default function BottomNav() {
                   className="w-10 h-8 flex items-center justify-center rounded-xl transition-all duration-200"
                   style={isActive ? { background: 'rgba(232,113,58,0.10)' } : {}}
                 >
-                  <span
-                    className={`text-xl leading-none transition-transform duration-200 ${isActive ? 'scale-[1.15]' : 'scale-100'}`}
-                  >
+                  <span className={`text-xl leading-none transition-transform duration-200 ${isActive ? 'scale-[1.15]' : 'scale-100'}`}>
                     {icon}
                   </span>
                 </div>
-                <span
-                  className="text-[10px] font-display font-700 leading-none"
-                  style={{ color: isActive ? '#E8713A' : 'var(--t3)' }}
-                >
+                <span className="text-[10px] font-display font-700 leading-none" style={{ color: isActive ? '#E8713A' : 'var(--t3)' }}>
                   {label}
                 </span>
-                {isActive && (
-                  <div className="w-1 h-1 rounded-full mt-0.5" style={{ background: '#E8713A' }} />
-                )}
+                {isActive && <div className="w-1 h-1 rounded-full mt-0.5" style={{ background: '#E8713A' }} />}
               </>
             )}
           </NavLink>
         ))}
+
+        {/* Chef Sage — special action button, distinct from nav tabs */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex flex-col items-center justify-center px-3 gap-0.5 transition-all duration-150 min-w-0"
+        >
+          <div
+            className="w-10 h-8 flex items-center justify-center rounded-xl transition-all duration-200"
+            style={open ? { background: 'rgba(232,113,58,0.15)' } : {}}
+          >
+            <span className={`text-xl leading-none transition-transform duration-200 ${open ? 'scale-[1.15]' : 'scale-100'}`}>
+              👨‍🍳
+            </span>
+          </div>
+          <span className="text-[10px] font-display font-700 leading-none" style={{ color: open ? '#E8713A' : 'var(--t3)' }}>
+            Sage
+          </span>
+          {open && <div className="w-1 h-1 rounded-full mt-0.5" style={{ background: '#E8713A' }} />}
+        </button>
       </div>
     </nav>
   )
