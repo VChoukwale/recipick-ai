@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 
 interface Message {
@@ -8,6 +8,51 @@ interface Message {
 
 // Keep only last N turns to avoid hitting token limits
 const MAX_HISTORY = 10
+
+// Simple markdown renderer: bold (**text**), bullet lines (- ), numbered (1. )
+function renderMarkdown(text: string): React.ReactNode {
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim()
+
+    // Parse inline bold within a line
+    function parseBold(s: string): React.ReactNode[] {
+      const parts = s.split(/\*\*(.*?)\*\*/g)
+      return parts.map((part, idx) =>
+        idx % 2 === 1 ? <strong key={idx} className="font-700">{part}</strong> : part
+      )
+    }
+
+    // Bullet line
+    if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+      const content = trimmed.slice(2)
+      return (
+        <div key={i} className="flex gap-1.5 my-0.5">
+          <span className="flex-shrink-0 mt-0.5 text-xs opacity-60">•</span>
+          <span>{parseBold(content)}</span>
+        </div>
+      )
+    }
+
+    // Numbered list
+    if (/^\d+\.\s/.test(trimmed)) {
+      const match = trimmed.match(/^(\d+)\.\s(.*)$/)
+      if (match) {
+        return (
+          <div key={i} className="flex gap-1.5 my-0.5">
+            <span className="flex-shrink-0 font-700 text-xs opacity-70 mt-0.5">{match[1]}.</span>
+            <span>{parseBold(match[2])}</span>
+          </div>
+        )
+      }
+    }
+
+    // Empty line → small spacer
+    if (trimmed === '') return <div key={i} className="h-1.5" />
+
+    // Regular line
+    return <div key={i} className="my-0.5">{parseBold(trimmed)}</div>
+  })
+}
 
 export default function CookingAssistant() {
   const [open, setOpen] = useState(false)
@@ -202,13 +247,10 @@ export default function CookingAssistant() {
                       : { background: 'var(--s2)', border: '1px solid var(--bdr-s)', color: 'var(--t1)', borderRadius: '18px 18px 18px 4px' }
                     }
                   >
-                    {/* Render newlines properly */}
-                    {msg.content.split('\n').map((line, li) => (
-                      <span key={li}>
-                        {line}
-                        {li < msg.content.split('\n').length - 1 && <br />}
-                      </span>
-                    ))}
+                    {msg.role === 'assistant'
+                      ? renderMarkdown(msg.content)
+                      : msg.content
+                    }
                   </div>
                 </div>
               ))}
