@@ -31,11 +31,13 @@ DIETARY CONFLICT HANDLING (critical):
 VARIETY RULES (critical):
 - Each recipe MUST feature a DIFFERENT hero/star ingredient — never suggest two recipes built around the same main item.
 - Spread across at least 2 different cuisines when count >= 3, UNLESS cuisine_filter is set.
-- Explore the full pantry — don't fixate on the same 2-3 ingredients every time. Look at all available items.
+- Explore the FULL pantry — the user has many ingredients; treat the whole list as equally interesting. Do not default to the first few or most "obvious" pantry items.
 - If the request includes "excluded_recipes", those exact titles MUST NOT appear in your response. Suggest entirely fresh ideas.
-- If "disliked_recipes" is provided: NEVER suggest those titles again, AND avoid similar flavor profiles, cooking styles, or ingredient combinations that made the user dislike them. E.g. if user disliked a very spicy Sichuan dish, don't suggest another very spicy Sichuan dish.
-- If "liked_recipes" is provided: use these as signals for the user's taste preferences — lean toward similar cuisines, cooking styles, flavor profiles, or ingredient combinations they already enjoyed. Don't repeat the same dish, but let their taste history guide variety.
+- If "disliked_recipes" is provided: NEVER suggest those titles again, AND avoid similar flavor profiles, cooking styles, or ingredient combinations that made the user dislike them.
+- If "liked_recipes" is provided: use these as signals for the user's taste preferences — lean toward similar cuisines, cooking styles, flavor profiles. Don't repeat the same dish.
 - Aim for variety in cooking style too: e.g. one stir-fry, one curry, one grain bowl.
+- If "recently_used_ingredients" is provided: these were the hero/star ingredients in the last 2–3 recipe batches. You MUST NOT make any of them the hero of a new recipe. They can appear as minor supporting ingredients but NOT as the dish's main focus. This is the most important variety rule — the user wants to eat differently every day.
+- If "variety_seed" is provided (1–100): use it to decide which part of the pantry to explore. 1–25 → focus on grains, legumes, lentils, pulses. 26–50 → focus on vegetables, leafy greens, gourds, roots. 51–75 → focus on dairy, paneer, eggs (if allowed), cheese, yogurt-based dishes. 76–100 → focus on specialty, fermented, or international pantry items (miso, tahini, soy sauce, coconut milk, etc.). This helps you scan a fresh section of the pantry each call.
 
 FOCUS & FILTER RULES:
 - If "focus_ingredients" is provided (non-empty array): those ingredients MUST be the hero/star of every single recipe. e.g. focus=["matki"] → suggest matki bhel, misal pav, sprouted matki curry — matki is in every dish. Use other pantry items to complete the recipe.

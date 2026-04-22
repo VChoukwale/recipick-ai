@@ -160,6 +160,26 @@ export default function HomePage() {
     if (recipes.length > 0) sessionStorage.setItem('last-recipes', JSON.stringify({ recipes }))
   }, [recipes])
 
+  // Returns recently featured hero ingredients from localStorage (last 3 sessions × 3 recipes = up to 9)
+  function getRecentIngredients(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem('recent-hero-ingredients') ?? '[]')
+    } catch { return [] }
+  }
+
+  // After each AI response, store the hero ingredient of each recipe (first pantry ingredient or title keyword)
+  function trackRecentIngredients(newRecipes: AiRecipe[]) {
+    const heroes = newRecipes.map(r => {
+      const pantryHero = r.ingredients?.find(i => i.in_pantry)?.name
+      return pantryHero ?? r.title.split(' ')[0]
+    }).filter(Boolean)
+    try {
+      const prev: string[] = JSON.parse(localStorage.getItem('recent-hero-ingredients') ?? '[]')
+      const merged = [...heroes, ...prev].slice(0, 12) // keep last 12
+      localStorage.setItem('recent-hero-ingredients', JSON.stringify(merged))
+    } catch { /* ignore */ }
+  }
+
   useEffect(() => {
     if (profile) {
       setDayStatus(profile.day_status)
@@ -264,6 +284,8 @@ export default function HomePage() {
     const diet = profile?.dietary_preference ?? 'vegetarian'
     const safePantry = pantryItems.filter(i => !violatesDiet(i.name, diet)).map(i => i.name)
     const safeFocus = focusIngredientNames.filter(n => !violatesDiet(n, diet))
+    // Only pass recently-used ingredients when no specific focus is chosen (free exploration)
+    const recentHeroes = safeFocus.length === 0 ? getRecentIngredients() : []
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 30000)
     )
@@ -286,12 +308,15 @@ export default function HomePage() {
         excluded_recipes: [...excludedRecipes, ...dislikedTitles],
         liked_recipes: likedTitles,
         disliked_recipes: dislikedTitles,
+        recently_used_ingredients: recentHeroes,
+        variety_seed: Math.floor(Math.random() * 100) + 1,
       },
     })
     const { data, error: fnError } = await Promise.race([fetchPromise, timeoutPromise])
     if (fnError) throw fnError
     if (data?.error) throw new Error(data.error)
     const newRecipes: AiRecipe[] = data?.recipes ?? []
+    trackRecentIngredients(newRecipes)
     if (append) setRecipes(prev => [...prev, ...newRecipes])
     else setRecipes(newRecipes)
   }
