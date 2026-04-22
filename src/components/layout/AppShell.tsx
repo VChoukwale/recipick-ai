@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import SettingsSheet from '../ui/SettingsSheet'
+import CookingAssistant from '../ui/CookingAssistant'
 import { useTheme } from '../../hooks/useTheme'
 
 export default function AppShell() {
@@ -48,6 +49,7 @@ export default function AppShell() {
           <Outlet />
         </main>
         <BottomNav />
+        <CookingAssistant />
       </div>
 
       {showSettings && <SettingsSheet onClose={() => setShowSettings(false)} />}
