@@ -10,6 +10,7 @@ import PantryPage from './pages/PantryPage'
 import ShopPage from './pages/ShopPage'
 import RecipesPage from './pages/RecipesPage'
 import InboxPage from './pages/InboxPage'
+import PWAUpdateToast from './components/ui/PWAUpdateToast'
 
 // Guards /onboarding — must be signed in; redirects away if already onboarded
 function OnboardingRoute() {
@@ -35,6 +36,7 @@ function OnboardingRoute() {
 export default function App() {
   return (
     <AuthProvider>
+      <PWAUpdateToast />
       <BrowserRouter>
         <Routes>
           {/* Public */}

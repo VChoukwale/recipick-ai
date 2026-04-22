@@ -691,7 +691,9 @@ export default function HomePage() {
               ? <><span className="text-lg">⏳</span><span>Wait a moment…</span></>
               : focusIds.size > 0
                 ? <><span className="text-lg">⭐</span><span>Cook with {focusIngredientNames[0]}{focusIngredientNames.length > 1 ? ` +${focusIngredientNames.length - 1}` : ''}</span></>
-                : <><span className="text-lg">✨</span><span>What should I cook?</span></>
+                : (cuisine !== 'Any' || mood !== 'Any mood' || mealType || equipment.length > 0 || dishSearch.trim() || region)
+                  ? <><span className="text-lg">✨</span><span>Suggest recipes</span></>
+                  : <><span className="text-lg">✨</span><span>Cook for me</span></>
           }
         </button>
 

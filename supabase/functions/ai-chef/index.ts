@@ -26,7 +26,7 @@ DIETARY CONFLICT HANDLING (critical):
 - For "star_ingredient" mode: build recipes where that ingredient is the HERO.
 - For "regional" mode: suggest authentic regional recipes, not generic versions.
 - For each missing ingredient, suggest a culturally-appropriate substitution.
-- The "why_this" field should sound like a friend recommending food, not a database query.
+- The "why_this" field must be EXACTLY 2–3 short bullet lines joined by "\n" (newline). Each line is a practical, specific reason the recipe suits this user. Examples: "Uses your star ingredients well", "Ready in under 20 minutes", "High protein, great post-workout". No quotes, no dashes, no introductory sentence — just the bullets joined with \n.
 
 VARIETY RULES (critical):
 - Each recipe MUST feature a DIFFERENT hero/star ingredient — never suggest two recipes built around the same main item.
@@ -71,7 +71,7 @@ RESPONSE SCHEMA (return exactly this JSON, no markdown):
       "missing_ingredients": [{ "name": "string", "substitution": "string" }],
       "match_percentage": number,
       "instructions": ["step 1", "step 2"],
-      "why_this": "string"
+      "why_this": "bullet1\nbullet2\nbullet3"
     }
   ]
 }`

@@ -19,7 +19,7 @@ export default function AuthPage() {
       {/* Value props */}
       <div className="mb-10 space-y-3 w-full max-w-xs animate-slide-up">
         {[
-          { icon: '🥦', text: 'Vegetarian & vegan, always' },
+          { icon: '🍽️', text: 'Any diet — vegan, veggie, or anything' },
           { icon: '🌍', text: 'Regional cuisines from everywhere' },
           { icon: '✨', text: 'AI that knows your pantry' },
         ].map(({ icon, text }) => (

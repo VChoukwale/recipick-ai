@@ -58,8 +58,10 @@ So I built recipick.ai. It knows what you have, respects your dietary profile, u
 | 📖 **Recipe Vault** | Saved recipes in collapsible sections: Not tried yet / Tried & liked / Didn't enjoy. Filter by cuisine, difficulty, favorites. |
 | ⭐ **Favorites + Ratings** | Star to bookmark. Mark as tried, then rate 👍/👎. Ratings feed back into AI to improve future suggestions. |
 | 🛒 **Grocery Run** | Missing ingredients go to your grocery list in one tap. Voice input. Check off as you shop. |
-| ⚙️ **Diet & Profile** | Vegan, vegetarian, eggitarian, or non-vegetarian. Cooking skill level. Instant conflict detection across your pantry on change. |
-| 🌙 **Dark Mode + PWA** | Full dark mode. Installs on any device from the browser as a standalone app. |
+| ⚙️ **Diet & Profile** | Vegan, vegetarian, eggitarian, or non-vegetarian. Cooking skill, conflict detection on diet change. |
+| 📲 **PWA** | Installs from the browser on any device — no App Store, no friction. Auto-updates silently in background. |
+| 🌙 **Dark Mode** | Full dark theme with persistent preference per device. |
+| 💬 **In-App Feedback** | One-tap reaction + message form in Settings. Responses delivered straight to the developer. |
 
 ---
 
@@ -77,6 +79,7 @@ Every AI feature runs server-side via Supabase Edge Functions. The Anthropic API
 | `ai-categorize` | Claude Haiku | Auto-assigns pantry items to one of 16 categories with searchable AI tags. Runs silently after an item is added. |
 | `ai-pantry-chat` | Claude Haiku | Natural language pantry management ("I just bought tomatoes", "used up the milk"). Parses intent and updates the pantry. |
 | `ai-grocery-categorize` | Claude Haiku | Assigns grocery list items to store-section categories to help with physical shopping order. |
+| `send-feedback` | — (Resend API) | Saves in-app feedback to the database and emails it to the developer via Resend. |
 
 ### Key Prompt Engineering Decisions
 
@@ -130,6 +133,7 @@ supabase/migrations/001_initial_schema.sql
 supabase/migrations/002_supplements_category.sql
 supabase/migrations/003_recipe_inbox.sql
 supabase/migrations/004_grocery_list.sql
+supabase/migrations/005_feedback.sql
 ```
 
 ### 4. Google OAuth
@@ -152,7 +156,10 @@ npx supabase functions deploy ai-categorize --project-ref $PROJECT_REF --no-veri
 npx supabase functions deploy ai-extract-recipe --project-ref $PROJECT_REF --no-verify-jwt
 npx supabase functions deploy ai-pantry-chat --project-ref $PROJECT_REF --no-verify-jwt
 npx supabase functions deploy ai-grocery-categorize --project-ref $PROJECT_REF --no-verify-jwt
+npx supabase functions deploy send-feedback --project-ref $PROJECT_REF --no-verify-jwt
 ```
+
+Add `RESEND_API_KEY` as an additional secret in **Supabase → Edge Functions → Secrets** for the feedback email feature.
 
 Get your personal access token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens). Never commit it.
 
@@ -198,13 +205,28 @@ supabase/
 │   ├── ai-categorize/          # Auto-categorizes pantry items
 │   ├── ai-extract-recipe/      # Extracts recipe from URL / YouTube
 │   ├── ai-pantry-chat/         # Natural language pantry updates
-│   └── ai-grocery-categorize/  # Grocery list categorization
+│   ├── ai-grocery-categorize/  # Grocery list categorization
+│   └── send-feedback/          # In-app feedback → DB + email
 └── migrations/
     ├── 001_initial_schema.sql
     ├── 002_supplements_category.sql
     ├── 003_recipe_inbox.sql
-    └── 004_grocery_list.sql
+    ├── 004_grocery_list.sql
+    └── 005_feedback.sql
 ```
+
+---
+
+## Coming Soon
+
+Features planned for future releases:
+
+- **One-tap grocery → pantry** — check off items in the grocery list and they're automatically added to the pantry
+- **Meal planner** — plan breakfast/lunch/dinner for the week from your saved and AI recipes
+- **Auto-pantry from grocery** — importing a grocery haul rebuilds your pantry automatically
+- **Waste reduction tracker** — flag items nearing expiry, prompt quick-use recipe ideas
+- **Shareable recipe cards** — export a recipe as an image to share on social media
+- **Community vault** — discover recipes saved and loved by other users
 
 ---
 

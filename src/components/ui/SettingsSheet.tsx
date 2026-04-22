@@ -172,6 +172,7 @@ export default function SettingsSheet({ onClose }: Props) {
   }
 
   const initials = (profile?.display_name ?? user?.email ?? '?').slice(0, 2).toUpperCase()
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
@@ -191,14 +192,23 @@ export default function SettingsSheet({ onClose }: Props) {
             style={{ background: 'var(--s2)', color: 'var(--t3)' }}>✕</button>
         </div>
 
-        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
 
           {/* Account card */}
           <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)' }}>
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display font-800 text-base flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
-              {initials}
-            </div>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="avatar"
+                className="flex-shrink-0 rounded-full object-cover"
+                style={{ width: 56, height: 56, border: '2px solid #E8713A' }}
+              />
+            ) : (
+              <div className="flex-shrink-0 rounded-full flex items-center justify-center text-white font-display font-800 text-base"
+                style={{ width: 56, height: 56, border: '2px solid #E8713A', background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
+                {initials}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="font-display font-700 text-base leading-tight truncate" style={{ color: 'var(--t1)' }}>
                 {profile?.display_name || user?.email?.split('@')[0] || 'Chef'}
@@ -232,7 +242,7 @@ export default function SettingsSheet({ onClose }: Props) {
                   <button key={opt.value} onClick={() => setDietary(opt.value)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all"
                     style={active
-                      ? { background: '#16a34a10', borderColor: '#16a34a40', color: 'var(--t1)' }
+                      ? { background: '#16a34a10', borderColor: '#16a34a40', color: 'var(--t1)', borderLeftWidth: 3, borderLeftColor: '#16a34a' }
                       : { background: 'var(--s1)', borderColor: 'var(--bdr-m)', color: 'var(--t1)' }
                     }>
                     <span className={`text-xl w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${active ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-transparent'}`}>
@@ -344,6 +354,7 @@ export default function SettingsSheet({ onClose }: Props) {
             <button
               onClick={() => { setFeedbackOpen(o => !o); setFeedbackDone(false) }}
               className="w-full flex items-center justify-between px-4 py-3.5 transition-opacity hover:opacity-80"
+              style={feedbackOpen ? { background: '#7c3aed08' } : undefined}
             >
               <div className="flex items-center gap-2.5">
                 <span className="w-7 h-7 rounded-xl flex items-center justify-center text-sm bg-purple-100 dark:bg-purple-900/30">💬</span>
@@ -406,6 +417,11 @@ export default function SettingsSheet({ onClose }: Props) {
               </div>
             )}
           </div>
+
+          {/* Wordmark */}
+          <p className="text-center text-[10px] font-body" style={{ color: 'var(--t3)' }}>
+            recipick.ai · v1.0
+          </p>
 
           {/* Sign out */}
           <button onClick={handleSignOut}

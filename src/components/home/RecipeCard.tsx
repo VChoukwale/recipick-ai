@@ -90,7 +90,7 @@ export default function RecipeCard({ recipe, saved, onView, onSave }: Props) {
           </span>
         </div>
 
-        {/* Why this — editorial quote box */}
+        {/* Why this — bullet points */}
         <div
           className="rounded-xl px-3 py-2.5 mb-3"
           style={{
@@ -98,12 +98,20 @@ export default function RecipeCard({ recipe, saved, onView, onSave }: Props) {
             border: '1px solid rgba(232,113,58,0.08)',
           }}
         >
-          <p
-            className="text-[13px] font-body italic leading-relaxed"
-            style={{ color: 'var(--t2)' }}
-          >
-            "{recipe.why_this}"
-          </p>
+          {recipe.why_this.includes('\n') ? (
+            <ul className="space-y-0.5">
+              {recipe.why_this.split('\n').filter(Boolean).map((line, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-[12px] font-body leading-snug" style={{ color: 'var(--t2)' }}>
+                  <span style={{ color: '#E8713A', flexShrink: 0, marginTop: 1 }}>•</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[13px] font-body italic leading-relaxed" style={{ color: 'var(--t2)' }}>
+              "{recipe.why_this}"
+            </p>
+          )}
         </div>
 
         {/* Ingredient summary */}

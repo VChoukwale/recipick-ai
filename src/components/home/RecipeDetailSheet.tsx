@@ -108,9 +108,20 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
 
           {/* Why this */}
           <div className="bg-brand-50 dark:bg-brand-900/20 rounded-2xl px-4 py-3 mb-5">
-            <p className="text-sm font-body italic text-brand-700 dark:text-brand-300 leading-relaxed">
-              "{recipe.why_this}"
-            </p>
+            {recipe.why_this.includes('\n') ? (
+              <ul className="space-y-1">
+                {recipe.why_this.split('\n').filter(Boolean).map((line, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm font-body leading-snug text-brand-700 dark:text-brand-300">
+                    <span className="text-brand-500 flex-shrink-0 mt-0.5">•</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm font-body italic text-brand-700 dark:text-brand-300 leading-relaxed">
+                "{recipe.why_this}"
+              </p>
+            )}
           </div>
 
           {/* In pantry */}

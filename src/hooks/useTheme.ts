@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 export function useTheme() {
   const [dark, setDark] = useState(() => {
     const stored = localStorage.getItem('theme')
-    if (stored) return stored === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
+    // Default to light for new users regardless of system preference
+    return stored === 'dark'
   })
 
   useEffect(() => {

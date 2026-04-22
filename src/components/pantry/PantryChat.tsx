@@ -283,14 +283,19 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
               type="button"
               onClick={voiceSupported ? handleVoice : () => alert('Voice input is not supported in this browser. Try Chrome on Android or desktop.')}
               disabled={loading}
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-all active:scale-95"
+              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-all active:scale-95 ${listening ? 'animate-pulse' : ''}`}
               style={listening
-                ? { background: '#dc2626', boxShadow: '0 0 0 4px rgba(220,38,38,0.25)' }
-                : { background: 'var(--s1)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }
+                ? { background: '#dc2626', color: '#fff' }
+                : { background: 'var(--s1)', border: '1px solid var(--bdr-m)', color: '#E8713A' }
               }
               title={listening ? 'Stop listening' : 'Speak'}
             >
-              {listening ? '⏹' : '🎙'}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="2" width="6" height="11" rx="3" />
+                <path d="M5 10a7 7 0 0 0 14 0" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+                <line x1="8" y1="22" x2="16" y2="22" />
+              </svg>
             </button>
             <button
               type="submit"
