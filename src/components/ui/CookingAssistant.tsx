@@ -7,15 +7,33 @@ interface Message {
   content: string
 }
 
-// Keep only last N turns to avoid hitting token limits
 const MAX_HISTORY = 10
+
+function MicIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="8" y1="22" x2="16" y2="22" />
+    </svg>
+  )
+}
+
+function SendIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="5 12 12 5 19 12" />
+    </svg>
+  )
+}
 
 // Simple markdown renderer: bold (**text**), bullet lines (- ), numbered (1. )
 function renderMarkdown(text: string): React.ReactNode {
   return text.split('\n').map((line, i) => {
     const trimmed = line.trim()
 
-    // Parse inline bold within a line
     function parseBold(s: string): React.ReactNode[] {
       const parts = s.split(/\*\*(.*?)\*\*/g)
       return parts.map((part, idx) =>
@@ -23,7 +41,6 @@ function renderMarkdown(text: string): React.ReactNode {
       )
     }
 
-    // Bullet line
     if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
       const content = trimmed.slice(2)
       return (
@@ -34,7 +51,6 @@ function renderMarkdown(text: string): React.ReactNode {
       )
     }
 
-    // Numbered list
     if (/^\d+\.\s/.test(trimmed)) {
       const match = trimmed.match(/^(\d+)\.\s(.*)$/)
       if (match) {
@@ -47,13 +63,27 @@ function renderMarkdown(text: string): React.ReactNode {
       }
     }
 
-    // Empty line → small spacer
     if (trimmed === '') return <div key={i} className="h-1.5" />
 
-    // Regular line
     return <div key={i} className="my-0.5">{parseBold(trimmed)}</div>
   })
 }
+
+const capabilities = [
+  { icon: '🔪', label: 'Techniques' },
+  { icon: '🧄', label: 'Ingredients' },
+  { icon: '🔄', label: 'Substitutions' },
+  { icon: '🥘', label: 'Troubleshooting' },
+  { icon: '🌍', label: 'Cuisines' },
+  { icon: '🥗', label: 'Nutrition' },
+]
+
+const suggestedQuestions = [
+  'How do I sprout matki at home?',
+  'How to fix an over-salted curry?',
+  'Best substitute for buttermilk?',
+  'How long to soak chana dal?',
+]
 
 export default function CookingAssistant() {
   const { open, setOpen } = useCookingAssistant()
@@ -97,7 +127,6 @@ export default function CookingAssistant() {
       if (transcript) {
         setInput(transcript)
         setListening(false)
-        // Auto-send after voice
         setTimeout(() => sendMessage(transcript), 300)
       }
     }
@@ -119,7 +148,6 @@ export default function CookingAssistant() {
     setLoading(true)
 
     try {
-      // Send only last MAX_HISTORY messages as history (exclude the one we just added)
       const history = messages.slice(-MAX_HISTORY)
       const { data, error } = await supabase.functions.invoke('ai-cooking-assistant', {
         body: { message: msg, history },
@@ -144,16 +172,10 @@ export default function CookingAssistant() {
     }
   }
 
-  const suggestedQuestions = [
-    'How do I sprout matki at home?',
-    'How to fix an over-salted curry?',
-    'Best substitute for buttermilk?',
-    'How long to soak chana dal?',
-  ]
+  const canSend = input.trim().length > 0 && !loading
 
   return (
     <>
-      {/* Chat sheet */}
       {open && (
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
@@ -170,12 +192,24 @@ export default function CookingAssistant() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-2 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--bdr-s)' }}>
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-                  style={{ background: 'linear-gradient(135deg, #E8713A22, #E8713A11)', border: '1px solid #E8713A30' }}>
-                  👨‍🍳
+                {/* Gradient circle avatar matching FAB */}
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #E8713A, #D85F22)',
+                    boxShadow: '0 2px 10px rgba(232,113,58,0.40)',
+                  }}
+                >
+                  <span className="text-lg leading-none">👨‍🍳</span>
                 </div>
                 <div>
-                  <p className="font-display font-700 text-base leading-tight" style={{ color: 'var(--t1)' }}>Chef Sage</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-display font-700 text-base leading-tight" style={{ color: 'var(--t1)' }}>Chef Sage</p>
+                    <span
+                      className="text-[9px] font-display font-700 px-1.5 py-0.5 rounded-full leading-none"
+                      style={{ background: 'linear-gradient(135deg, #E8713A22, #E8713A33)', color: '#E8713A', border: '1px solid #E8713A40' }}
+                    >AI</span>
+                  </div>
                   <p className="text-[11px] font-body" style={{ color: 'var(--t3)' }}>Knows everything about cooking</p>
                 </div>
               </div>
@@ -189,11 +223,12 @@ export default function CookingAssistant() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
 
-              {/* Empty state with suggestions */}
+              {/* Empty state */}
               {messages.length === 0 && (
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4 pt-1">
+                  {/* Intro bubble */}
                   <div className="flex gap-2.5">
-                    <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm"
+                    <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm flex-shrink-0"
                       style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
                       <span className="text-xs">👨‍🍳</span>
                     </div>
@@ -205,15 +240,37 @@ export default function CookingAssistant() {
                     </div>
                   </div>
 
-                  <p className="text-xs font-display font-600 px-1" style={{ color: 'var(--t3)' }}>Try asking…</p>
+                  {/* Capability chips */}
+                  <div className="flex flex-wrap gap-2 px-0.5">
+                    {capabilities.map(c => (
+                      <div
+                        key={c.label}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display font-600"
+                        style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)' }}
+                      >
+                        <span>{c.icon}</span>
+                        <span>{c.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px" style={{ background: 'var(--bdr-s)' }} />
+                    <p className="text-xs font-display font-600" style={{ color: 'var(--t3)' }}>Try asking…</p>
+                    <div className="flex-1 h-px" style={{ background: 'var(--bdr-s)' }} />
+                  </div>
+
+                  {/* Suggested questions */}
                   <div className="space-y-2">
                     {suggestedQuestions.map(q => (
                       <button
                         key={q}
                         onClick={() => sendMessage(q)}
-                        className="w-full text-left text-sm font-body px-3.5 py-2.5 rounded-xl border transition-all hover:border-brand-300 active:scale-[0.98]"
+                        className="w-full text-left text-sm font-body px-3.5 py-2.5 rounded-xl border transition-all hover:border-brand-300 active:scale-[0.98] flex items-center gap-2"
                         style={{ background: 'var(--s2)', borderColor: 'var(--bdr-m)', color: 'var(--t2)' }}
                       >
+                        <span className="text-[11px] opacity-50">↗</span>
                         {q}
                       </button>
                     ))}
@@ -237,10 +294,7 @@ export default function CookingAssistant() {
                       : { background: 'var(--s2)', border: '1px solid var(--bdr-s)', color: 'var(--t1)', borderRadius: '18px 18px 18px 4px' }
                     }
                   >
-                    {msg.role === 'assistant'
-                      ? renderMarkdown(msg.content)
-                      : msg.content
-                    }
+                    {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
                   </div>
                 </div>
               ))}
@@ -248,9 +302,9 @@ export default function CookingAssistant() {
               {/* Typing indicator */}
               {loading && (
                 <div className="flex gap-2.5">
-                  <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-700 text-white"
+                  <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs text-white"
                     style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)' }}>
-                    K
+                    👨‍🍳
                   </div>
                   <div className="rounded-2xl px-4 py-3" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
                     <div className="flex gap-1 items-center h-4">
@@ -267,20 +321,26 @@ export default function CookingAssistant() {
 
             {/* Input bar */}
             <div className="flex-shrink-0 px-3 py-3" style={{ borderTop: '1px solid var(--bdr-s)' }}>
-              <div className="flex items-center gap-2 rounded-2xl px-3 py-2"
-                style={{ background: 'var(--s2)', border: '1px solid var(--bdr-m)' }}>
-                {/* Mic button */}
+              <div
+                className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-all"
+                style={{
+                  background: 'var(--s2)',
+                  border: listening ? '1.5px solid #ef4444' : '1.5px solid var(--bdr-m)',
+                }}
+              >
+                {/* Mic button — SVG icon */}
                 <button
                   type="button"
                   onClick={handleVoice}
                   className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                     listening
                       ? 'bg-red-500 text-white animate-pulse'
-                      : 'text-stone-400 hover:text-brand-500'
+                      : 'hover:bg-orange-50 dark:hover:bg-orange-950'
                   }`}
+                  style={{ color: listening ? '#fff' : '#E8713A' }}
                   title={listening ? 'Stop listening' : 'Speak your question'}
                 >
-                  🎤
+                  <MicIcon size={16} />
                 </button>
 
                 <input
@@ -294,16 +354,17 @@ export default function CookingAssistant() {
                   style={{ color: 'var(--t1)' }}
                 />
 
+                {/* Send button — more visible */}
                 <button
                   onClick={() => sendMessage()}
-                  disabled={!input.trim() || loading}
-                  className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm transition-all disabled:opacity-30"
-                  style={input.trim() && !loading
-                    ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff' }
-                    : { background: 'var(--s1)', color: 'var(--t3)' }
+                  disabled={!canSend}
+                  className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                  style={canSend
+                    ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', boxShadow: '0 2px 8px rgba(232,113,58,0.40)' }
+                    : { background: 'var(--s1)', color: 'var(--t3)', opacity: 0.4 }
                   }
                 >
-                  ↑
+                  <SendIcon />
                 </button>
               </div>
               <p className="text-center text-[10px] font-body mt-1.5" style={{ color: 'var(--t3)' }}>

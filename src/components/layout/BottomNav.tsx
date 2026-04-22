@@ -60,16 +60,27 @@ export default function BottomNav() {
                 ? 'linear-gradient(135deg, #E8713A, #D85F22)'
                 : 'linear-gradient(135deg, #F08248, #E8713A)',
               boxShadow: open
-                ? '0 0 0 4px rgba(232,113,58,0.25), 0 0 18px 6px rgba(232,113,58,0.45)'
-                : '0 0 0 3px rgba(232,113,58,0.18), 0 0 14px 4px rgba(232,113,58,0.30)',
-              transform: open ? 'scale(1.08)' : 'scale(1)',
+                ? '0 0 0 4px rgba(232,113,58,0.28), 0 0 22px 8px rgba(232,113,58,0.50)'
+                : '0 0 0 3px rgba(232,113,58,0.20), 0 0 16px 5px rgba(232,113,58,0.35)',
+              transform: open ? 'scale(1.10)' : 'scale(1)',
             }}
           >
             <span className="text-2xl leading-none" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.18))' }}>
               👨‍🍳
             </span>
+            {/* AI badge */}
+            <span
+              className="absolute -top-1 -right-1 text-[9px] font-display font-700 px-1 rounded-full leading-none flex items-center justify-center"
+              style={{
+                background: '#fff',
+                color: '#E8713A',
+                height: 14,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                border: '1px solid rgba(232,113,58,0.25)',
+              }}
+            >AI</span>
           </div>
-          <span className="text-[10px] font-display font-700 leading-none mt-1" style={{ color: open ? '#E8713A' : 'var(--t3)' }}>
+          <span className="text-[10px] font-display font-700 leading-none mt-1" style={{ color: '#E8713A' }}>
             Sage
           </span>
         </button>
