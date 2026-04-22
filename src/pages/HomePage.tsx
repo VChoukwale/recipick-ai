@@ -304,7 +304,7 @@ export default function HomePage() {
         mood_filter: mood !== 'Any mood' ? mood : null,
         meal_type_filter: mealType || null,
         equipment_filter: equipment.length > 0 ? equipment : null,
-        count: 5,
+        count: 3,
         excluded_recipes: [...excludedRecipes, ...dislikedTitles],
         liked_recipes: likedTitles,
         disliked_recipes: dislikedTitles,
