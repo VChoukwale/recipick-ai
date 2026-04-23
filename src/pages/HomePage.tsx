@@ -260,36 +260,51 @@ export default function HomePage() {
     const safeFocus = focusIngredientNames.filter(n => !violatesDiet(n, diet))
     // Only pass recently-used ingredients when no specific focus is chosen (free exploration)
     const recentHeroes = safeFocus.length === 0 ? getRecentIngredients() : []
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 60000)
-    )
-    const fetchPromise = supabase.functions.invoke('ai-chef', {
-      body: {
-        pantry_items: safePantry,
-        focus_ingredients: safeFocus,
-        dietary_preference: diet,
-        skill_level: profile?.skill_level ?? 'intermediate',
-        day_status: dayStatus,
-        busy_until_time: busyUntilTime || null,
-        preferred_cuisines: profile?.preferred_cuisines ?? [],
-        cuisine_filter: cuisine !== 'Any' ? cuisine : null,
-        region_filter: region || null,
-        dish_query: dishSearch.trim() || null,
-        mood_filter: mood !== 'Any mood' ? mood : null,
-        meal_type_filter: mealType || null,
-        equipment_filter: equipment.length > 0 ? equipment : null,
-        count: 3,
-        excluded_recipes: [...excludedRecipes, ...dislikedTitles],
-        liked_recipes: likedTitles,
-        disliked_recipes: dislikedTitles,
-        recently_used_ingredients: recentHeroes,
-        variety_seed: Math.floor(Math.random() * 100) + 1,
-      },
-    })
-    const { data, error: fnError } = await Promise.race([fetchPromise, timeoutPromise])
-    if (fnError) throw fnError
-    if (data?.error) throw new Error(data.error)
-    if (data?.validation_error) throw new Error('validation_failed')
+    const requestBody = {
+      pantry_items: safePantry,
+      focus_ingredients: safeFocus,
+      dietary_preference: diet,
+      skill_level: profile?.skill_level ?? 'intermediate',
+      day_status: dayStatus,
+      busy_until_time: busyUntilTime || null,
+      preferred_cuisines: profile?.preferred_cuisines ?? [],
+      cuisine_filter: cuisine !== 'Any' ? cuisine : null,
+      region_filter: region || null,
+      dish_query: dishSearch.trim() || null,
+      mood_filter: mood !== 'Any mood' ? mood : null,
+      meal_type_filter: mealType || null,
+      equipment_filter: equipment.length > 0 ? equipment : null,
+      count: 3,
+      excluded_recipes: [...excludedRecipes, ...dislikedTitles],
+      liked_recipes: likedTitles,
+      disliked_recipes: dislikedTitles,
+      recently_used_ingredients: recentHeroes,
+      variety_seed: Math.floor(Math.random() * 100) + 1,
+    }
+
+    async function invoke() {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new DOMException('Timeout', 'AbortError')), 60000)
+      )
+      const { data, error: fnError } = await Promise.race([
+        supabase.functions.invoke('ai-chef', { body: requestBody }),
+        timeout,
+      ])
+      if (fnError) throw fnError
+      if (data?.error) throw new Error(data.error)
+      if (data?.validation_error) throw new Error('validation_failed')
+      return data
+    }
+
+    let data: { recipes?: AiRecipe[] }
+    try {
+      data = await invoke()
+    } catch (err) {
+      // Don't retry validation failures — retry once on transient errors
+      if (err instanceof Error && err.message === 'validation_failed') throw err
+      await new Promise(r => setTimeout(r, 2000))
+      data = await invoke()
+    }
     const newRecipes: AiRecipe[] = data?.recipes ?? []
     trackRecentIngredients(newRecipes)
     if (append) setRecipes(prev => [...prev, ...newRecipes])
@@ -420,7 +435,7 @@ export default function HomePage() {
                   style={{ color: 'var(--t1)' }}>
                   <span style={{ color: 'var(--t3)' }}>↳</span>
                   <span>Region</span>
-                  {region && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{region}</span>}
+                  {region && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#50705022', color: '#507050' }}>{region}</span>}
                   <span className="ml-auto text-[12px]">{showRegion ? '▲' : '▼'}</span>
                 </button>
                 {showRegion && (
@@ -429,14 +444,14 @@ export default function HomePage() {
                       <button onClick={() => setRegion('')}
                         className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                         style={region === ''
-                          ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                          ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
                           : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
                         }>Any</button>
                       {REGIONS[cuisine].map(r => (
                         <button key={r} onClick={() => setRegion(region === r ? '' : r)}
                           className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                           style={region === r
-                            ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
+                            ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
                             : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
                           }>{r}</button>
                       ))}
@@ -454,7 +469,7 @@ export default function HomePage() {
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
               style={{ color: 'var(--t1)' }}>
               <span>Mood</span>
-              {mood !== 'Any mood' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#50705022', color: '#507050' }}>{mood}</span>}
+              {mood !== 'Any mood' && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{mood}</span>}
               <span className="ml-auto text-[12px]">{showMood ? '▲' : '▼'}</span>
             </button>
             {showMood && (
@@ -464,7 +479,7 @@ export default function HomePage() {
                     <button key={m} onClick={() => setMood(mood === m ? 'Any mood' : m)}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={mood === m
-                        ? { background: '#507050', border: '1px solid #507050', color: '#fff', boxShadow: '0 2px 10px rgba(80,112,80,0.30)' }
+                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
                         : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
                       }>{m}</button>
                   ))}
@@ -480,7 +495,7 @@ export default function HomePage() {
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
               style={{ color: 'var(--t1)' }}>
               <span>Meal Type</span>
-              {mealType && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{MEAL_TYPES.find(mt => mt.value === mealType)?.label}</span>}
+              {mealType && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{MEAL_TYPES.find(mt => mt.value === mealType)?.label}</span>}
               <span className="ml-auto text-[12px]">{showMealType ? '▲' : '▼'}</span>
             </button>
             {showMealType && (
@@ -490,7 +505,7 @@ export default function HomePage() {
                     <button key={mt.value} onClick={() => setMealType(mealType === mt.value ? '' : mt.value)}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={mealType === mt.value
-                        ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
+                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
                         : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
                       }>{mt.label}</button>
                   ))}
@@ -506,7 +521,7 @@ export default function HomePage() {
               className="flex items-center gap-1.5 w-full text-left text-[10px] font-display font-700 uppercase tracking-widest mb-0"
               style={{ color: 'var(--t1)' }}>
               <span>Equipment</span>
-              {equipment.length > 0 && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#7c5cbf22', color: '#7c5cbf' }}>{equipment.length} selected</span>}
+              {equipment.length > 0 && <span className="normal-case font-500 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#E8713A22', color: '#E8713A' }}>{equipment.length} selected</span>}
               <span className="ml-auto text-[12px]">{showEquipment ? '▲' : '▼'}</span>
             </button>
             {showEquipment && (
@@ -518,7 +533,7 @@ export default function HomePage() {
                       onClick={() => setEquipment(prev => active ? prev.filter(e => e !== eq.value) : [...prev, eq.value])}
                       className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-display font-600 transition-all duration-150 active:scale-95 whitespace-nowrap"
                       style={active
-                        ? { background: '#7c5cbf', border: '1px solid #7c5cbf', color: '#fff', boxShadow: '0 2px 10px rgba(124,92,191,0.30)' }
+                        ? { background: '#E8713A', border: '1px solid #E8713A', color: '#fff', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }
                         : { background: 'var(--s2)', border: '1px solid var(--bdr-m)', color: 'var(--t2)', boxShadow: 'var(--shd-sm)' }
                       }>{eq.label}</button>
                   )
