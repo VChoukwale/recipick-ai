@@ -61,23 +61,59 @@ recipick.ai started as a simple pantry-based recipe idea and grew into a full pr
 
 ## Screenshots
 
-### 🏠 Home & Recipe Generation
-![Home](./docs/screens/home.png)
+### 🏠 Home Page
 
-### 🥕 Pantry Management
-![Pantry](./docs/screens/pantry.png)
+<table>
+  <tr>
+    <td align="center"><img src="./docs/screens/home/light-theme.jpeg" width="210"/></td>
+    <td align="center"><img src="./docs/screens/home/suggest-recipes.jpeg" width="210"/></td>
+    <td align="center"><img src="./docs/screens/home/suggested-recipe.jpeg" width="210"/></td>
+  </tr>
+  <tr>
+    <td align="center">Light theme</td>
+    <td align="center">Filters & cuisine</td>
+    <td align="center">Recipe results</td>
+  </tr>
+</table>
 
-### 🍽️ Recipe Results
-![Recipes](./docs/screens/recipes.png)
+### 🧺 Pantry
 
-### 📥 Recipe Inbox
-![Inbox](./docs/screens/inbox.png)
+<table>
+  <tr>
+    <td align="center"><img src="./docs/screens/pantry/pantry-page.jpeg" width="210"/></td>
+    <td align="center"><img src="./docs/screens/pantry/pantry-assistant.jpeg" width="210"/></td>
+  </tr>
+  <tr>
+    <td align="center">Pantry overview</td>
+    <td align="center">Pantry Assistant (AI)</td>
+  </tr>
+</table>
 
-### ⭐ Saved Recipes (Vault)
-![Vault](./docs/screens/vault.png)
+### 🛒 Grocery List &nbsp;&nbsp; 📖 Recipe Vault &nbsp;&nbsp; 📥 Recipe Inbox
 
-### 🛒 Grocery List
-![Grocery](./docs/screens/grocery.png)
+<table>
+  <tr>
+    <td align="center"><img src="./docs/screens/shop/grocery-list.jpeg" width="210"/></td>
+    <td align="center"><img src="./docs/screens/recipes/recipe-vault.jpeg" width="210"/></td>
+    <td align="center"><img src="./docs/screens/inbox/recipe-inbox.jpeg" width="210"/></td>
+  </tr>
+  <tr>
+    <td align="center">Grocery Run</td>
+    <td align="center">Recipe Vault</td>
+    <td align="center">Recipe Inbox</td>
+  </tr>
+</table>
+
+### 🧑‍🍳 Chef Sage
+
+<table>
+  <tr>
+    <td align="center"><img src="./docs/screens/sage/sage-assistant.jpeg" width="210"/></td>
+  </tr>
+  <tr>
+    <td align="center">AI cooking assistant — available on every page</td>
+  </tr>
+</table>
 
 ---
 
