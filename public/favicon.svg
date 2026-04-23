@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#E8713A"/>
-  <text x="32" y="44" font-size="36" text-anchor="middle" font-family="sans-serif">🥘</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="22" fill="#E8713A"/>
+  <!-- Pan body ring -->
+  <circle cx="43" cy="57" r="27" fill="white"/>
+  <!-- Pan interior -->
+  <circle cx="43" cy="57" r="20" fill="#D4622D"/>
+  <!-- Handle -->
+  <rect x="68" y="52" width="24" height="10" rx="5" fill="white"/>
 </svg>
