@@ -170,9 +170,8 @@ export default function CookingAssistant() {
   }
 
   function goToHome(dish: string) {
-    localStorage.setItem('sage_dish_search', dish)
     setOpen(false)
-    navigate('/')
+    navigate(`/?dish=${encodeURIComponent(dish)}`)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {

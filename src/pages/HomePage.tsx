@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { DayStatus, AiRecipe } from '../types/database'
@@ -113,6 +114,7 @@ interface PantryChip { id: string; name: string; is_star_ingredient: boolean }
 
 export default function HomePage() {
   const { user, profile } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [dayStatus, setDayStatus] = useState<DayStatus>('home_all_day')
   const [busyUntilTime, setBusyUntilTime] = useState('')
   const [recipes, setRecipes] = useState<AiRecipe[]>([])
@@ -158,12 +160,12 @@ export default function HomePage() {
 
   // Pre-fill dish search if navigated here from Chef Sage redirect
   useEffect(() => {
-    const pending = localStorage.getItem('sage_dish_search')
-    if (pending) {
-      setDishSearch(pending)
-      localStorage.removeItem('sage_dish_search')
+    const dish = searchParams.get('dish')
+    if (dish) {
+      setDishSearch(dish)
+      setSearchParams({}, { replace: true })
     }
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
     if (recipes.length > 0) sessionStorage.setItem('last-recipes', JSON.stringify({ recipes }))
