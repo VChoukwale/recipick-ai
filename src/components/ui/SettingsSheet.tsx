@@ -1,4 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { DietaryPreference, SkillLevel } from '../../types/database'
@@ -84,6 +89,28 @@ export default function SettingsSheet({ onClose }: Props) {
   const [fixingConflicts, setFixingConflicts] = useState(false)
   const prevDietaryRef = useRef<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
   const conflictRef = useRef<HTMLDivElement>(null)
+
+  // Install state
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as Window & { MSStream?: unknown }).MSStream
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e as BeforeInstallPromptEvent) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = useCallback(async () => {
+    if (isIOS) { setShowIOSInstructions(o => !o); return }
+    if (!deferredPrompt) return
+    await deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') setDeferredPrompt(null)
+  }, [isIOS, deferredPrompt])
+
+  const showInstallOption = !isInstalled && (isIOS || !!deferredPrompt)
 
   // Feedback state
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -417,6 +444,49 @@ export default function SettingsSheet({ onClose }: Props) {
               </div>
             )}
           </div>
+
+          {/* Install App */}
+          {showInstallOption && (
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+              <button
+                onClick={handleInstall}
+                className="w-full flex items-center justify-between px-4 py-3.5 transition-opacity hover:opacity-80"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-xl flex items-center justify-center text-sm bg-orange-100 dark:bg-orange-900/30">📲</span>
+                  <div className="text-left">
+                    <p className="font-display font-700 text-sm text-orange-600 dark:text-orange-400">Install App</p>
+                    <p className="text-[11px] font-body" style={{ color: 'var(--t3)' }}>
+                      {isIOS ? 'Add to your Home Screen' : 'Add recipick.ai to your Home Screen'}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs transition-transform duration-200" style={{ color: 'var(--t3)', display: 'inline-block', transform: showIOSInstructions ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+              </button>
+
+              {isIOS && showIOSInstructions && (
+                <div className="px-4 pb-4 pt-1" style={{ borderTop: '1px solid var(--bdr-s)' }}>
+                  <p className="text-xs font-body mb-3 mt-2" style={{ color: 'var(--t3)' }}>
+                    Safari doesn't show an install popup — follow these steps:
+                  </p>
+                  <div className="space-y-2.5">
+                    {[
+                      { step: '1', text: 'Tap the Share button', detail: '(the □↑ icon at the bottom of Safari)' },
+                      { step: '2', text: 'Scroll down and tap', detail: '"Add to Home Screen"' },
+                      { step: '3', text: 'Tap Add', detail: 'in the top-right corner to confirm' },
+                    ].map(({ step, text, detail }) => (
+                      <div key={step} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-display font-800 text-white" style={{ background: '#E8713A' }}>{step}</span>
+                        <p className="text-xs font-body leading-relaxed" style={{ color: 'var(--t1)' }}>
+                          {text} <span style={{ color: 'var(--t3)' }}>{detail}</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Wordmark */}
           <p className="text-center text-[10px] font-body" style={{ color: 'var(--t3)' }}>
