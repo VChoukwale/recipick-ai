@@ -67,16 +67,47 @@ Secondary framing (less prominent in UI): recipick.ai also reduces food waste. S
 
 ## Architecture
 
-```
-Browser (React PWA)
-    ↓
-Supabase JS Client
-    ↓
-Supabase Postgres (RLS)   ←→   Supabase Edge Functions (Deno)
-                                        ↓
-                               Anthropic Claude Haiku API
-                                        ↓
-                               (send-feedback only) Resend API
+```mermaid
+flowchart TD
+    Browser["🌐 Browser · React PWA\nReact 18 · TypeScript · Vite\nInstallable on Android & iOS"]
+
+    subgraph SUPA["☁️  Supabase"]
+        DB[("🗄️  Postgres\nRow Level Security\nAll tables scoped to user_id")]
+        subgraph EF["⚡  Edge Functions · Deno Runtime"]
+            chef["🍳 ai-chef\nRecipe engine"]
+            sage["🧑‍🍳 ai-cooking-assistant\nChef Sage"]
+            extract["📥 ai-extract-recipe\nURL & YouTube"]
+            cat["🏷️ ai-categorize\nPantry tagging"]
+            chat["💬 ai-pantry-chat\nNLP updates"]
+            grocery["🛒 ai-grocery-categorize\nStore sections"]
+            fb["📧 send-feedback\nDB + email"]
+        end
+    end
+
+    subgraph EXT["External APIs"]
+        Claude["🤖 Claude Haiku\nAnthropic API"]
+        Resend["📨 Resend API\nFeedback emails only"]
+    end
+
+    Browser -- "Supabase JS Client\nauth · DB reads/writes" --> DB
+    Browser -- "functions.invoke()" --> EF
+    EF -- "read / write" --> DB
+    chef & sage & extract & cat & chat & grocery --> Claude
+    fb --> Resend
+
+    style Browser fill:#E8713A,color:#fff,stroke:#c45e28,stroke-width:2px
+    style DB fill:#3ECF8E,color:#fff,stroke:#2bb87a,stroke-width:2px
+    style SUPA fill:#3ECF8E11,stroke:#3ECF8E,stroke-width:2px
+    style EF fill:#6B4FBB22,stroke:#6B4FBB,stroke-width:1px
+    style chef fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style sage fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style extract fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style cat fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style chat fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style grocery fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style fb fill:#6B4FBB,color:#fff,stroke:#5a3fa0
+    style Claude fill:#191919,color:#fff,stroke:#444
+    style Resend fill:#191919,color:#fff,stroke:#444
 ```
 
 The Anthropic API key never reaches the browser. All AI calls are proxied through Supabase Edge Functions. The React client only holds the Supabase anon key, which is safe to expose (RLS enforces user-level access).
