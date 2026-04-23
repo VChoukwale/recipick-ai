@@ -1,32 +1,64 @@
 # recipick.ai — Technical Design Document
 
-> Last updated: April 2026  
-> Author: Vaishnavi Choukwale  
+> Last updated: April 2026
+> Author: Vaishnavi Choukwale
 > Live: [recipickai.vercel.app](https://recipickai.vercel.app)
 
 ---
 
-## 1. Project Overview
+## Problem
 
-recipick.ai is a mobile-first, AI-powered recipe recommendation app that works backwards from your pantry. It supports four dietary profiles (vegan, vegetarian, eggitarian, non-vegetarian), understands regional cuisines globally, and uses a multi-layer variety engine to ensure suggestions feel fresh each day.
-
-The core thesis: **most recipe apps show you what to cook in an ideal world. recipick.ai shows you what you can cook right now, with what you have.**
+People stand in front of a full fridge and don't know what to cook. Existing recipe apps show aspirational dishes that need 10 ingredients you don't have. Vegetarian and vegan apps exist, but few handle eggitarians, non-vegetarians, or mid-session diet switching cleanly. And recipe variety degrades fast — left unchecked, any AI will suggest the same 5 dishes on repeat.
 
 ---
 
-## 2. Problem Statement
+## Product Thinking
 
-- People stare at a full pantry and don't know what to cook.
-- Existing apps show aspirational recipes requiring 10+ missing ingredients.
-- Vegetarian/vegan apps exist, but few handle eggitarians, non-vegetarians, or diet-switching cleanly.
-- Recipe variety degrades fast — the AI tends to suggest the same 5 dishes if not explicitly steered.
-- Pantry management is tedious — voice + NLP makes it conversational instead.
+The core thesis: **show what you can cook right now, with what you have.**
+
+Everything else follows from that:
+- Pantry-first, not recipe-first. The AI never suggests something you're missing half the ingredients for.
+- Dietary rules are hard constraints, not suggestions. Vegan means no animal products, ever — including items left over in the pantry from before a diet change.
+- Variety is engineered, not hoped for. If the app suggests palak paneer three days in a row, users stop trusting it. The variety engine tracks hero ingredients across sessions and actively steers the AI away from repetition.
+- Convenience over perfection. Substitutions for missing ingredients, quick-mode for late nights, voice input everywhere — the app should feel effortless, not like a chore.
+
+Secondary framing (less prominent in UI): recipick.ai also reduces food waste. Surfacing recipes built around what you already have — especially starred or near-expiry items — nudges users toward using existing stock before buying more.
 
 ---
 
-## 3. Architecture
+## Core Flows
 
-### High-Level
+### Recipe Generation
+
+1. User sets optional context: energy level, cuisine, mood, meal type, equipment, focus ingredient.
+2. App calls `ai-chef` edge function with full pantry, filters, dietary profile, and variety data.
+3. Claude returns 3 structured recipes ranked by pantry match %.
+4. User taps a card → full recipe sheet with ingredients, instructions, match breakdown.
+5. Missing ingredients can be added to the grocery list in one tap.
+
+### Pantry Management
+
+- Add manually, by voice, or via natural language chat ("I just bought tomatoes and spinach").
+- `ai-categorize` runs async on each new item — assigns category and searchable AI tags.
+- `ai-pantry-chat` parses freeform intent into structured `{ add, mark_unavailable, remove }` actions.
+- Star an ingredient to always build recipes around it. Toggle availability without deleting.
+
+### Chef Sage
+
+- Global AI cooking assistant, accessible from any page via the bottom nav.
+- Handles techniques, substitutions, storage, food science, nutrition, equipment.
+- Role boundary enforced in the system prompt: recipe requests are redirected to the Home tab. Chef Sage never generates recipe lists.
+- Multi-turn — conversation history is passed on each request.
+
+### Recipe Inbox
+
+- User pastes any URL or YouTube link.
+- `ai-extract-recipe` fetches the page (or YouTube transcript) and returns a structured recipe.
+- Each ingredient is scored against the user's pantry. Save to vault in one tap.
+
+---
+
+## Architecture
 
 ```
 Browser (React PWA)
@@ -40,177 +72,28 @@ Supabase Postgres (RLS)   ←→   Supabase Edge Functions (Deno)
                                (send-feedback only) Resend API
 ```
 
-### Technology Stack
+The Anthropic API key never reaches the browser. All AI calls are proxied through Supabase Edge Functions. The React client only holds the Supabase anon key, which is safe to expose (RLS enforces user-level access).
 
-| Layer | Technology |
+### Database
+
+All tables use Row Level Security scoped to `auth.uid() = user_id`.
+
+| Table | Purpose |
 |---|---|
-| Frontend | React 18, TypeScript 5, Vite 5, Tailwind CSS v3 |
-| Auth | Supabase Google OAuth + session management |
-| Database | Supabase Postgres + Row Level Security |
-| AI | Anthropic Claude Haiku (claude-haiku-4-5-20251001) |
-| Edge Functions | Supabase Edge Functions (Deno runtime) |
-| Email | Resend API (feedback notifications only) |
-| PWA | vite-plugin-pwa, Service Worker, standalone mode |
-| Deployment | Vercel (auto-deploy on push to main) |
+| `profiles` | Dietary preference, cooking skill, onboarding state |
+| `pantry_items` | User ingredients with category, availability, AI tags, star flag |
+| `saved_recipes` | AI-generated and URL-extracted recipes with ratings and tried status |
+| `grocery_items` | Shopping list items with store-section categories |
+| `feedback` | In-app reactions and messages |
 
 ---
 
-## 4. Database Schema
-
-### `profiles`
-User profile created on first sign-in. Linked to `auth.users` via `id`.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | FK → auth.users |
-| display_name | text | |
-| dietary_preference | text | vegan / vegetarian / vegetarian_with_eggs / non_vegetarian |
-| cooking_skill | text | beginner / intermediate / advanced |
-| onboarding_completed | boolean | |
-
-### `pantry_items`
-Every ingredient the user tracks.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | |
-| user_id | uuid | FK → profiles |
-| name | text | |
-| category | text | 16 categories |
-| is_available | boolean | false = "out of stock" |
-| is_favorite | boolean | Show in Favorites section |
-| is_star_ingredient | boolean | Always builds recipes around this |
-| ai_tags | text[] | Searchable tags assigned by ai-categorize |
-
-### `saved_recipes`
-Recipes saved from AI Chef or extracted from URLs.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | |
-| user_id | uuid | |
-| title | text | |
-| description | text | |
-| cuisine_type | text | |
-| region_detail | text | Sub-region (e.g. "Maharashtra") |
-| ingredients | jsonb | Array of {name, quantity, in_pantry} |
-| instructions | text[] | |
-| difficulty | text | easy / medium / hard |
-| time_minutes | int | |
-| match_percentage | int | |
-| is_favorite | boolean | |
-| tried_status | text | not_tried / liked / disliked |
-| source | text | ai_generated / url_extracted / manual |
-| source_url | text | Original URL if extracted |
-| why_this | text | 2–3 bullet lines joined by \n |
-| substitutions | jsonb | |
-
-### `grocery_items`
-Items to buy, derived from missing recipe ingredients.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | |
-| user_id | uuid | |
-| name | text | |
-| category | text | Store section (produce, dairy, etc.) |
-| is_checked | boolean | |
-| source_recipe | text | Recipe the item came from |
-
-### `feedback`
-In-app feedback submissions.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | |
-| user_id | uuid | FK → profiles |
-| user_name | text | |
-| user_email | text | |
-| reaction | text | 💡 👍 🐛 🤔 |
-| message | text | |
-| created_at | timestamptz | |
-
-All tables use **Row Level Security** — users can only access their own rows.
-
----
-
-## 5. Pages & Features
-
-### Home (`/`)
-The AI Chef — the core value proposition.
-
-**User flow:**
-1. User selects optional filters: energy level (icons), cuisine, mood, meal type, equipment.
-2. Taps "Cook for me" (no filters) or "Suggest recipes" (with filters active) or "Cook with [item]" (star ingredient selected).
-3. App calls `ai-chef` edge function with full pantry, filters, user profile, variety data.
-4. 3 recipe cards returned — sorted by match percentage.
-5. Tap a card → RecipeDetailSheet (full recipe, pantry match breakdown, instructions, save/grocery options).
-
-**Variety engine (localStorage):**
-- `recently_used_ingredients` — tracks hero ingredients from last 3 batches (max 12 items). Passed to ai-chef as exclusion list.
-- `variety_seed` — random 1–100 per call, steers ai-chef toward a different pantry section each call.
-- `excluded_recipes` — titles from current session used for "Get more ideas" button.
-
-**Day status:**
-- Idle / Cooking now / Busy until [time] / Late night — affects recipe suggestions (e.g. late night → under 20 min).
-
-### Pantry (`/pantry`)
-Full ingredient management.
-
-- 16 categories with collapsible sections.
-- Star ingredient toggle (always cook around this).
-- Availability toggle (in stock / out of stock).
-- PantryChat — conversational NLP pantry updates via voice or text. "I just bought potatoes and onions" → AI parses intent, adds to pantry, auto-categorizes async.
-- Search with voice input.
-
-### Grocery (`/shop`)
-Shopping list.
-
-- Add items manually or from missing ingredients on any recipe.
-- Mic inside the search field (voice input).
-- ai-grocery-categorize assigns store sections.
-- Check off as you shop.
-
-### Recipe Vault (`/recipes`)
-All saved recipes.
-
-- 3 collapsible sections: Not tried yet / Tried & liked / Didn't enjoy.
-- Filter by cuisine, difficulty, favorites.
-- Thumb up/down rating updates tried_status and feeds back into ai-chef preferences.
-
-### Inbox (`/inbox`)
-Paste any recipe URL or YouTube link.
-
-- `ai-extract-recipe` extracts structured recipe + scores against pantry.
-- One-tap save to vault.
-- Shows source URL with link for reference.
-
-### Chef Sage (global overlay)
-AI cooking knowledge chatbot — present on every page via bottom nav center button.
-
-- **Role boundary**: handles cooking techniques, substitutions, storage, food science, nutrition, equipment. If asked "what should I cook?" or "suggest me recipes", it redirects: *"For personalised recipes matched to your pantry, tap the 🏠 Home tab — the AI Chef there knows exactly what you have!"* It never generates recipe lists.
-- Multi-turn conversation with history passed on each request.
-- Voice input (Web Speech API).
-- Styled as a raised orange circle in bottom nav — visually distinct from navigation items.
-
-### Settings (sheet)
-- Edit display name, dietary preference, cooking skill.
-- Dark/light theme toggle (persists to localStorage, defaults to light for new users).
-- In-app feedback form: pick reaction (💡 👍 🐛 🤔), write message, submit. Saves to `feedback` table and emails developer via Resend.
-
-### Auth (`/auth`)
-Google OAuth sign-in only. Value props displayed: "Any diet — vegan, veggie, or anything", "Regional cuisines from everywhere", "AI that knows your pantry".
-
-### Onboarding (`/onboarding`)
-3-step flow: diet profile → cooking skill → add first pantry items. Sets `onboarding_completed = true` on profile.
-
----
-
-## 6. AI Edge Functions
+## AI Pipeline
 
 ### `ai-chef` — Recipe Engine
 
-**Input:**
+**Input (key fields):**
+
 ```json
 {
   "pantry_items": ["tomatoes", "paneer", "..."],
@@ -232,131 +115,108 @@ Google OAuth sign-in only. Value props displayed: "Any diet — vegan, veggie, o
 }
 ```
 
-**Output:** 3 structured recipes with match %, missing ingredients + substitutions, step-by-step instructions, and `why_this` (2–3 bullet lines as a `\n`-joined string).
+**Output:** 3 structured recipes with `match_percentage`, `missing_ingredients` + substitutions, step-by-step `instructions`, and `why_this` (2–3 practical bullet lines joined by `\n`).
 
 **Key prompt rules:**
-- Dietary safety as absolute rules at top of prompt (hard constraints).
-- Plant-based products and masala spice packets always safe regardless of diet.
-- `recently_used_ingredients` → hard exclusion from hero role.
-- `variety_seed` 1–25 → grains/legumes, 26–50 → vegetables, 51–75 → dairy, 76–100 → specialty/international.
-- Flavor profile variety: across 3 recipes, must span ≥2 of: comforting/mild, bold/spicy, fresh/light, umami/sweet-savory.
-- `why_this` must be exactly 2–3 short practical bullet lines joined by `\n`. No paragraph prose.
-- Missing ingredients cannot be empty when match_percentage < 100.
-- Water never listed as a missing ingredient.
+- Dietary constraints are hard rules at the top of the prompt — not guidelines.
+- Plant-based branded products ("Vegan Chicken", "Beyond Meat", "Tofu") are always safe regardless of dietary mode.
+- Masala spice packets ("Fish Curry Masala") are always safe — the meat word is a dish name, not an ingredient.
+- `recently_used_ingredients` are excluded from the hero role in any new recipe.
+- `variety_seed` 1–25 → grains/legumes, 26–50 → vegetables, 51–75 → dairy, 76–100 → specialty/international pantry items.
+- Flavor zone variety: across 3 recipes, must span at least 2 of: comforting/mild, bold/spicy, fresh/light, umami/sweet-savory.
+- `missing_ingredients` cannot be empty when `match_percentage < 100`. Water is never listed as missing.
 
 ### `ai-cooking-assistant` — Chef Sage
 
-Multi-turn cooking knowledge Q&A. System prompt establishes clear role separation from the AI Chef. Handles techniques, substitutions, storage, food science, equipment, cultural context, nutrition. Multi-turn history passed on each call. Explicitly redirects recipe requests to Home tab.
+Multi-turn Q&A. System prompt defines role boundary: knowledge only, no recipe lists. Conversation history passed on each call for context continuity.
 
 ### `ai-extract-recipe` — Recipe Extraction
 
-Reads any URL (or YouTube transcript) and returns structured recipe JSON. Scores each ingredient against user's pantry.
+Fetches URL content or YouTube transcript, returns structured recipe JSON. Scores each ingredient against the user's current pantry.
 
-### `ai-categorize` — Pantry Auto-Categorization
+### `ai-categorize` — Auto-Categorization
 
-Called async after any pantry item is added. Assigns one of 16 categories and up to 5 searchable AI tags. Runs in background; pantry item is created first (as "other"), then updated when classification returns.
+Called async after pantry item creation. Assigns one of 16 categories and up to 5 searchable tags. Item is created immediately (as "other") then updated when classification returns — no blocking UI wait.
 
-### `ai-pantry-chat` — NLP Pantry Management
+### `ai-pantry-chat` — NLP Pantry Updates
 
-Accepts natural language like "I just bought tomatoes and garlic, and I used up the spinach." Returns structured `{ add: [], mark_unavailable: [], remove: [] }` actions. Executed against DB by the client.
-
-### `ai-grocery-categorize` — Grocery Store Sections
-
-Assigns store-section categories (produce, dairy, grains, etc.) to grocery list items for logical shopping order.
-
-### `send-feedback` — Feedback Delivery
-
-Saves feedback to `feedback` table via service role key (bypasses RLS). Sends branded HTML email to developer via Resend API. Does not use Claude.
+Accepts freeform text like "I used up the spinach and bought garlic." Returns `{ add: [], mark_unavailable: [], remove: [] }`. Client executes the actions against the DB.
 
 ---
 
-## 7. Key Technical Decisions
+## Data Flow
 
-### Why server-side AI only?
-The Anthropic API key never reaches the browser. All AI calls go through Supabase Edge Functions. Users cannot inspect network requests to find or abuse the key.
+### Variety Engine (client-side localStorage)
 
-### Why Claude Haiku specifically?
-Fast enough for mobile (sub-3s most calls), cheap enough for a solo project, and instruction-following quality is sufficient for structured JSON output. The structured prompt + schema approach compensates for the smaller model.
+Three values maintained across calls:
 
-### Why `registerType: 'autoUpdate'` for PWA?
-Silent updates with no user friction. A `controllerchange` event listener shows a non-blocking toast ("App updated — tap Refresh") when a new service worker activates, so users aren't stuck on an old version without knowing.
-
-### Why localStorage for variety data (not DB)?
-`recently_used_ingredients` and `variety_seed` are session/device-level signals. They don't need to sync across devices and don't need persistence across months. localStorage is instant, zero latency, zero DB cost. If cleared, variety resets gracefully.
-
-### Why inline SVG for mic buttons everywhere?
-Earlier versions used emoji (🎙) which renders inconsistently across Android/iOS/desktop. SVG ensures pixel-perfect, theme-aware rendering. Same icon pattern used in PantryChat, ShopPage, and CookingAssistant for visual consistency.
-
-### Dietary conflict detection approach
-Rather than a blocklist (easily defeated by new product names), the prompt uses a **three-rule system**:
-1. Dietary mode as absolute constraints at the prompt top.
-2. Explicit exceptions for plant-based branded products and masala spice packets (common false positives).
-3. "If focus_ingredients violates diet, ignore those ingredients entirely — never refuse."
-
-This handles edge cases like "Vegan Chicken" in a vegan pantry (safe) and "Fish Curry Masala" (spice blend, always safe), and prevents refusals when a user accidentally requests a focus ingredient that violates their mode.
-
-### Auth value proposition updated
-The auth page previously said "Vegetarian & vegan, always" — misleading since the app supports eggitarians and non-vegetarians. Updated to "Any diet — vegan, veggie, or anything."
-
----
-
-## 8. Design System
-
-CSS custom properties (set on `:root` and `.dark`) for all semantic colors:
-
-| Token | Light | Dark | Usage |
-|---|---|---|---|
-| `--s1` | white | charcoal-900 | Surface 1 (cards, sheets) |
-| `--s2` | cream-50 | charcoal-800 | Surface 2 (backgrounds) |
-| `--t1` | stone-900 | stone-50 | Primary text |
-| `--t2` | stone-600 | stone-300 | Secondary text |
-| `--t3` | stone-400 | stone-500 | Muted text |
-| `--bdr-s` | cream-200 | charcoal-700 | Subtle border |
-| `--bdr-m` | cream-300 | charcoal-600 | Medium border |
-
-Brand orange: `#E8713A` (dark variant `#D85F22`).
-
-Typography: `font-display` (Nunito, 700/800 weights for headings), `font-body` (Inter, regular for body text).
-
----
-
-## 9. Security & Guardrails
-
-- **API key isolation**: `ANTHROPIC_API_KEY` and `RESEND_API_KEY` live only in Supabase Edge Function secrets. Never in client code or `.env` committed to git.
-- **RLS on all tables**: Every SELECT/INSERT/UPDATE/DELETE scoped to `auth.uid() = user_id`. No cross-user data access possible.
-- **No user-controlled SQL**: All DB operations use Supabase typed client. No raw query construction from user input.
-- **Prompt injection**: AI endpoints receive only structured JSON — pantry item names, filter strings. No freeform user text goes directly into system prompts (only `ai-cooking-assistant` and `ai-pantry-chat` take user messages, and those are kept as `user`-role messages, not injected into the system prompt).
-- **Diet safety**: Hard-coded constraints in prompt; if dietary_preference conflicts with request, AI ignores conflicting ingredients rather than refusing — always returns valid, safe recipes.
-- **Feedback spam**: Feedback is saved per authenticated user only (service role used for RLS bypass, but user_id is captured from the JWT server-side).
-
----
-
-## 10. Known Constraints
-
-| Constraint | Detail |
-|---|---|
-| Recipe count | 3 per request (5 causes timeouts on Supabase free tier) |
-| AI response time | 2–5s for recipe generation; Chef Sage typically 1–2s |
-| Variety engine | Client-side localStorage; resets if cleared or on new device |
-| Voice input | Web Speech API — Chrome on Android/desktop only. No iOS Safari support. |
-| Pantry size | No hard limit, but large pantries (100+ items) may affect response quality |
-| Offline | PWA caches shell + static assets. AI features require network. |
-
----
-
-## 11. Where recipick.ai Works
-
-| Platform | Method | Notes |
+| Key | Purpose | Lifetime |
 |---|---|---|
-| Android Chrome | Install PWA from browser | Full voice, standalone, push-ready |
-| Desktop Chrome/Edge | Install PWA from browser | Full feature parity |
-| iOS Safari | Add to Home Screen | Works, but no Web Speech API |
-| Any browser | Web app | Full features minus voice and install prompt |
+| `recently_used_ingredients` | Hero ingredients from last 3 recipe batches (max 12 items) | Accumulates per session; passed to `ai-chef` as exclusion list |
+| `variety_seed` | Random 1–100 generated fresh per call | Per-call; steers AI toward a pantry section |
+| `excluded_recipes` | Recipe titles from the current session | Session only; prevents duplicates on "Get more ideas" |
+
+Stored in localStorage rather than DB because these are session/device signals — they don't need cross-device sync, and resetting them gracefully degrades variety without breaking anything.
+
+### Recipe Rating Loop
+
+```
+User rates 👍/👎 on saved recipe
+    ↓
+Updates tried_status + is_favorite in saved_recipes table
+    ↓
+On next ai-chef call, liked_recipes and disliked_recipes
+are derived from saved_recipes and sent to the prompt
+    ↓
+Claude uses them as flavor/style preference signals
+(not exact title exclusions — signals, not rules)
+```
 
 ---
 
-## 12. Minimizes Waste — The Core Narrative
+## Tradeoffs
 
-A secondary but important framing: recipick.ai is also a food waste reduction tool. By surfacing recipes built around what you already have (especially near-expiry or star ingredients), it nudges users toward using up existing stock before buying more. The grocery list integration closes the loop — items that are genuinely missing get added to the list, while items already in the pantry are never re-bought accidentally.
+### Server-side AI only
+The Anthropic key never reaches the browser. Adds ~50–100ms latency per call vs. direct client requests. Worth it: the alternative exposes the key to any user who opens DevTools.
 
-This narrative is intentionally secondary in the UI (the primary hook is convenience and personalisation), but it's accurate and worth highlighting in social/sustainability contexts.
+### Claude Haiku over larger models
+Fast enough for mobile (2–5s most calls), cost-effective for a solo project, and instruction-following quality is sufficient for structured JSON output. A tighter prompt with explicit schema compensates for the smaller model's limitations.
+
+### `autoUpdate` PWA registration
+Silent background updates with no user friction. A `controllerchange` listener shows a non-blocking toast ("App updated — tap Refresh") when a new service worker activates. Users never get stuck on a stale version without knowing.
+
+### localStorage for variety data
+Zero latency, zero DB cost, zero sync complexity. The downside — resets on a new device or cleared storage — is acceptable. If it resets, the AI simply lacks history and picks from a random seed; it doesn't break.
+
+### Inline SVG for mic icons everywhere
+Emoji mic (🎙) renders inconsistently across Android/iOS/desktop. SVG gives pixel-perfect, theme-aware rendering across all surfaces: PantryChat, ShopPage, CookingAssistant.
+
+### Dietary conflict handling via prompt, not blocklist
+A blocklist is fragile — new product names break it immediately. Instead the prompt uses a three-rule system: (1) dietary mode as absolute constraints, (2) explicit safe-product exceptions (plant-based brands, masala spice packets), (3) "if focus_ingredients violate diet, ignore them — never refuse." This handles edge cases and prevents unhelpful refusals.
+
+---
+
+## Reliability Improvements (Phase 1)
+
+These changes shipped together to address transient AI failures observed in early user testing.
+
+**`max_tokens` reduction (8192 → 2800):** The model was allocated more output budget than needed for 3 recipes. Reducing the cap forces conciseness and cuts median response time significantly. 2800 tokens is sufficient for 3 fully detailed recipes including instructions.
+
+**Auto-retry on transient errors:** `callAiChef` wraps the edge function call in a helper (`invoke()`). If the first call throws a non-validation error, it waits 2 seconds and retries once before surfacing the error to the user. Validation failures (dietary conflicts in the response) are not retried — they're escalated immediately. This handles Supabase free-tier cold starts without requiring any UI changes.
+
+**Validation layer at the edge:** `validateAndEnrichRecipes()` runs server-side after Claude responds. It checks each recipe against the declared dietary preference before returning. Recipes that fail are dropped silently; if all fail, the function returns `validation_error: true` and the client retries. This prevents dietary violations from ever reaching the UI, even if the model hallucinates.
+
+---
+
+## Future Scope
+
+| Feature | Notes |
+|---|---|
+| Grocery → pantry | Check off items in grocery list → auto-add to pantry |
+| Meal planner | Weekly plan from saved and AI recipes |
+| Auto-pantry from grocery | Grocery haul import rebuilds pantry automatically |
+| Waste tracker | Flag near-expiry items, surface quick-use recipe ideas |
+| Shareable recipe cards | Export recipe as image for social sharing |
+| Community vault | Discover recipes saved and loved by other users |
+| Push notifications | "You have 3 starred ingredients — want a recipe idea?" |
+| Nutrition estimates | Macro breakdown per recipe from Claude |

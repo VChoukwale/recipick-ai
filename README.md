@@ -2,7 +2,7 @@
 
 # recipick.ai
 
-**Your pantry-first AI kitchen companion — recipes personalised to what you have, who you are, and how you eat**
+**Pantry-first AI recipe companion — personalised to what you have, how you eat, and how much energy you have today**
 
 [![Live App](https://img.shields.io/badge/Live%20App-recipickai.vercel.app-E8713A?style=for-the-badge&logo=vercel&logoColor=white)](https://recipickai.vercel.app)
 [![PWA](https://img.shields.io/badge/PWA-Installable-5A8F5A?style=for-the-badge&logo=pwa&logoColor=white)](https://recipickai.vercel.app)
@@ -16,88 +16,113 @@
 
 ---
 
-## What is recipick.ai?
+## Overview
 
-recipick.ai is a mobile-first, AI-powered recipe recommendation app that works backwards from your pantry. Instead of showing you aspirational recipes that need 10 things you don't have, it looks at what's already in your kitchen and suggests meals you can cook right now — matched to your dietary profile, energy level, cuisine preferences, and taste history.
+recipick.ai works backwards from your pantry. Instead of showing aspirational recipes that need 10 ingredients you don't have, it looks at what's already in your kitchen and suggests what you can cook right now — matched to your dietary profile, energy level, cuisine preferences, and taste history.
 
-It supports four dietary profiles — **vegan**, **vegetarian**, **eggitarian (lacto-ovo)**, and **non-vegetarian** — each with precise conflict detection and AI rules that go beyond simple keyword filtering. Plant-based mock meats, spice packets named after meat dishes, and other edge cases are all handled correctly.
+It supports four dietary profiles — **vegan**, **vegetarian**, **eggitarian (lacto-ovo)**, and **non-vegetarian** — with precise AI conflict detection that handles edge cases like plant-based mock meats and masala spice packets correctly.
 
-Built as a **Progressive Web App (PWA)**, it installs directly from the browser like a native app — no App Store, no waiting, no friction.
+Built as a **Progressive Web App**, it installs directly from the browser on Android and iOS — no App Store required.
 
-**Core technology:**
+---
 
-| Layer | Tech |
+## Features
+
+| Feature | Description |
 |---|---|
-| Frontend | React 18 · TypeScript 5 · Vite 5 · Tailwind CSS v3 |
+| 🤖 **AI Chef** | Set energy level, cuisine, mood, meal type, and equipment. Get 3 recipes ranked by pantry match %, with substitutions for anything missing. |
+| 🧺 **Smart Pantry** | Add ingredients across 16 categories. AI auto-categorises on add. Star items to always cook around them. |
+| 🌍 **Regional Cuisine** | Go beyond "Indian" or "Chinese" — ask for Maharashtrian, Sichuan, Oaxacan. The AI knows authentic regional dishes. |
+| 🎯 **Focus Mode** | Select one or more pantry items and every recipe is built around them as the hero ingredient. |
+| 🔀 **Variety Engine** | Tracks hero ingredients across sessions and uses a variety seed to steer the AI toward a fresh pantry section each call. |
+| 🧑‍🍳 **Chef Sage** | AI cooking assistant on every page — techniques, substitutions, storage, food science. Voice + text. Multi-turn. |
+| 📥 **Recipe Inbox** | Paste any URL or YouTube link. AI extracts ingredients, scores against your pantry, and saves in one tap. |
+| 📖 **Recipe Vault** | Saved recipes in collapsible sections: Not tried / Liked / Didn't enjoy. Filter by cuisine, difficulty, favourites. |
+| ⭐ **Favorites** | Star to bookmark. Rate 👍/👎 after cooking. Ratings feed back into AI for better future suggestions. |
+| 🛒 **Grocery List** | Missing ingredients go to your grocery list in one tap. Voice input. Check off as you shop. |
+| ⚙️ **Diet & Profile** | Vegan, vegetarian, eggitarian, or non-vegetarian. Conflict detection on diet change. |
+| 📲 **PWA** | Install from the browser on any device. Auto-updates silently in the background. |
+| 🌙 **Dark Mode** | Full dark theme with persistent preference per device. |
+| 💬 **In-App Feedback** | One-tap reaction + message form in Settings. Responses go directly to the developer. |
+
+---
+
+## Screenshots
+
+### 🏠 Home & Recipe Generation
+![Home](./docs/screens/home.png)
+
+### 🥕 Pantry Management
+![Pantry](./docs/screens/pantry.png)
+
+### 🍽️ Recipe Results
+![Recipes](./docs/screens/recipes.png)
+
+### 📥 Recipe Inbox
+![Inbox](./docs/screens/inbox.png)
+
+### ⭐ Saved Recipes (Vault)
+![Vault](./docs/screens/vault.png)
+
+### 🛒 Grocery List
+![Grocery](./docs/screens/grocery.png)
+
+---
+
+## How It Works
+
+1. **Add your pantry** — add ingredients manually, by voice, or via natural language ("I just bought tomatoes and spinach").
+2. **Set your context** — choose energy level, cuisine, mood, meal type, or equipment. Or leave it blank.
+3. **Get recipes** — the AI Chef scans your pantry, applies your dietary rules, and returns 3 recipes ranked by how much you already have.
+4. **Cook or save** — follow the step-by-step instructions, add missing items to your grocery list, or save the recipe to your vault.
+5. **Rate it** — 👍/👎 after cooking. Ratings influence the AI's future suggestions for you.
+
+---
+
+## Architecture
+
+```
+Browser (React PWA)
+    ↓
+Supabase JS Client
+    ↓
+Supabase Postgres (RLS)   ←→   Supabase Edge Functions (Deno)
+                                        ↓
+                               Anthropic Claude Haiku API
+                                        ↓
+                               (send-feedback only) Resend API
+```
+
+All AI calls are server-side via Supabase Edge Functions. The Anthropic API key never reaches the browser.
+
+### Edge Functions
+
+| Function | Purpose |
+|---|---|
+| `ai-chef` | Core recipe engine — pantry matching, dietary rules, variety logic |
+| `ai-cooking-assistant` | Chef Sage chatbot — multi-turn cooking Q&A |
+| `ai-extract-recipe` | Extracts structured recipe from any URL or YouTube link |
+| `ai-categorize` | Auto-assigns pantry items to 16 categories with AI tags |
+| `ai-pantry-chat` | Natural language pantry updates ("used up the milk") |
+| `ai-grocery-categorize` | Assigns store-section categories to grocery items |
+| `send-feedback` | Saves feedback to DB and emails developer via Resend |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, TypeScript 5, Vite 5, Tailwind CSS v3 |
 | Auth & Database | Supabase (Postgres + RLS + Google OAuth) |
-| AI | Anthropic Claude Haiku via Supabase Edge Functions (Deno) |
-| PWA | vite-plugin-pwa · Service Worker · Standalone mode |
+| AI | Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) |
+| Edge Functions | Supabase Edge Functions (Deno runtime) |
+| PWA | vite-plugin-pwa, Service Worker, standalone mode |
 | Deployment | Vercel — auto-deploy on push to `main` |
 
 ---
 
-## Why I built this
-
-I kept staring into a full pantry with no idea what to cook. Generic recipe apps show dishes that need 10 ingredients you don't have. I wanted something that actually looked at *my* pantry and worked backwards — respecting my diet, using what I already have, and genuinely varying what it suggests each day.
-
-So I built recipick.ai. It knows what you have, respects your dietary profile, understands your energy level and time, and suggests recipes with real pantry match percentages. It tracks what you've made, what you liked, and what flavour profiles you haven't tried recently — so every recommendation feels fresh.
-
----
-
-## Feature Overview
-
-| Feature | Description |
-|---|---|
-| 🤖 **AI Chef** | Pick energy level, cuisine, mood, meal type, and equipment. Get 3 recipes ranked by pantry match %, with substitutions for anything missing. |
-| 🧺 **Smart Pantry** | Add ingredients across 16 categories. AI auto-categorises on add. Star items to always cook around them. |
-| 🌍 **Regional Cuisine Explorer** | Go beyond "Indian" or "Chinese" — ask for Maharashtrian, Sichuan, Oaxacan. The AI knows authentic regional dishes. |
-| 🎯 **Focus Ingredient Mode** | Select one or more pantry items and every recipe is built around them as the hero. |
-| 🔀 **Variety Engine** | Tracks recently used hero ingredients across sessions. A random variety seed steers the AI toward a fresh pantry section every call. |
-| 🧑‍🍳 **Chef Sage** | AI cooking assistant chatbot on every page. Ask anything — techniques, substitutions, storage, food science. Voice + text. Multi-turn. |
-| 📥 **Recipe Inbox** | Paste any recipe URL or YouTube link. AI extracts ingredients, scores them against your pantry, and lets you save in one tap. |
-| 📖 **Recipe Vault** | Saved recipes in collapsible sections: Not tried yet / Tried & liked / Didn't enjoy. Filter by cuisine, difficulty, favorites. |
-| ⭐ **Favorites + Ratings** | Star to bookmark. Mark as tried, then rate 👍/👎. Ratings feed back into AI to improve future suggestions. |
-| 🛒 **Grocery Run** | Missing ingredients go to your grocery list in one tap. Voice input. Check off as you shop. |
-| ⚙️ **Diet & Profile** | Vegan, vegetarian, eggitarian, or non-vegetarian. Cooking skill, conflict detection on diet change. |
-| 📲 **PWA** | Installs from the browser on any device — no App Store, no friction. Auto-updates silently in background. |
-| 🌙 **Dark Mode** | Full dark theme with persistent preference per device. |
-| 💬 **In-App Feedback** | One-tap reaction + message form in Settings. Responses delivered straight to the developer. |
-
----
-
-## AI Architecture
-
-Every AI feature runs server-side via Supabase Edge Functions. The Anthropic API key never reaches the browser.
-
-### Edge Functions
-
-| Function | Model | Purpose |
-|---|---|---|
-| `ai-chef` | Claude Haiku | Core recipe engine. Receives full pantry, dietary rules, filters, focus ingredients, recently used heroes, and a variety seed. Returns 3 structured recipes with match %, missing ingredients, substitutions, and steps. |
-| `ai-cooking-assistant` | Claude Haiku | Chef Sage chatbot. Multi-turn cooking Q&A — techniques, substitutions, storage, food science. Accepts conversation history for context. |
-| `ai-extract-recipe` | Claude Haiku | Extracts a structured recipe from any pasted URL or YouTube video (reads transcript). Scores ingredients against the user's pantry. |
-| `ai-categorize` | Claude Haiku | Auto-assigns pantry items to one of 16 categories with searchable AI tags. Runs silently after an item is added. |
-| `ai-pantry-chat` | Claude Haiku | Natural language pantry management ("I just bought tomatoes", "used up the milk"). Parses intent and updates the pantry. |
-| `ai-grocery-categorize` | Claude Haiku | Assigns grocery list items to store-section categories to help with physical shopping order. |
-| `send-feedback` | — (Resend API) | Saves in-app feedback to the database and emails it to the developer via Resend. |
-
-### Key Prompt Engineering Decisions
-
-**Dietary safety as a hard rule** — rules sit at the top of the `ai-chef` prompt as non-negotiable. Plant-based products ("Vegan Chicken", "Beyond Meat", "Tofu") and spice packets ("Fish Curry Masala") are always safe regardless of dietary mode — spice names reference dish origins, not actual meat content.
-
-**Variety engine** — the chef prompt enforces: (1) different hero ingredient per recipe, (2) spread across 2+ cuisines, (3) `recently_used_ingredients` are excluded from starring in new recipes, (4) a `variety_seed` (1–100, randomised each call) steers the AI toward a different pantry section each call: grains/legumes → vegetables → dairy → specialty items.
-
-**Flavor profile mix** — even across 3 recipes, the prompt asks for at least 2 distinct flavor zones (bold/spicy, comforting/mild, fresh/light, umami/sweet-savory).
-
-**Regional depth** — `region_filter="Maharashtra"` produces misal pav, thalipeeth, kothimbir vadi — not generic curry. The prompt explicitly asks for dishes iconic to that specific sub-region.
-
-**Structured JSON output** — every prompt ends with an explicit schema and "Return ONLY this JSON, no markdown." Responses are stripped of code fences before parsing.
-
-**Missing ingredient accuracy** — `missing_ingredients` cannot be empty when `match_percentage < 100`. Without this, Claude returns optimistic scores without listing what's actually missing.
-
----
-
-## Local Development
+## Setup Instructions
 
 ### Prerequisites
 
@@ -144,7 +169,7 @@ Supabase Dashboard → Authentication → Providers → Google. Enable it, add O
 
 Add your Anthropic key in **Supabase Dashboard → Edge Functions → Secrets** as `ANTHROPIC_API_KEY`.
 
-Then deploy all functions:
+Deploy all functions:
 
 ```bash
 export SUPABASE_ACCESS_TOKEN=your-access-token
@@ -159,7 +184,7 @@ npx supabase functions deploy ai-grocery-categorize --project-ref $PROJECT_REF -
 npx supabase functions deploy send-feedback --project-ref $PROJECT_REF --no-verify-jwt
 ```
 
-Add `RESEND_API_KEY` as an additional secret in **Supabase → Edge Functions → Secrets** for the feedback email feature.
+Add `RESEND_API_KEY` as an additional secret for the feedback email feature.
 
 Get your personal access token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens). Never commit it.
 
@@ -171,15 +196,62 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
----
-
-## Deploying to Vercel
+### Deploying to Vercel
 
 1. Connect the repo at [vercel.com](https://vercel.com). Vite is auto-detected.
 2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as environment variables.
 3. After first deploy, add your Vercel URL to **Supabase → Authentication → URL Configuration → Redirect URLs**.
 
 Every push to `main` triggers an automatic redeploy.
+
+---
+
+## Usage
+
+### Generating recipes
+
+- Open the Home tab.
+- Optionally set filters: cuisine, mood, meal type, equipment, or energy level.
+- Tap **Cook for me** to get 3 personalised recipes.
+- Tap a recipe card to see full ingredients, pantry match breakdown, and step-by-step instructions.
+- Tap **Add missing to grocery** or **Save recipe** directly from the detail sheet.
+
+### Pantry management
+
+- Go to the Pantry tab.
+- Add items manually, by voice, or by typing natural language in the chat bar ("I just bought spinach and lentils").
+- Star an ingredient to always build recipes around it.
+- Toggle availability (in stock / out of stock) without deleting.
+
+### Chef Sage
+
+- Tap the orange button in the bottom nav (any page).
+- Ask anything cooking-related: techniques, ingredient substitutions, storage, food science.
+- Chef Sage will redirect recipe requests to the Home tab — it's a knowledge assistant, not a recipe generator.
+
+---
+
+## Known Limitations
+
+| Limitation | Detail |
+|---|---|
+| Recipe count | 3 per request — requesting 5 causes timeouts on Supabase free tier |
+| Voice input | Web Speech API — Chrome on Android/desktop only; not supported on iOS Safari |
+| Variety engine | Stored in localStorage — resets if cleared or on a new device |
+| Pantry size | No hard limit, but very large pantries (100+ items) may reduce recipe relevance |
+| Offline | PWA caches the app shell and static assets; AI features require a network connection |
+| AI response time | 2–5 seconds typical; occasional cold starts on Supabase free tier may be slower |
+
+---
+
+## Roadmap
+
+- **Grocery → pantry** — check off items in grocery list and auto-add them to pantry
+- **Meal planner** — plan breakfast/lunch/dinner for the week from saved and AI recipes
+- **Auto-pantry from grocery** — importing a grocery haul rebuilds pantry automatically
+- **Waste reduction tracker** — flag items nearing expiry, surface quick-use recipe ideas
+- **Shareable recipe cards** — export a recipe as an image for social sharing
+- **Community vault** — discover recipes saved and loved by other users
 
 ---
 
@@ -214,19 +286,6 @@ supabase/
     ├── 004_grocery_list.sql
     └── 005_feedback.sql
 ```
-
----
-
-## Coming Soon
-
-Features planned for future releases:
-
-- **One-tap grocery → pantry** — check off items in the grocery list and they're automatically added to the pantry
-- **Meal planner** — plan breakfast/lunch/dinner for the week from your saved and AI recipes
-- **Auto-pantry from grocery** — importing a grocery haul rebuilds your pantry automatically
-- **Waste reduction tracker** — flag items nearing expiry, prompt quick-use recipe ideas
-- **Shareable recipe cards** — export a recipe as an image to share on social media
-- **Community vault** — discover recipes saved and loved by other users
 
 ---
 
