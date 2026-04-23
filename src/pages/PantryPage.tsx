@@ -29,6 +29,7 @@ export default function PantryPage() {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [activeCategory, setActiveCategory] = useState<PantryCategory | null>(null)
   const [showChat, setShowChat] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLDivElement>(null)
   const isNavigatingRef = useRef(false)
@@ -41,11 +42,18 @@ export default function PantryPage() {
 
   async function fetchItems() {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('pantry_items')
       .select('*')
       .eq('user_id', user!.id)
       .order('added_at', { ascending: false })
+    if (error) {
+      console.error('PantryPage fetchItems failed:', error)
+      setFetchError(true)
+      setLoading(false)
+      return
+    }
+    setFetchError(false)
     setItems((data as PantryItem[]) ?? [])
     setLoading(false)
   }
@@ -128,8 +136,13 @@ export default function PantryPage() {
   }
 
   async function handleDelete(id: string) {
+    const snapshot = items
     setItems(prev => prev.filter(i => i.id !== id))
-    await supabase.from('pantry_items').delete().eq('id', id)
+    const { error } = await supabase.from('pantry_items').delete().eq('id', id)
+    if (error) {
+      console.error('PantryPage handleDelete failed:', error)
+      setItems(snapshot)
+    }
   }
 
   async function handleEdit(id: string, fields: {
@@ -254,6 +267,11 @@ export default function PantryPage() {
           <div className="flex flex-col items-center justify-center h-48 gap-3">
             <span className="text-3xl animate-simmer">🥬</span>
             <p className="text-sm font-body text-stone-400">Loading your pantry…</p>
+          </div>
+        ) : fetchError ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-6">
+            <p className="text-sm font-body text-stone-500 dark:text-stone-400">Couldn't load your pantry. Try refreshing.</p>
+            <button onClick={fetchItems} className="btn-primary mt-1">Refresh</button>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-6">

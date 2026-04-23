@@ -289,6 +289,7 @@ export default function HomePage() {
     const { data, error: fnError } = await Promise.race([fetchPromise, timeoutPromise])
     if (fnError) throw fnError
     if (data?.error) throw new Error(data.error)
+    if (data?.validation_error) throw new Error('validation_failed')
     const newRecipes: AiRecipe[] = data?.recipes ?? []
     trackRecentIngredients(newRecipes)
     if (append) setRecipes(prev => [...prev, ...newRecipes])
@@ -311,7 +312,12 @@ export default function HomePage() {
     catch (e: unknown) {
       console.error('ai-chef error:', e)
       const isTimeout = e instanceof Error && e.name === 'AbortError'
-      setError(isTimeout ? 'Request timed out. Check your connection and try again.' : 'Something went wrong. Please try again.')
+      const isValidationFail = e instanceof Error && e.message === 'validation_failed'
+      setError(isTimeout
+        ? 'Request timed out. Check your connection and try again.'
+        : isValidationFail
+          ? "We couldn't generate safe recipe matches this time. Try changing your ingredients or filters."
+          : 'Something went wrong. Please try again.')
     }
     finally { setLoading(false); setCooldown(true); setTimeout(() => setCooldown(false), 5000) }
   }
@@ -322,7 +328,12 @@ export default function HomePage() {
     catch (e: unknown) {
       console.error('load more error:', e)
       const isTimeout = e instanceof Error && e.name === 'AbortError'
-      setError(isTimeout ? 'Request timed out. Try again.' : 'Something went wrong. Try again?')
+      const isValidationFail = e instanceof Error && e.message === 'validation_failed'
+      setError(isTimeout
+        ? 'Request timed out. Try again.'
+        : isValidationFail
+          ? "We couldn't generate safe recipe matches this time. Try changing your ingredients or filters."
+          : 'Something went wrong. Try again?')
     }
     finally { setLoadingMore(false) }
   }

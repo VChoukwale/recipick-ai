@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { validateAndEnrichRecipes } from '../_shared/recipeValidation.ts'
 
 const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
@@ -83,6 +84,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
+    const diet: string = body.dietary_preference ?? 'vegetarian'
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
     if (!anthropicKey) throw new Error('ANTHROPIC_API_KEY not set')
 
@@ -105,14 +107,47 @@ serve(async (req) => {
 
     const data = await response.json()
     if (!response.ok) throw new Error(`Anthropic error: ${JSON.stringify(data)}`)
+
     const text = data.content?.[0]?.text ?? ''
     const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
-    const recipes = JSON.parse(cleaned)
 
-    return new Response(JSON.stringify(recipes), {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(cleaned)
+    } catch (parseErr) {
+      console.error('[ai-chef] JSON parse failed:', parseErr, '| raw:', cleaned.slice(0, 200))
+      throw new Error('AI returned invalid JSON')
+    }
+
+    const rawRecipes: unknown[] = Array.isArray((parsed as { recipes?: unknown[] })?.recipes)
+      ? (parsed as { recipes: unknown[] }).recipes
+      : []
+
+    if (rawRecipes.length === 0) {
+      console.error('[ai-chef] AI returned no recipes array. raw:', cleaned.slice(0, 300))
+      return new Response(JSON.stringify({ recipes: [], validation_error: true }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      })
+    }
+
+    const { valid, droppedCount } = validateAndEnrichRecipes(rawRecipes, diet)
+
+    if (droppedCount > 0) {
+      console.error(`[ai-chef] dropped ${droppedCount} recipe(s) during validation`)
+    }
+
+    if (valid.length === 0) {
+      console.error('[ai-chef] all recipes failed validation — returning validation_error')
+      return new Response(JSON.stringify({ recipes: [], validation_error: true }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      })
+    }
+
+    return new Response(JSON.stringify({ recipes: valid }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     })
   } catch (err) {
+    console.error('[ai-chef] unhandled error:', err)
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

@@ -183,6 +183,7 @@ export default function RecipesPage() {
   const [selectedRecipe, setSelectedRecipe] = useState<SavedRecipe | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const [fetchError, setFetchError] = useState(false)
 
   function toggleSection(key: string) {
     setCollapsed(prev => ({ ...prev, [key]: !prev[key] }))
@@ -195,11 +196,18 @@ export default function RecipesPage() {
 
   async function fetchRecipes() {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('saved_recipes')
       .select('*')
       .eq('user_id', user!.id)
       .order('created_at', { ascending: false })
+    if (error) {
+      console.error('RecipesPage fetchRecipes failed:', error)
+      setFetchError(true)
+      setLoading(false)
+      return
+    }
+    setFetchError(false)
     setRecipes((data as SavedRecipe[]) ?? [])
     setLoading(false)
   }
@@ -218,9 +226,14 @@ export default function RecipesPage() {
   }
 
   async function handleDelete(id: string) {
+    const snapshot = recipes
     setRecipes(prev => prev.filter(r => r.id !== id))
     if (selectedRecipe?.id === id) setSelectedRecipe(null)
-    await supabase.from('saved_recipes').delete().eq('id', id)
+    const { error } = await supabase.from('saved_recipes').delete().eq('id', id)
+    if (error) {
+      console.error('RecipesPage handleDelete failed:', error)
+      setRecipes(snapshot)
+    }
   }
 
   const cuisineOptions = useMemo(() => {
@@ -310,6 +323,11 @@ export default function RecipesPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-48">
             <CookingSpinner size="md" label="Loading your vault…" />
+          </div>
+        ) : fetchError ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-6">
+            <p className="text-sm font-body text-stone-500 dark:text-stone-400">Couldn't load your recipes. Try refreshing.</p>
+            <button onClick={fetchRecipes} className="btn-primary mt-1">Refresh</button>
           </div>
         ) : recipes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-6">

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>recipick.ai — Icon Generator</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; background: #f5f5f5; }
+    h1 { font-size: 18px; color: #333; margin-bottom: 6px; }
+    p  { font-size: 13px; color: #666; margin-bottom: 20px; }
+    .row { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #fff; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .preview { width: 72px; height: 72px; border-radius: 12px; flex-shrink: 0; }
+    .info { flex: 1; }
+    .info strong { display: block; font-size: 13px; color: #222; }
+    .info span   { font-size: 12px; color: #888; }
+    a.dl { display: inline-block; margin-top: 6px; padding: 5px 12px; background: #E8713A; color: #fff; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
+    a.dl:hover { background: #d06028; }
+    code { background: #eee; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>recipick.ai Icon Generator</h1>
+  <p>
+    Open this file in <strong>Chrome on Windows</strong>.<br>
+    Click each download link → save the file to <code>public/</code>, replacing any existing file with the same name.<br>
+    Then rebuild and redeploy the app.
+  </p>
+  <div id="icons"></div>
+  <script>
+    const BG    = '#E8713A';
+    const EMOJI = '🍳';
+    const FONT  = "'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif";
+
+    function render(size, emojiScale) {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, size, size);
+      const fs = Math.round(size * emojiScale);
+      ctx.font = `${fs}px ${FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(EMOJI, size / 2, size * 0.53);
+      return c;
+    }
+
+    const specs = [
+      {
+        name:  'icon-512.png',
+        size:  512, scale: 0.47,
+        label: 'Android launcher icon (any)',
+        dest:  'public/icon-512.png — replaces existing',
+      },
+      {
+        name:  'icon-192.png',
+        size:  192, scale: 0.47,
+        label: 'Android launcher icon small (any)',
+        dest:  'public/icon-192.png — replaces existing',
+      },
+      {
+        name:  'icon-512-maskable.png',
+        size:  512, scale: 0.38,
+        label: 'Android adaptive icon (maskable)',
+        dest:  'public/icon-512-maskable.png — new file',
+      },
+      {
+        name:  'icon-192-maskable.png',
+        size:  192, scale: 0.38,
+        label: 'Android adaptive icon small (maskable)',
+        dest:  'public/icon-192-maskable.png — new file',
+      },
+      {
+        name:  'apple-touch-icon.png',
+        size:  180, scale: 0.47,
+        label: 'iOS home screen icon',
+        dest:  'public/apple-touch-icon.png — replaces existing',
+      },
+    ];
+
+    const container = document.getElementById('icons');
+
+    specs.forEach(({ name, size, scale, label, dest }) => {
+      const src = render(size, scale);
+
+      // 72×72 preview canvas
+      const preview = document.createElement('canvas');
+      preview.width = 72; preview.height = 72;
+      preview.className = 'preview';
+      preview.getContext('2d').drawImage(src, 0, 0, 72, 72);
+
+      const a = document.createElement('a');
+      a.href = src.toDataURL('image/png');
+      a.download = name;
+      a.className = 'dl';
+      a.textContent = `Download ${name}`;
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = `<strong>${label}</strong><span>${dest}</span>`;
+      info.appendChild(a);
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.appendChild(preview);
+      row.appendChild(info);
+      container.appendChild(row);
+    });
+  </script>
+</body>
+</html>

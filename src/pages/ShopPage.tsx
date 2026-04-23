@@ -66,6 +66,7 @@ export default function ShopPage() {
   const { user } = useAuth()
   const [items, setItems] = useState<GroceryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [newItem, setNewItem] = useState('')
   const [adding, setAdding] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -102,11 +103,18 @@ export default function ShopPage() {
 
   async function fetchItems() {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('grocery_list')
       .select('*')
       .eq('user_id', user!.id)
       .order('created_at', { ascending: true })
+    if (error) {
+      console.error('ShopPage fetchItems failed:', error)
+      setFetchError(true)
+      setLoading(false)
+      return
+    }
+    setFetchError(false)
     setItems((data as GroceryItem[]) ?? [])
     setLoading(false)
   }
@@ -192,15 +200,27 @@ export default function ShopPage() {
   }
 
   async function handleDelete(id: string) {
+    const snapshot = items
     setItems(prev => prev.filter(i => i.id !== id))
-    await supabase.from('grocery_list').delete().eq('id', id)
+    const { error } = await supabase.from('grocery_list').delete().eq('id', id)
+    if (error) {
+      console.error('ShopPage handleDelete failed:', error)
+      setItems(snapshot)
+      showToast('Could not remove item. Try again.')
+    }
   }
 
   async function handleClearChecked() {
     const checkedIds = items.filter(i => i.is_checked).map(i => i.id)
     if (!checkedIds.length) return
+    const snapshot = items
     setItems(prev => prev.filter(i => !i.is_checked))
-    await supabase.from('grocery_list').delete().in('id', checkedIds)
+    const { error } = await supabase.from('grocery_list').delete().in('id', checkedIds)
+    if (error) {
+      console.error('ShopPage handleClearChecked failed:', error)
+      setItems(snapshot)
+      showToast('Could not clear items. Try again.')
+    }
   }
 
   const unchecked = items.filter(i => !i.is_checked)
@@ -233,6 +253,11 @@ export default function ShopPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-48">
             <CookingSpinner size="md" label="Loading your list…" />
+          </div>
+        ) : fetchError ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-3 text-center px-6">
+            <p className="text-sm font-body text-stone-500 dark:text-stone-400">Couldn't load your grocery list. Try refreshing.</p>
+            <button onClick={fetchItems} className="btn-primary mt-1">Refresh</button>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-6">
