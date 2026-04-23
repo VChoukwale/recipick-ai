@@ -2,34 +2,21 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { PantryItem, PantryCategory } from '../types/database'
+import { CATEGORY_ORDER, CATEGORY_META } from '../components/pantry/categoryMeta'
+import PantrySection from '../components/pantry/PantrySection'
+import AddItemSheet from '../components/pantry/AddItemSheet'
+import EditItemSheet from '../components/pantry/EditItemSheet'
+import PantryChat from '../components/pantry/PantryChat'
+import { violatesDiet } from '../utils/diet'
 
-const MEAT_FISH_P = ['chicken', 'beef', 'pork', 'lamb', 'mutton', 'goat', 'fish', 'prawn', 'shrimp', 'tuna', 'salmon', 'crab', 'lobster', 'turkey', 'duck', 'bacon', 'ham', 'sausage', 'anchovy', 'sardine', 'squid', 'mince', 'keema', 'pepperoni', 'salami']
-const DAIRY_P = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'honey', 'cheddar', 'mozzarella', 'parmesan', 'ricotta', 'feta', 'halloumi', 'khoya', 'malai', 'condensed milk']
-const PLANT_BASED_P = ['plant based', 'plant-based', 'plant protein', 'vegan', 'mock ', 'faux ', 'beyond meat', 'impossible burger', 'tofu', 'tempeh', 'seitan', 'jackfruit']
-const SPICE_IND_P = ['masala', 'spice mix', 'spice blend', 'spice rub', 'seasoning', 'curry powder', 'marinade', 'tadka', 'tempering']
-function pantryViolatesDiet(name: string, diet: string): boolean {
-  const lower = name.toLowerCase()
-  if (PLANT_BASED_P.some(m => lower.includes(m))) return false
-  const spice = SPICE_IND_P.some(s => lower.includes(s))
-  const isMeat = !spice && MEAT_FISH_P.some(k => lower.includes(k))
-  const isDairy = DAIRY_P.some(k => lower.includes(k))
-  const isEgg = /\beggs?\b/i.test(lower)
-  if (diet === 'vegan') return isMeat || isDairy || isEgg
-  if (diet === 'vegetarian') return isMeat || isEgg
-  if (diet === 'vegetarian_with_eggs') return isMeat
-  return false
-}
+// Short-form label for the PantrySection chip: "⚠️ 2 not vegetarian"
+// Intentionally shorter than dietLabel() from utils/diet, which returns "vegetarian (no eggs)".
 function pantryDietLabel(diet: string): string {
   if (diet === 'vegan') return 'vegan'
   if (diet === 'vegetarian') return 'vegetarian'
   if (diet === 'vegetarian_with_eggs') return 'eggitarian'
   return ''
 }
-import { CATEGORY_ORDER, CATEGORY_META } from '../components/pantry/categoryMeta'
-import PantrySection from '../components/pantry/PantrySection'
-import AddItemSheet from '../components/pantry/AddItemSheet'
-import EditItemSheet from '../components/pantry/EditItemSheet'
-import PantryChat from '../components/pantry/PantryChat'
 
 export default function PantryPage() {
   const { user, profile } = useAuth()
@@ -288,7 +275,7 @@ export default function PantryPage() {
               const diet = profile?.dietary_preference ?? 'non_vegetarian'
               const sectionItems = grouped.get(cat)!
               const conflictIds = diet === 'non_vegetarian' ? new Set<string>()
-                : new Set(sectionItems.filter(i => i.is_available && pantryViolatesDiet(i.name, diet)).map(i => i.id))
+                : new Set(sectionItems.filter(i => i.is_available && violatesDiet(i.name, diet)).map(i => i.id))
               return (
                 <PantrySection
                   key={cat}
