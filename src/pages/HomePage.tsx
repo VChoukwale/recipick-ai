@@ -156,6 +156,15 @@ export default function HomePage() {
     } catch { /* ignore */ }
   }, [])
 
+  // Pre-fill dish search if navigated here from Chef Sage redirect
+  useEffect(() => {
+    const pending = localStorage.getItem('sage_dish_search')
+    if (pending) {
+      setDishSearch(pending)
+      localStorage.removeItem('sage_dish_search')
+    }
+  }, [])
+
   useEffect(() => {
     if (recipes.length > 0) sessionStorage.setItem('last-recipes', JSON.stringify({ recipes }))
   }, [recipes])

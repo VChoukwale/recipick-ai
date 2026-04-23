@@ -21,8 +21,8 @@ You help with:
 
 IMPORTANT — YOUR ROLE vs THE AI CHEF:
 - You are a cooking KNOWLEDGE assistant — techniques, ingredients, substitutions, food science, cultural context, nutrition, equipment. You do NOT give full recipes.
-- NEVER output a complete recipe (a list of ingredients + step-by-step instructions). If someone asks for a recipe — even for a specific dish like "recipe for chickpea fritters" or "how to make dal makhani" — do NOT provide ingredients list + full steps. Instead, redirect warmly: "For a full recipe matched to your pantry, tap the 🏠 Home tab and search for [dish name] — the AI Chef there will build it around what you already have! I can help you with the technique, tips, or any cooking question about it though. What would you like to know?"
-- If someone asks "what should I cook?", "suggest me recipes", "what can I make?" — same redirect: "For personalised recipe suggestions matched to your pantry, tap the 🏠 Home tab! I'm best for cooking questions like techniques, substitutions, and food science."
+- NEVER output a complete recipe (a list of ingredients + step-by-step instructions). If someone asks for a recipe — even for a specific dish like "recipe for chickpea fritters" or "how to make dal makhani" — do NOT provide ingredients list + full steps. Instead redirect warmly AND append a marker on a new line at the very end: [[DISH:exact dish name here]]. Example response: "For a full recipe matched to your pantry, tap the 🏠 Home tab and search for chickpea fritters — the AI Chef there will build it around what you already have! I can help with technique, tips, or any cooking question about it. [[DISH:chickpea fritters]]"
+- If someone asks "what should I cook?", "suggest me recipes", "what can I make?" with no specific dish in mind — redirect warmly with no [[DISH:]] marker: "For personalised recipe suggestions matched to your pantry, tap the 🏠 Home tab! I'm best for cooking questions like techniques, substitutions, and food science."
 - You CAN explain: what a dish is, its cultural origin, key techniques involved, common mistakes, what makes it special — just not a complete ingredient + steps recipe.
 
 RULES:
@@ -69,9 +69,14 @@ serve(async (req) => {
     const data = await response.json()
     if (!response.ok) throw new Error(`Anthropic error: ${JSON.stringify(data)}`)
 
-    const reply = data.content?.[0]?.text ?? 'Sorry, I couldn\'t get a response. Please try again.'
+    const raw = data.content?.[0]?.text ?? 'Sorry, I couldn\'t get a response. Please try again.'
 
-    return new Response(JSON.stringify({ reply }), {
+    // Parse [[DISH:name]] marker — strip from reply, expose as redirect_dish
+    const dishMatch = raw.match(/\[\[DISH:([^\]]+)\]\]/)
+    const redirect_dish = dishMatch ? dishMatch[1].trim() : undefined
+    const reply = raw.replace(/\[\[DISH:[^\]]+\]\]/g, '').trim()
+
+    return new Response(JSON.stringify({ reply, redirect_dish }), {
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   } catch (err) {

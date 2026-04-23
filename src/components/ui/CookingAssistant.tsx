@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useCookingAssistant } from '../../contexts/CookingAssistantContext'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  redirect_dish?: string
 }
 
 const MAX_HISTORY = 10
@@ -87,6 +89,7 @@ const suggestedQuestions = [
 
 export default function CookingAssistant() {
   const { open, setOpen } = useCookingAssistant()
+  const navigate = useNavigate()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -154,7 +157,8 @@ export default function CookingAssistant() {
       })
       if (error) throw error
       const reply = data?.reply ?? 'Sorry, something went wrong. Please try again.'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+      const redirect_dish: string | undefined = data?.redirect_dish
+      setMessages(prev => [...prev, { role: 'assistant', content: reply, redirect_dish }])
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -163,6 +167,12 @@ export default function CookingAssistant() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function goToHome(dish: string) {
+    localStorage.setItem('sage_dish_search', dish)
+    setOpen(false)
+    navigate('/')
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -287,14 +297,27 @@ export default function CookingAssistant() {
                       👨‍🍳
                     </div>
                   )}
-                  <div
-                    className="rounded-2xl px-3.5 py-2.5 max-w-[85%] text-sm font-body leading-relaxed"
-                    style={msg.role === 'user'
-                      ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', borderRadius: '18px 18px 4px 18px' }
-                      : { background: 'var(--s2)', border: '1px solid var(--bdr-s)', color: 'var(--t1)', borderRadius: '18px 18px 18px 4px' }
-                    }
-                  >
-                    {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
+                  <div className="flex flex-col gap-2 max-w-[85%]">
+                    <div
+                      className="rounded-2xl px-3.5 py-2.5 text-sm font-body leading-relaxed"
+                      style={msg.role === 'user'
+                        ? { background: 'linear-gradient(135deg, #E8713A, #D85F22)', color: '#fff', borderRadius: '18px 18px 4px 18px' }
+                        : { background: 'var(--s2)', border: '1px solid var(--bdr-s)', color: 'var(--t1)', borderRadius: '18px 18px 18px 4px' }
+                      }
+                    >
+                      {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
+                    </div>
+                    {msg.redirect_dish && (
+                      <button
+                        onClick={() => goToHome(msg.redirect_dish!)}
+                        className="self-start flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-display font-700 text-white transition-all active:scale-95"
+                        style={{ background: 'linear-gradient(135deg, #E8713A, #D85F22)', boxShadow: '0 2px 10px rgba(232,113,58,0.35)' }}
+                      >
+                        <span>🏠</span>
+                        <span>Find "{msg.redirect_dish}" on Home</span>
+                        <span>→</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
