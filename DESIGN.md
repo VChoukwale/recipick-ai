@@ -30,11 +30,18 @@ Secondary framing (less prominent in UI): recipick.ai also reduces food waste. S
 
 ### Recipe Generation
 
-1. User sets optional context: energy level, cuisine, mood, meal type, equipment, focus ingredient.
+1. User sets optional filters: energy level, cuisine, mood, meal type, equipment, focus ingredient.
 2. App calls `ai-chef` edge function with full pantry, filters, dietary profile, and variety data.
-3. Claude returns 3 structured recipes ranked by pantry match %.
-4. User taps a card → full recipe sheet with ingredients, instructions, match breakdown.
-5. Missing ingredients can be added to the grocery list in one tap.
+3. Claude returns structured JSON with 3 recipe suggestions.
+4. `validateAndEnrichRecipes()` runs server-side before anything is returned:
+   - Schema validation (required fields, types)
+   - Dietary conflict check per recipe
+   - `match_percentage` recomputed deterministically against actual pantry
+   - `missing_ingredients` recomputed accurately
+5. Valid recipes are returned ranked by match %. Recipes that fail validation are dropped silently.
+6. If all recipes fail → function returns `validation_error: true` → client retries automatically.
+7. User taps a card → full recipe sheet with ingredients, instructions, match breakdown.
+8. Missing ingredients can be added to the grocery list in one tap.
 
 ### Pantry Management
 
@@ -193,6 +200,9 @@ Emoji mic (🎙) renders inconsistently across Android/iOS/desktop. SVG gives pi
 
 ### Dietary conflict handling via prompt, not blocklist
 A blocklist is fragile — new product names break it immediately. Instead the prompt uses a three-rule system: (1) dietary mode as absolute constraints, (2) explicit safe-product exceptions (plant-based brands, masala spice packets), (3) "if focus_ingredients violate diet, ignore them — never refuse." This handles edge cases and prevents unhelpful refusals.
+
+### AI-provided `in_pantry` vs deterministic recompute
+Claude's `in_pantry` flags on each ingredient are preserved for fuzzy matching — the model can recognise that "cherry tomatoes" matches "tomatoes" in the pantry. However, `match_percentage` and `missing_ingredients` are always recomputed server-side deterministically after the AI responds, so the numbers shown to the user are always accurate regardless of what Claude estimated.
 
 ---
 

@@ -12,6 +12,8 @@
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
+🔗 **Live App:** [recipickai.vercel.app](https://recipickai.vercel.app/)
+
 </div>
 
 ---
@@ -23,6 +25,16 @@ recipick.ai works backwards from your pantry. Instead of showing aspirational re
 It supports four dietary profiles — **vegan**, **vegetarian**, **eggitarian (lacto-ovo)**, and **non-vegetarian** — with precise AI conflict detection that handles edge cases like plant-based mock meats and masala spice packets correctly.
 
 Built as a **Progressive Web App**, it installs directly from the browser on Android and iOS — no App Store required.
+
+---
+
+## Why I Built This
+
+I built recipick.ai from a real daily problem: deciding what to cook with whatever was already in my kitchen.
+
+Most recipe apps assume users start with a dish in mind. In reality, many people start with a pantry, limited time, dietary preferences, and the question: "What can I make today?"
+
+recipick.ai started as a simple pantry-based recipe idea and grew into a full product with AI generation, recipe validation, pantry management, grocery planning, and saved recipe feedback.
 
 ---
 
@@ -71,11 +83,17 @@ Built as a **Progressive Web App**, it installs directly from the browser on And
 
 ## How It Works
 
-1. **Add your pantry** — add ingredients manually, by voice, or via natural language ("I just bought tomatoes and spinach").
-2. **Set your context** — choose energy level, cuisine, mood, meal type, or equipment. Or leave it blank.
-3. **Get recipes** — the AI Chef scans your pantry, applies your dietary rules, and returns 3 recipes ranked by how much you already have.
-4. **Cook or save** — follow the step-by-step instructions, add missing items to your grocery list, or save the recipe to your vault.
-5. **Rate it** — 👍/👎 after cooking. Ratings influence the AI's future suggestions for you.
+1. **Add pantry ingredients** and set your dietary preference.
+2. **Select filters** — cuisine, meal type, mood, equipment, or focus ingredients. All optional.
+3. **The request is sent** to a Supabase Edge Function with your full pantry, profile, and variety data.
+4. **Claude generates** 3 structured recipe suggestions as JSON.
+5. **The response is validated** before anything is shown:
+   - Schema validation (required fields, types)
+   - Dietary conflict check per recipe
+   - Match % recomputed deterministically against your actual pantry
+   - Missing ingredients recomputed accurately
+6. **Valid recipes are displayed**, ranked by pantry match %. Recipes that fail validation are dropped silently.
+7. **Save, cook, or shop** — save to your vault, follow step-by-step instructions, or add missing items to your grocery list in one tap. Rate after cooking to improve future suggestions.
 
 ---
 
