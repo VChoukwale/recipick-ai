@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 300">
+  <!-- Orange background -->
+  <rect width="380" height="300" fill="#E8713A"/>
+
+  <!-- Spoon: lower-left, angled toward pan -->
+  <g transform="rotate(-38 72 238)">
+    <ellipse cx="72" cy="238" rx="21" ry="15" fill="#5A2E08"/>
+    <rect x="86" y="231" width="88" height="9" rx="4.5" fill="#5A2E08"/>
+  </g>
+
+  <!-- Pan: rotate(35) clockwise → opening goes to upper-left, handle lower-right -->
+  <g transform="rotate(35 220 195)">
+    <ellipse cx="220" cy="195" rx="72" ry="27" fill="#1A1A1A"/>
+    <ellipse cx="216" cy="194" rx="58" ry="20" fill="#2C2C2C"/>
+    <ellipse cx="200" cy="190" rx="22" ry="7" fill="white" opacity="0.07"/>
+    <rect x="285" y="185" width="80" height="20" rx="10" fill="#0F0F0F"/>
+  </g>
+
+  <!-- Food flying directly out of pan opening (upper-left of pan) -->
+  <!-- Opening lands near (155, 152) after rotation — food arcs upward from there -->
+
+  <!-- Leaf 1 — mid-left, rotating out -->
+  <path d="M152,148 C140,133 153,115 171,121 C168,136 158,148 152,148Z" fill="#28A038" transform="rotate(-22 161 131)"/>
+  <line x1="152" y1="148" x2="171" y2="121" stroke="#1A7228" stroke-width="1.5"/>
+
+  <!-- Leaf 2 — higher, arcing right -->
+  <path d="M186,108 C174,93 186,75 204,81 C202,96 192,108 186,108Z" fill="#28A038" transform="rotate(20 195 91)"/>
+  <line x1="186" y1="108" x2="204" y2="81" stroke="#1A7228" stroke-width="1.5"/>
+
+  <!-- Leaf 3 — small, lower-left -->
+  <path d="M122,165 C112,153 122,138 137,143 C135,154 126,165 122,165Z" fill="#34B844" transform="rotate(-50 129 151)"/>
+
+  <!-- Tomato 1 — large, center of cluster -->
+  <circle cx="205" cy="122" r="19" fill="#CC1E1E"/>
+  <circle cx="198" cy="115" r="6" fill="#FF5050" opacity="0.4"/>
+  <!-- Tomato 2 — smaller, lower -->
+  <circle cx="165" cy="150" r="15" fill="#CC1E1E"/>
+  <circle cx="159" cy="144" r="4" fill="#FF5050" opacity="0.4"/>
+
+  <!-- Corn/grain dots scattered in cluster -->
+  <circle cx="188" cy="122" r="5.5" fill="#E0AE00"/>
+  <circle cx="197" cy="108" r="5"   fill="#E0AE00"/>
+  <circle cx="178" cy="136" r="5"   fill="#E0AE00"/>
+  <circle cx="152" cy="132" r="4"   fill="#E0AE00"/>
+  <circle cx="167" cy="115" r="4.5" fill="#E0AE00"/>
+
+  <!-- Steam rising from food cluster -->
+  <path d="M162,100 Q148,78 161,58 Q174,38 160,14" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M192,95 Q178,72 191,52 Q204,32 190,8"  stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.8"/>
+</svg>

@@ -7,9 +7,7 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#EDE7DC] dark:bg-charcoal-950 px-6">
       {/* Logo / brand */}
       <div className="mb-8 text-center animate-fade-in">
-        <div className="w-20 h-20 rounded-3xl bg-brand-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-          <span className="text-4xl">🥘</span>
-        </div>
+        <img src="/logo.svg" alt="recipick.ai" className="w-24 h-24 rounded-3xl mx-auto mb-4 shadow-lg" />
         <h1 className="font-display text-4xl font-800 text-brand-500">recipick.ai</h1>
         <p className="mt-2 text-base text-stone-500 dark:text-stone-400 font-body">
           Pick smart. Cook easy.
