@@ -67,7 +67,7 @@ Secondary framing (less prominent in UI): recipick.ai also reduces food waste. S
 
 ## Architecture
 
-![Architecture Diagram](./docs/architecture.svg)
+![Architecture Diagram](./docs/architecture-v2.svg)
 
 The Anthropic API key never reaches the browser. All AI calls are proxied through Supabase Edge Functions. The React client only holds the Supabase anon key, which is safe to expose (RLS enforces user-level access).
 
