@@ -33,8 +33,8 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 
-# Claude Code (contains tokens/permissions)
-.claude/settings.local.json
+# Claude Code (internal tooling config — not for public repos)
+.claude/
 
 # Supabase temp
 supabase/.temp/
