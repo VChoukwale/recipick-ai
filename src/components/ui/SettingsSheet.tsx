@@ -136,12 +136,13 @@ export default function SettingsSheet({ onClose }: Props) {
     if (!user) return
     setSaving(true)
     const dietChanged = dietary !== prevDietaryRef.current
-    await supabase.from('profiles').update({
+    const { error } = await supabase.from('profiles').update({
       display_name: displayName.trim() || null,
       dietary_preference: dietary,
       skill_level: skill,
       preferred_cuisines: cuisines,
     }).eq('id', user.id)
+    if (error) { setSaving(false); return }
     await refreshProfile()
     prevDietaryRef.current = dietary
     setSaving(false)
