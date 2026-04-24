@@ -135,36 +135,7 @@ recipick.ai started as a simple pantry-based recipe idea and grew into a full pr
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────┐
-│           Browser · React PWA           │
-│     React 18 · TypeScript · Vite        │
-└──────────────┬──────────────────────────┘
-               │ Supabase JS Client
-               ▼
-┌──────────────────────────────────────────────────┐
-│                 Supabase (hosted)                │
-│                                                  │
-│  ┌─────────────┐    ┌──────────────────────────┐ │
-│  │  Postgres   │◄───│    Edge Functions         │ │
-│  │  + RLS      │    │    Deno Runtime           │ │
-│  └─────────────┘    │                          │ │
-│                     │  ai-chef                 │ │
-│                     │  ai-cooking-assistant    │ │
-│                     │  ai-extract-recipe       │ │
-│                     │  ai-categorize           │ │
-│                     │  ai-pantry-chat          │ │
-│                     │  ai-grocery-categorize   │ │
-│                     │  send-feedback           │ │
-│                     └────────────┬─────────────┘ │
-└──────────────────────────────────│───────────────┘
-               ┌────────────────────┴──────────────┐
-               ▼                                   ▼
-┌──────────────────────────┐       ┌───────────────────┐
-│   Anthropic Claude Haiku │       │    Resend API     │
-│   (all AI functions)     │       │  (feedback only)  │
-└──────────────────────────┘       └───────────────────┘
-```
+![Architecture Diagram](./docs/readme-architecture.svg)
 
 All AI calls are server-side via Supabase Edge Functions. The Anthropic API key never reaches the browser.
 
