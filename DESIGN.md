@@ -67,46 +67,7 @@ Secondary framing (less prominent in UI): recipick.ai also reduces food waste. S
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    Browser["🌐 Browser · React PWA\nReact 18 · TypeScript · Vite"]
-
-    subgraph SUPA["☁️  Supabase Platform"]
-        DB[("🗄️ Postgres\nRow Level Security")]
-        subgraph EF["⚡  Edge Functions · Deno Runtime"]
-            A1["🍳 ai-chef"]
-            A2["🧑‍🍳 ai-cooking-assistant"]
-            A3["📥 ai-extract-recipe"]
-            A4["🏷️ ai-categorize"]
-            A5["💬 ai-pantry-chat"]
-            A6["🛒 ai-grocery-categorize"]
-            A7["📧 send-feedback"]
-        end
-    end
-
-    Claude["🤖 Claude Haiku · Anthropic API"]
-    Resend["📨 Resend API"]
-
-    Browser -->|"JS Client · auth + DB ops"| DB
-    Browser -->|"functions.invoke()"| EF
-    EF -->|"read / write"| DB
-    A1 & A2 & A3 & A4 & A5 & A6 -->|"API calls"| Claude
-    A7 -->|"email only"| Resend
-
-    style Browser fill:#E8713A,color:#fff,stroke:#c45e28,stroke-width:2px
-    style DB fill:#3ECF8E,color:#fff,stroke:#2bb87a,stroke-width:2px
-    style SUPA fill:#3ECF8E15,stroke:#3ECF8E,stroke-width:2px
-    style EF fill:#6B4FBB20,stroke:#6B4FBB,stroke-width:1px
-    style A1 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A2 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A3 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A4 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A5 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A6 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style A7 fill:#6B4FBB,color:#fff,stroke:#5a3fa0
-    style Claude fill:#1a1a2e,color:#fff,stroke:#444
-    style Resend fill:#1a1a2e,color:#fff,stroke:#444
-```
+![Architecture Diagram](./docs/architecture.svg)
 
 The Anthropic API key never reaches the browser. All AI calls are proxied through Supabase Edge Functions. The React client only holds the Supabase anon key, which is safe to expose (RLS enforces user-level access).
 
