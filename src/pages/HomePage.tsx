@@ -300,10 +300,16 @@ export default function HomePage() {
     try {
       data = await invoke()
     } catch (err) {
-      // Don't retry validation failures — retry once on transient errors
+      // Don't retry validation failures — retry up to 2 more times on transient errors
       if (err instanceof Error && err.message === 'validation_failed') throw err
       await new Promise(r => setTimeout(r, 2000))
-      data = await invoke()
+      try {
+        data = await invoke()
+      } catch (err2) {
+        if (err2 instanceof Error && err2.message === 'validation_failed') throw err2
+        await new Promise(r => setTimeout(r, 3000))
+        data = await invoke()
+      }
     }
     const newRecipes: AiRecipe[] = data?.recipes ?? []
     trackRecentIngredients(newRecipes)
@@ -328,10 +334,13 @@ export default function HomePage() {
       console.error('ai-chef error:', e)
       const isTimeout = e instanceof Error && e.name === 'AbortError'
       const isValidationFail = e instanceof Error && e.message === 'validation_failed'
+      const hasFilters = cuisine !== 'Any' || region || mood !== 'Any mood' || mealType || equipment.length > 0
       setError(isTimeout
         ? 'Request timed out. Check your connection and try again.'
         : isValidationFail
-          ? "We couldn't generate safe recipe matches this time. Try changing your ingredients or filters."
+          ? hasFilters
+            ? `No ${(profile?.dietary_preference ?? 'vegetarian').replace(/_/g, ' ')} recipes found for ${region ? `${region} ${cuisine}` : cuisine !== 'Any' ? cuisine : 'these filters'}. Try a different region or cuisine.`
+            : "We couldn't generate safe recipe matches this time. Try adjusting your filters or pantry items."
           : 'Something went wrong. Please try again.')
     }
     finally { setLoading(false); setCooldown(true); setTimeout(() => setCooldown(false), 5000) }

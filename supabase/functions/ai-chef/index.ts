@@ -99,7 +99,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: 2800,
+        max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMessage }],
       }),
