@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AiRecipe } from '../../types/database'
+import { detectAllergens } from '../../utils/allergens'
+import { violatesDiet } from '../../utils/diet'
 
 interface Props {
   recipe: AiRecipe
@@ -25,11 +27,14 @@ function MatchBar({ pct }: { pct: number }) {
 const SKIP_MISSING = new Set(['water', 'warm water', 'cold water', 'hot water', 'water (for boiling)'])
 
 export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Props) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [addedToList, setAddedToList] = useState(false)
   const [addingToList, setAddingToList] = useState(false)
   const [addListMsg, setAddListMsg] = useState('')
   const inPantry = recipe.ingredients.filter(i => i.in_pantry)
+  const allergenWarnings = detectAllergens(recipe.ingredients, profile?.allergies ?? [])
+  const diet = profile?.dietary_preference ?? 'vegetarian'
+  const dietViolations = diet === 'non_vegetarian' ? [] : recipe.ingredients.filter(i => violatesDiet(i.name, diet)).map(i => i.name)
   const rawMissing = recipe.missing_ingredients?.length > 0
     ? recipe.missing_ingredients
     : recipe.ingredients.filter(i => !i.in_pantry).map(i => ({ name: i.name, substitution: '' }))
@@ -123,6 +128,28 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
               </p>
             )}
           </div>
+
+          {/* Allergen warning */}
+          {allergenWarnings.length > 0 && (
+            <div className="mb-4 flex items-start gap-2.5 px-3.5 py-3 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <span className="text-base flex-shrink-0">⚠️</span>
+              <div>
+                <p className="font-display font-700 text-red-600 dark:text-red-400 text-sm">Allergen Alert</p>
+                <p className="text-xs font-body text-red-500 dark:text-red-300 mt-0.5">Contains: {allergenWarnings.join(', ')}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Dietary conflict warning */}
+          {dietViolations.length > 0 && (
+            <div className="mb-4 flex items-start gap-2.5 px-3.5 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <span className="text-base flex-shrink-0">🌿</span>
+              <div>
+                <p className="font-display font-700 text-amber-700 dark:text-amber-400 text-sm">May not match your diet</p>
+                <p className="text-xs font-body text-amber-600 dark:text-amber-300 mt-0.5">{dietViolations.join(', ')}</p>
+              </div>
+            </div>
+          )}
 
           {/* In pantry */}
           {inPantry.length > 0 && (

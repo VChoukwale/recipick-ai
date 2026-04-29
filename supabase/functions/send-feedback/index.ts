@@ -31,6 +31,9 @@ serve(async (req) => {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (resendKey) {
       const reactionLabel = reaction ? `${reaction} ${REACTIONS[reaction] ?? ''}` : 'General feedback'
+      const safeMessage = (message as string)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, '<br/>')
       const emailHtml = `
         <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
           <div style="background: #E8713A; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
@@ -45,7 +48,7 @@ serve(async (req) => {
                 <td style="padding: 8px 0; font-size: 14px;">${reactionLabel}</td></tr>
           </table>
           <div style="background: #FAF7F2; border: 1px solid #EDE6D6; border-radius: 12px; padding: 16px 20px;">
-            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #1A140E;">${message.replace(/\n/g, '<br/>')}</p>
+            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #1A140E;">${safeMessage}</p>
           </div>
           <p style="margin-top: 16px; font-size: 12px; color: #8C7355;">Submitted via recipick.ai in-app feedback</p>
         </div>
@@ -58,7 +61,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           from: 'recipick.ai <onboarding@resend.dev>',
-          to: ['vaishnavichoukwale1912@gmail.com'],
+          to: [Deno.env.get('FEEDBACK_RECIPIENT_EMAIL') ?? 'feedback@recipick.ai'],
           subject: `recipick.ai Feedback — ${user_name ?? 'User'} ${reaction ?? ''}`.trim(),
           html: emailHtml,
         }),
