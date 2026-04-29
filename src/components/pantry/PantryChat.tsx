@@ -190,18 +190,17 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
         }))
         await supabase.from('pantry_items').insert(inserts)
 
-        // Categorize all new items, then refresh so the correct category appears
+        // Categorize all new items, then refresh so correct category appears
         Promise.all(
-          toInsert.map(name =>
-            supabase.functions.invoke('ai-categorize', { body: { item_name: name } }).then(({ data }) => {
-              if (data?.category) {
-                return supabase.from('pantry_items')
-                  .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
-                  .eq('user_id', uid)
-                  .eq('name', name)
-              }
-            })
-          )
+          toInsert.map(async name => {
+            const { data: catData } = await supabase.functions.invoke('ai-categorize', { body: { item_name: name } })
+            if (catData?.category) {
+              await supabase.from('pantry_items')
+                .update({ category: catData.category, ai_tags: catData.ai_tags ?? [] })
+                .eq('user_id', uid)
+                .eq('name', name)
+            }
+          })
         ).then(() => onPantryUpdate())
       }
     }
