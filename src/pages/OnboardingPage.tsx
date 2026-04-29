@@ -154,19 +154,23 @@ export default function OnboardingPage() {
       if (profileErr) throw profileErr
 
       if (checkedItems.size > 0) {
+        const { data: existing } = await supabase
+          .from('pantry_items').select('name').eq('user_id', user.id)
+        const existingNames = new Set((existing ?? []).map((r: { name: string }) => r.name.toLowerCase()))
+
         const allItems = STARTER_PANTRY.flatMap(s => s.items)
         const toInsert = allItems
-          .filter(item => checkedItems.has(item.name))
+          .filter(item => checkedItems.has(item.name) && !existingNames.has(item.name.toLowerCase()))
           .map(item => ({
             user_id: user.id,
             name: item.name,
             category: item.category,
             is_available: true,
           }))
-        const { error: pantryErr } = await supabase
-          .from('pantry_items')
-          .upsert(toInsert, { onConflict: 'user_id,name', ignoreDuplicates: true })
-        if (pantryErr) throw pantryErr
+        if (toInsert.length > 0) {
+          const { error: pantryErr } = await supabase.from('pantry_items').insert(toInsert)
+          if (pantryErr) throw pantryErr
+        }
       }
 
       await refreshProfile()
