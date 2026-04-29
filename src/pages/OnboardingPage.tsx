@@ -163,7 +163,9 @@ export default function OnboardingPage() {
             category: item.category,
             is_available: true,
           }))
-        const { error: pantryErr } = await supabase.from('pantry_items').insert(toInsert)
+        const { error: pantryErr } = await supabase
+          .from('pantry_items')
+          .upsert(toInsert, { onConflict: 'user_id,name', ignoreDuplicates: true })
         if (pantryErr) throw pantryErr
       }
 
