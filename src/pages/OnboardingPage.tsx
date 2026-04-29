@@ -139,22 +139,19 @@ export default function OnboardingPage() {
     setSaveError('')
 
     try {
+      // upsert so a profile row is created if it doesn't exist yet
       const { error: profileErr } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           dietary_preference: dietary,
           skill_level: skill,
           preferred_cuisines: cuisines,
+          allergies,
           onboarding_completed: true,
         })
-        .eq('id', user.id)
 
       if (profileErr) throw profileErr
-
-      // Save allergies separately — won't block onboarding if column is missing yet
-      if (allergies.length > 0) {
-        await supabase.from('profiles').update({ allergies }).eq('id', user.id)
-      }
 
       if (checkedItems.size > 0) {
         const allItems = STARTER_PANTRY.flatMap(s => s.items)
