@@ -43,7 +43,7 @@ recipick.ai started as a simple pantry-based recipe idea and grew into a full pr
 | Feature | Description |
 |---|---|
 | 🤖 **AI Chef** | Set energy level, cuisine, mood, meal type, and equipment. Get 3 recipes ranked by pantry match %, with substitutions for anything missing. |
-| 🧺 **Smart Pantry** | Add ingredients across 16 categories. AI auto-categorises on add. Star items to always cook around them. |
+| 🧺 **Smart Pantry** | Add ingredients across 18 categories including Fruits and Nuts & Seeds. AI auto-categorises on add. Star items to always cook around them. |
 | 🌍 **Regional Cuisine** | Go beyond "Indian" or "Chinese" — ask for Maharashtrian, Sichuan, Oaxacan. The AI knows authentic regional dishes. |
 | 🎯 **Focus Mode** | Select one or more pantry items and every recipe is built around them as the hero ingredient. |
 | 🔀 **Variety Engine** | Tracks hero ingredients across sessions and uses a variety seed to steer the AI toward a fresh pantry section each call. |

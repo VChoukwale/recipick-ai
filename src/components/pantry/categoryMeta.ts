@@ -3,8 +3,10 @@ import type { PantryCategory } from '../../types/database'
 // Default header background per category
 export const CATEGORY_BG: Record<PantryCategory, string> = {
   fresh_produce:     'bg-green-200 dark:bg-green-700/40',
+  fruits:            'bg-red-100 dark:bg-red-800/35',
   dairy_eggs:        'bg-blue-200 dark:bg-blue-700/40',
   protein:           'bg-red-200 dark:bg-red-700/40',
+  nuts_seeds:        'bg-amber-100 dark:bg-amber-900/40',
   grains_legumes:    'bg-amber-200 dark:bg-amber-700/40',
   spices_herbs:      'bg-orange-200 dark:bg-orange-700/40',
   condiments_sauces: 'bg-yellow-200 dark:bg-yellow-700/40',
@@ -23,8 +25,10 @@ export const CATEGORY_BG: Record<PantryCategory, string> = {
 // Hover — one shade darker than default
 export const CATEGORY_HOVER: Record<PantryCategory, string> = {
   fresh_produce:     'hover:bg-green-300 dark:hover:bg-green-600/50',
+  fruits:            'hover:bg-red-200 dark:hover:bg-red-700/45',
   dairy_eggs:        'hover:bg-blue-300 dark:hover:bg-blue-600/50',
   protein:           'hover:bg-red-300 dark:hover:bg-red-600/50',
+  nuts_seeds:        'hover:bg-amber-200 dark:hover:bg-amber-800/50',
   grains_legumes:    'hover:bg-amber-300 dark:hover:bg-amber-600/50',
   spices_herbs:      'hover:bg-orange-300 dark:hover:bg-orange-600/50',
   condiments_sauces: 'hover:bg-yellow-300 dark:hover:bg-yellow-600/50',
@@ -43,8 +47,10 @@ export const CATEGORY_HOVER: Record<PantryCategory, string> = {
 // Tailwind border-l color class per category
 export const CATEGORY_ACCENT: Record<PantryCategory, string> = {
   fresh_produce:     'border-l-green-500',
+  fruits:            'border-l-red-400',
   dairy_eggs:        'border-l-blue-400',
   protein:           'border-l-red-500',
+  nuts_seeds:        'border-l-amber-600',
   grains_legumes:    'border-l-amber-500',
   spices_herbs:      'border-l-orange-500',
   condiments_sauces: 'border-l-yellow-500',
@@ -62,8 +68,10 @@ export const CATEGORY_ACCENT: Record<PantryCategory, string> = {
 
 export const CATEGORY_META: Record<PantryCategory, { label: string; emoji: string }> = {
   fresh_produce:     { label: 'Fresh Produce',       emoji: '🥬' },
+  fruits:            { label: 'Fruits',               emoji: '🍎' },
   dairy_eggs:        { label: 'Dairy & Eggs',         emoji: '🥛' },
   protein:           { label: 'Protein',              emoji: '💪' },
+  nuts_seeds:        { label: 'Nuts & Seeds',         emoji: '🥜' },
   grains_legumes:    { label: 'Grains & Legumes',     emoji: '🌾' },
   spices_herbs:      { label: 'Spices & Herbs',       emoji: '🌶️' },
   condiments_sauces: { label: 'Condiments & Sauces',  emoji: '🫙' },
@@ -80,7 +88,8 @@ export const CATEGORY_META: Record<PantryCategory, { label: string; emoji: strin
 }
 
 export const CATEGORY_ORDER: PantryCategory[] = [
-  'fresh_produce', 'dairy_eggs', 'protein', 'grains_legumes', 'spices_herbs',
-  'condiments_sauces', 'oils_fats', 'frozen', 'canned',
-  'dry_shelf', 'baking', 'snacks', 'beverages', 'dips', 'supplements', 'other',
+  'fresh_produce', 'fruits', 'dairy_eggs', 'protein', 'nuts_seeds',
+  'grains_legumes', 'spices_herbs', 'condiments_sauces', 'oils_fats',
+  'frozen', 'canned', 'dry_shelf', 'baking', 'snacks', 'beverages',
+  'dips', 'supplements', 'other',
 ]

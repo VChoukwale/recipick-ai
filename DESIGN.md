@@ -145,7 +145,7 @@ Fetches URL content or YouTube transcript, returns structured recipe JSON. Score
 
 ### `ai-categorize` — Auto-Categorization
 
-Called async after pantry item creation. Assigns one of 16 categories and up to 5 searchable tags. Item is created immediately (as "other") then updated when classification returns — no blocking UI wait.
+Called async after pantry item creation. Assigns one of 18 categories and up to 5 searchable tags. Item is created immediately (as "other") then updated when classification returns — no blocking UI wait.
 
 ### `ai-pantry-chat` — NLP Pantry Updates
 

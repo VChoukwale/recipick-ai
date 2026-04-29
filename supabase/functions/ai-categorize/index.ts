@@ -17,10 +17,12 @@ serve(async (req) => {
 
 Return ONLY this JSON (no markdown):
 {
-  "category": one of: fresh_produce|dairy_eggs|grains_legumes|spices_herbs|condiments_sauces|frozen|snacks|beverages|dry_shelf|oils_fats|baking|dips|canned|other,
+  "category": one of: fresh_produce|fruits|dairy_eggs|protein|nuts_seeds|grains_legumes|spices_herbs|condiments_sauces|oils_fats|frozen|canned|dry_shelf|baking|snacks|beverages|dips|supplements|other,
   "subcategory": "string or null",
   "ai_tags": ["array", "of", "descriptive", "tags"]
-}`
+}
+
+Category guide: fresh_produce=vegetables/leafy greens, fruits=all fruits (apple/mango/banana/berries), dairy_eggs=milk/cheese/yogurt/eggs, protein=meat/fish/tofu/tempeh/legume-based proteins, nuts_seeds=almonds/cashews/peanuts/sesame/flaxseed, grains_legumes=rice/lentils/dal/flour/pasta/chickpeas, spices_herbs=spices/masalas/dried herbs, condiments_sauces=sauces/vinegar/soy sauce/hot sauce, oils_fats=cooking oils/ghee/butter, frozen=frozen foods, canned=tinned/jarred goods, dry_shelf=packaged dry goods, baking=sugar/baking powder/cocoa/vanilla, snacks=chips/crackers/packaged snacks, beverages=drinks/tea/coffee/juice, dips=hummus/pesto/jam/spreads, supplements=protein powder/vitamins/superfoods, other=everything else.`
 
     const response = await fetch(ANTHROPIC_API, {
       method: 'POST',
