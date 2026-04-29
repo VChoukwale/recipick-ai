@@ -11,6 +11,7 @@ import ShopPage from './pages/ShopPage'
 import RecipesPage from './pages/RecipesPage'
 import InboxPage from './pages/InboxPage'
 import PWAUpdateToast from './components/ui/PWAUpdateToast'
+import { Analytics } from '@vercel/analytics/react'
 
 // Guards /onboarding — must be signed in; redirects away if already onboarded
 function OnboardingRoute() {
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <Analytics />
     </AuthProvider>
   )
 }
