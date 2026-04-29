@@ -35,6 +35,7 @@ export default function PantryPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLDivElement>(null)
   const isNavigatingRef = useRef(false)
+  const didBackfillCategoriesRef = useRef(false)
 
   useEffect(() => {
     if (!user) return
@@ -57,8 +58,18 @@ export default function PantryPage() {
       return
     }
     setFetchError(false)
-    setItems((data as PantryItem[]) ?? [])
+    const fetched = (data as PantryItem[]) ?? []
+    setItems(fetched)
     setLoading(false)
+
+    // One-time per session: recategorize items stuck in "other" with no ai_tags
+    if (!didBackfillCategoriesRef.current) {
+      didBackfillCategoriesRef.current = true
+      const needsCategorizing = fetched.filter(i => i.category === 'other' && (!i.ai_tags || i.ai_tags.length === 0))
+      for (const item of needsCategorizing) {
+        triggerAICategorize(item, '')
+      }
+    }
   }
 
   async function fetchGroceryNames() {
