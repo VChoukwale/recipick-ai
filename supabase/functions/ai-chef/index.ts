@@ -90,6 +90,29 @@ RESPONSE SCHEMA (return exactly this JSON, no markdown):
   ]
 }`
 
+function extractCompleteRecipes(raw: string): unknown[] {
+  const recipes: unknown[] = []
+  let depth = 0
+  let start = -1
+
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (raw[i] === '}') {
+      depth--
+      if (depth === 0 && start !== -1) {
+        try {
+          const obj = JSON.parse(raw.slice(start, i + 1))
+          if (obj.title && obj.ingredients) recipes.push(obj)
+        } catch { /* skip malformed */ }
+        start = -1
+      }
+    }
+  }
+  return recipes
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
@@ -103,12 +126,13 @@ serve(async (req) => {
 
     const userMessage = JSON.stringify(body)
 
-    const response = await fetch(ANTHROPIC_API, {
+    const fetchFromAnthropic = () => fetch(ANTHROPIC_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': anthropicKey,
         'anthropic-version': '2023-06-01',
+        'User-Agent': 'recipick-ai/1.0',
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
@@ -117,6 +141,13 @@ serve(async (req) => {
         messages: [{ role: 'user', content: userMessage }],
       }),
     })
+
+    let response = await fetchFromAnthropic()
+
+    if (response.status === 403 || response.status === 429) {
+      await new Promise(r => setTimeout(r, 2000))
+      response = await fetchFromAnthropic()
+    }
 
     if (!response.ok) {
       const errText = await response.text()
@@ -133,7 +164,14 @@ serve(async (req) => {
       parsed = JSON.parse(cleaned)
     } catch (parseErr) {
       console.error('[ai-chef] JSON parse failed:', parseErr, '| raw:', cleaned.slice(0, 200))
-      throw new Error('AI returned invalid JSON')
+      // Truncated response — extract any complete recipe objects
+      const recovered = extractCompleteRecipes(cleaned)
+      if (recovered.length > 0) {
+        console.error(`[ai-chef] recovered ${recovered.length} recipe(s) from truncated response`)
+        parsed = { recipes: recovered }
+      } else {
+        throw new Error('AI returned invalid JSON')
+      }
     }
 
     const rawRecipes: unknown[] = Array.isArray((parsed as { recipes?: unknown[] })?.recipes)
