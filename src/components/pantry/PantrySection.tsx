@@ -13,10 +13,11 @@ interface Props {
   dietConflictCount?: number
   dietLabel?: string
   conflictItemIds?: Set<string>
+  allergenItemIds?: Set<string>
   groceryNames?: Set<string>
 }
 
-export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete, dietConflictCount = 0, dietLabel = '', conflictItemIds, groceryNames }: Props) {
+export default function PantrySection({ category, items, onToggleAvailable, onToggleStar, onEdit, onDelete, dietConflictCount = 0, dietLabel = '', conflictItemIds, allergenItemIds, groceryNames }: Props) {
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_META[category]
   const accent = CATEGORY_ACCENT[category]
@@ -58,6 +59,7 @@ export default function PantrySection({ category, items, onToggleAvailable, onTo
               onEdit={onEdit}
               onDelete={onDelete}
               isConflict={conflictItemIds?.has(item.id) ?? false}
+              isAllergen={allergenItemIds?.has(item.id) ?? false}
               isOnGroceryList={groceryNames?.has(item.name.toLowerCase()) ?? false}
             />
           ))}

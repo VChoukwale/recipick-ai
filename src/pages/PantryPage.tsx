@@ -8,6 +8,7 @@ import AddItemSheet from '../components/pantry/AddItemSheet'
 import EditItemSheet from '../components/pantry/EditItemSheet'
 import PantryChat from '../components/pantry/PantryChat'
 import { violatesDiet } from '../utils/diet'
+import { ALLERGENS } from '../utils/allergens'
 
 // Short-form label for the PantrySection chip: "⚠️ 2 not vegetarian"
 // Intentionally shorter than dietLabel() from utils/diet, which returns "vegetarian (no eggs)".
@@ -63,11 +64,17 @@ export default function PantryPage() {
     setLoading(false)
 
     // One-time per session: recategorize items stuck in "other" with no ai_tags
+    // Process sequentially to avoid hitting Claude API rate limits
     if (!didBackfillCategoriesRef.current) {
       didBackfillCategoriesRef.current = true
       const needsCategorizing = fetched.filter(i => i.category === 'other' && (!i.ai_tags || i.ai_tags.length === 0))
-      for (const item of needsCategorizing) {
-        triggerAICategorize(item, '')
+      if (needsCategorizing.length > 0) {
+        ;(async () => {
+          for (const item of needsCategorizing) {
+            await triggerAICategorize(item, '')
+            await new Promise(r => setTimeout(r, 400))
+          }
+        })()
       }
     }
   }
@@ -348,9 +355,15 @@ export default function PantryPage() {
           <div className="space-y-3 pt-2">
             {visibleCategories.map(cat => {
               const diet = profile?.dietary_preference ?? 'non_vegetarian'
+              const userAllergies = profile?.allergies ?? []
               const sectionItems = grouped.get(cat)!
               const conflictIds = diet === 'non_vegetarian' ? new Set<string>()
                 : new Set(sectionItems.filter(i => i.is_available && violatesDiet(i.name, diet)).map(i => i.id))
+              const allergenIds = userAllergies.length === 0 ? new Set<string>()
+                : new Set(sectionItems.filter(i => {
+                    const nameLower = i.name.toLowerCase()
+                    return ALLERGENS.some(a => userAllergies.includes(a.id) && a.keywords.some(kw => nameLower.includes(kw)))
+                  }).map(i => i.id))
               return (
                 <PantrySection
                   key={cat}
@@ -363,6 +376,7 @@ export default function PantryPage() {
                   dietConflictCount={conflictIds.size}
                   dietLabel={pantryDietLabel(diet)}
                   conflictItemIds={conflictIds}
+                  allergenItemIds={allergenIds}
                   groceryNames={groceryNames}
                 />
               )

@@ -8,10 +8,11 @@ interface Props {
   onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
   isConflict?: boolean
+  isAllergen?: boolean
   isOnGroceryList?: boolean
 }
 
-export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete, isConflict = false, isOnGroceryList = false }: Props) {
+export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete, isConflict = false, isAllergen = false, isOnGroceryList = false }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
@@ -42,6 +43,11 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
           {item.name}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {isAllergen && (
+            <span className="text-xs font-display font-600 px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400">
+              ⚠️ allergen
+            </span>
+          )}
           {isOnGroceryList && (
             <span className="text-xs font-display font-600 px-1.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400">
               🛒 on list
