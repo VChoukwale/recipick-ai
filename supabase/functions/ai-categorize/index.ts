@@ -15,14 +15,31 @@ serve(async (req) => {
 
     const prompt = `Given this ingredient: "${item_name}"${store_name ? ` (from store: ${store_name})` : ''}
 
-Return ONLY this JSON (no markdown):
+Return ONLY this JSON (no markdown, no explanation):
 {
-  "category": one of: fresh_produce|fruits|dairy_eggs|protein|nuts_seeds|grains_legumes|spices_herbs|condiments_sauces|oils_fats|frozen|canned|dry_shelf|baking|snacks|beverages|dips|supplements|other,
+  "category": "<one of the exact values below>",
   "subcategory": "string or null",
   "ai_tags": ["array", "of", "descriptive", "tags"]
 }
 
-Category guide: fresh_produce=vegetables/leafy greens, fruits=all fruits (apple/mango/banana/berries), dairy_eggs=milk/cheese/yogurt/eggs, protein=meat/fish/tofu/tempeh/legume-based proteins, nuts_seeds=almonds/cashews/peanuts/sesame/flaxseed, grains_legumes=rice/lentils/dal/flour/pasta/chickpeas, spices_herbs=spices/masalas/dried herbs, condiments_sauces=sauces/vinegar/soy sauce/hot sauce, oils_fats=cooking oils/ghee/butter, frozen=frozen foods, canned=tinned/jarred goods, dry_shelf=packaged dry goods, baking=sugar/baking powder/cocoa/vanilla, snacks=chips/crackers/packaged snacks, beverages=drinks/tea/coffee/juice, dips=hummus/pesto/jam/spreads, supplements=protein powder/vitamins/superfoods, other=everything else.`
+VALID category values (use EXACTLY as written):
+fresh_produce | dairy_eggs | grains_legumes | proteins | spices_herbs | condiments_sauces | oils_fats | frozen | beverages | snacks_sweets | baking | canned_packaged | nuts_seeds | other
+
+Category guide:
+- fresh_produce: ALL fresh fruits AND vegetables — apple, kiwi, lemon, mango, banana, berries, tomato, spinach, potato, onion, garlic, ginger, cucumber, capsicum, avocado
+- dairy_eggs: milk, cheese, yogurt, paneer, butter, eggs, cream, ghee (as dairy)
+- grains_legumes: rice, pasta, bread, flour (all types), oats, lentils, dal, chickpeas, black beans, kidney beans, quinoa, wheat, barley, noodles
+- proteins: meat, fish, chicken, tofu, tempeh, seitan, protein powder
+- spices_herbs: spices, masalas, dried herbs, salt, pepper, turmeric, cumin, coriander, chili powder, garam masala, oregano, basil
+- condiments_sauces: soy sauce, vinegar, hot sauce, ketchup, mustard, mayonnaise, fish sauce, teriyaki, hoisin, pesto, jam, spreads, dips, hummus
+- oils_fats: cooking oils, olive oil, coconut oil, ghee (cooking), vegetable oil, sesame oil
+- frozen: frozen vegetables, frozen meals, ice cream, frozen fish
+- beverages: tea, coffee, juice, soft drinks, plant milk, water, drinks
+- snacks_sweets: chips, crackers, cookies, chocolate, candy, biscuits, packaged snacks
+- baking: sugar, baking powder, baking soda, cocoa powder, vanilla extract, yeast, cake mix, icing sugar, cornstarch
+- canned_packaged: tinned/canned/jarred goods, canned tomatoes, canned beans, packaged dry goods, dry shelf items
+- nuts_seeds: almonds, cashews, peanuts, walnuts, pistachios, sesame seeds, flaxseed, chia seeds, sunflower seeds, pumpkin seeds, pine nuts
+- other: nutritional yeast, spirulina, supplements, vitamins, specialty/uncommon items not fitting above`
 
     const response = await fetch(ANTHROPIC_API, {
       method: 'POST',
