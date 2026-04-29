@@ -56,6 +56,13 @@ FOCUS & FILTER RULES:
 - If "meal_type_filter" is set (e.g. "breakfast", "lunch", "dinner", "snack", "drink"): ALL recipes must suit that meal occasion. breakfast → morning dishes, porridge, parathas, smoothies, toast, eggs only if dietary_preference allows them; lunch → lighter mains, salads, sandwiches, rice bowls; dinner → heartier mains, curries, pasta; snack → small bites, chaat, finger food; drink → smoothies, lassi, chai, juices.
 - If "equipment_filter" is set (array, e.g. ["air_fryer", "oven"]): ALL recipes must be cookable using ONLY the listed equipment. air_fryer → crispy dishes cooked in air fryer; oven → baked/roasted dishes; microwave → microwave-only recipes; stove → stovetop cooking. If multiple equipment are listed, each recipe can use any one of them.
 
+CONCISENESS (critical — response must fit within token limits):
+- description: max 20 words
+- each instruction step: max 15 words, max 6 steps total per recipe
+- why_this: max 8 words per bullet line
+- substitution: max 8 words
+- Omit filler words, articles, and verbose phrasing everywhere
+
 MISSING INGREDIENTS (critical accuracy rules):
 - NEVER list water (any form: warm water, cold water, boiling water) as a missing ingredient.
 - Before writing a recipe, mentally check EVERY ingredient against the pantry_items list.
