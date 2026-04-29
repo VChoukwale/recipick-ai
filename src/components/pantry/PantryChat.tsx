@@ -50,6 +50,8 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<ISpeechRecognition | null>(null)
+  // Track names added in this chat session so duplicates are caught even when pantryItems prop is stale
+  const sessionAddedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -160,15 +162,19 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
       const toInsert: string[] = []
 
       for (const name of actions.add) {
-        const existing = pantryItems.find(i => i.name.toLowerCase() === name.toLowerCase())
-        if (existing) {
+        const nameLower = name.toLowerCase()
+        const existing = pantryItems.find(i => i.name.toLowerCase() === nameLower)
+        const addedThisSession = sessionAddedRef.current.has(nameLower)
+
+        if (existing || addedThisSession) {
           alreadyPresent.push(name)
-          // If it exists but is marked unavailable, restore it
-          if (!existing.is_available) {
+          // Restore if it exists in DB but is marked unavailable
+          if (existing && !existing.is_available) {
             await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
           }
         } else {
           toInsert.push(name)
+          sessionAddedRef.current.add(nameLower)
         }
       }
 
@@ -184,16 +190,19 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
         }))
         await supabase.from('pantry_items').insert(inserts)
 
-        for (const name of toInsert) {
-          supabase.functions.invoke('ai-categorize', { body: { item_name: name } }).then(({ data }) => {
-            if (data?.category) {
-              supabase.from('pantry_items')
-                .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
-                .eq('user_id', uid)
-                .eq('name', name)
-            }
-          })
-        }
+        // Categorize all new items, then refresh so the correct category appears
+        Promise.all(
+          toInsert.map(name =>
+            supabase.functions.invoke('ai-categorize', { body: { item_name: name } }).then(({ data }) => {
+              if (data?.category) {
+                return supabase.from('pantry_items')
+                  .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
+                  .eq('user_id', uid)
+                  .eq('name', name)
+              }
+            })
+          )
+        ).then(() => onPantryUpdate())
       }
     }
 
