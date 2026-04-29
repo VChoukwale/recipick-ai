@@ -1,7 +1,7 @@
 export const ALLERGENS = [
   { id: 'peanuts',    label: 'Peanuts',       emoji: '🥜', keywords: ['peanut', 'groundnut'] },
   { id: 'tree_nuts',  label: 'Tree Nuts',      emoji: '🌰', keywords: ['almond', 'cashew', 'walnut', 'pecan', 'pistachio', 'hazelnut', 'macadamia', 'pine nut', 'brazil nut'] },
-  { id: 'dairy',      label: 'Dairy',          emoji: '🥛', keywords: ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'cheddar', 'mozzarella', 'parmesan', 'feta', 'ricotta'] },
+  { id: 'dairy',      label: 'Dairy',          emoji: '🥛', keywords: ['milk', 'cheese', 'cream', 'yogurt', 'curd', 'dahi', 'ghee', 'paneer', 'whey', 'cheddar', 'mozzarella', 'parmesan', 'feta', 'ricotta', 'buttermilk', 'dairy butter'] },
   { id: 'eggs',       label: 'Eggs',           emoji: '🥚', keywords: ['egg'] },
   { id: 'wheat',      label: 'Wheat / Gluten', emoji: '🌾', keywords: ['wheat', 'flour', 'bread', 'pasta', 'semolina', 'gluten', 'noodle', 'bulgur', 'barley', 'rye', 'seitan'] },
   { id: 'soy',        label: 'Soy',            emoji: '🫘', keywords: ['soy', 'tofu', 'tempeh', 'edamame', 'miso', 'soybean'] },

@@ -44,7 +44,7 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {isAllergen && (
-            <span className="text-xs font-display font-600 px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400">
+            <span className="text-[11px] font-display font-700 px-2 py-0.5 rounded-full bg-red-500 text-white">
               ⚠️ allergen
             </span>
           )}
