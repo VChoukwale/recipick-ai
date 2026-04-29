@@ -129,12 +129,11 @@ export default function RecipeCard({ recipe, saved, onView, onSave, userAllergie
 
         {/* Allergen warning */}
         {allergenWarnings.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {allergenWarnings.map(w => (
-              <span key={w} className="text-[11px] font-display font-700 px-2 py-0.5 rounded-full bg-red-500 text-white">
-                ⚠️ {w}
-              </span>
-            ))}
+          <div className="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-red-500">
+            <span className="text-sm flex-shrink-0">⚠️</span>
+            <span className="text-[11px] font-display font-700 text-white">
+              Contains: {allergenWarnings.join(', ')}
+            </span>
           </div>
         )}
       </div>
