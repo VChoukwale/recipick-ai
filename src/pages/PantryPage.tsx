@@ -176,12 +176,18 @@ export default function PantryPage() {
   }
 
   async function handleDelete(id: string) {
+    const item = items.find(i => i.id === id)
     const snapshot = items
     setItems(prev => prev.filter(i => i.id !== id))
+    if (item) setGroceryNames(prev => { const next = new Set(prev); next.delete(item.name.toLowerCase()); return next })
     const { error } = await supabase.from('pantry_items').delete().eq('id', id)
     if (error) {
       console.error('PantryPage handleDelete failed:', error)
       setItems(snapshot)
+      return
+    }
+    if (item) {
+      await supabase.from('grocery_list').delete().eq('user_id', user!.id).ilike('name', item.name)
     }
   }
 
