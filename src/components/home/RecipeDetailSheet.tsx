@@ -131,12 +131,12 @@ export default function RecipeDetailSheet({ recipe, saved, onSave, onClose }: Pr
 
           {/* Allergen warning */}
           {allergenWarnings.length > 0 && (
-            <div className="mb-4 flex items-start gap-2.5 px-3.5 py-3 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <span className="text-base flex-shrink-0">⚠️</span>
-              <div>
-                <p className="font-display font-700 text-red-600 dark:text-red-400 text-sm">Allergen Alert</p>
-                <p className="text-xs font-body text-red-500 dark:text-red-300 mt-0.5">Contains: {allergenWarnings.join(', ')}</p>
-              </div>
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {allergenWarnings.map(w => (
+                <span key={w} className="text-[11px] font-display font-700 px-2 py-0.5 rounded-full bg-red-500 text-white">
+                  ⚠️ {w}
+                </span>
+              ))}
             </div>
           )}
 
