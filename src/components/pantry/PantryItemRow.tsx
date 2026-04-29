@@ -8,9 +8,10 @@ interface Props {
   onEdit: (item: PantryItem) => void
   onDelete: (id: string) => void
   isConflict?: boolean
+  isOnGroceryList?: boolean
 }
 
-export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete, isConflict = false }: Props) {
+export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, onEdit, onDelete, isConflict = false, isOnGroceryList = false }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
@@ -40,7 +41,12 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
         }`}>
           {item.name}
         </p>
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {isOnGroceryList && (
+            <span className="text-xs font-display font-600 px-1.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400">
+              🛒 on list
+            </span>
+          )}
           {item.store_name && (
             <span className="text-xs font-display font-600 px-2 py-0.5 rounded-full bg-cream-200 dark:bg-charcoal-800 text-stone-500 dark:text-stone-400">
               {item.store_name}
@@ -49,7 +55,7 @@ export default function PantryItemRow({ item, onToggleAvailable, onToggleStar, o
           {item.quantity && (
             <span className="text-xs text-stone-400 dark:text-stone-500 font-body">{item.quantity}</span>
           )}
-          {!item.store_name && !item.quantity && (
+          {!isOnGroceryList && !item.store_name && !item.quantity && (
             <button
               onClick={() => onEdit(item)}
               className="text-xs text-brand-400 hover:text-brand-600 font-display font-600 transition-colors"

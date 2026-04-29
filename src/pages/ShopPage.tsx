@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import CookingSpinner from '../components/ui/CookingSpinner'
@@ -219,58 +219,52 @@ export default function ShopPage() {
   async function handleToggle(id: string) {
     const item = items.find(i => i.id === id)
     if (!item) return
-    const newVal = !item.is_checked
-    setItems(prev => prev.map(i => i.id === id ? { ...i, is_checked: newVal } : i))
-    const { error: toggleErr } = await supabase.from('grocery_list').update({ is_checked: newVal }).eq('id', id)
-    if (toggleErr) {
-      setItems(prev => prev.map(i => i.id === id ? { ...i, is_checked: item.is_checked } : i))
-      showToast('Could not update item. Check your connection.')
-      return
-    }
 
-    if (newVal) {
-      try {
-        const { data: existingData } = await supabase
-          .from('pantry_items')
-          .select('id, category')
-          .eq('user_id', user!.id)
-          .ilike('name', item.name)
-          .maybeSingle()
+    // Optimistically remove from list — buying = done
+    setItems(prev => prev.filter(i => i.id !== id))
 
-        const existing = existingData as { id: string; category: string } | null
-        // Priority: grocery item's saved category → existing pantry item's category → AI fallback
-        const resolvedCategory = item.category ?? existing?.category ?? 'other'
+    try {
+      await supabase.from('grocery_list').delete().eq('id', id)
 
-        if (!existing) {
-          const { data: newPantryItem } = await supabase.from('pantry_items').insert({
-            user_id: user!.id,
-            name: item.name,
-            category: resolvedCategory,
-            is_available: true,
-            is_favorite: false,
-            is_star_ingredient: false,
-            ai_tags: [],
-          }).select().single()
+      const { data: existingData } = await supabase
+        .from('pantry_items')
+        .select('id, category')
+        .eq('user_id', user!.id)
+        .ilike('name', item.name)
+        .maybeSingle()
 
-          showToast(`✓ ${item.name} added to pantry`)
+      const existing = existingData as { id: string; category: string } | null
+      const resolvedCategory = item.category ?? existing?.category ?? 'other'
 
-          // Only call AI if we had no category info — avoids unnecessary edge function calls
-          if (newPantryItem && resolvedCategory === 'other') {
-            supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
-              if (data?.category) {
-                supabase.from('pantry_items')
-                  .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
-                  .eq('id', (newPantryItem as { id: string }).id)
-              }
-            })
-          }
-        } else {
-          await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
-          showToast(`✓ ${item.name} marked available in pantry`)
+      if (!existing) {
+        const { data: newPantryItem } = await supabase.from('pantry_items').insert({
+          user_id: user!.id,
+          name: item.name,
+          category: resolvedCategory,
+          is_available: true,
+          is_favorite: false,
+          is_star_ingredient: false,
+          ai_tags: [],
+        }).select().single()
+
+        showToast(`✓ ${item.name} added to pantry`)
+
+        if (newPantryItem && resolvedCategory === 'other') {
+          supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
+            if (data?.category) {
+              supabase.from('pantry_items')
+                .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
+                .eq('id', (newPantryItem as { id: string }).id)
+            }
+          })
         }
-      } catch {
-        showToast(`Checked off — pantry update failed`)
+      } else {
+        await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
+        showToast(`✓ ${item.name} back in pantry`)
       }
+    } catch {
+      setItems(prev => [...prev, item])
+      showToast(`Couldn't check off. Try again.`)
     }
   }
 
@@ -300,6 +294,19 @@ export default function ShopPage() {
 
   const unchecked = items.filter(i => !i.is_checked)
   const checked = items.filter(i => i.is_checked)
+
+  const groupedUnchecked = useMemo(() => {
+    const map = new Map<string, GroceryItem[]>()
+    for (const item of unchecked) {
+      const key = item.category ?? 'other'
+      const arr = map.get(key) ?? []
+      arr.push(item)
+      map.set(key, arr)
+    }
+    return map
+  }, [unchecked])
+
+  const groupedCategories = CATEGORY_ORDER.filter(c => groupedUnchecked.has(c))
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -343,22 +350,38 @@ export default function ShopPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2 pt-2">
-            {unchecked.map(item => (
-              <GroceryRow key={item.id} item={item} onToggle={() => handleToggle(item.id)} onDelete={() => handleDelete(item.id)} />
+          <div className="pt-2">
+            {groupedCategories.map((cat, idx) => (
+              <div key={cat} className={idx > 0 ? 'mt-4' : ''}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-base leading-none">{CATEGORY_META[cat as keyof typeof CATEGORY_META]?.emoji ?? '📦'}</span>
+                  <span className="text-xs font-display font-700 text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                    {CATEGORY_META[cat as keyof typeof CATEGORY_META]?.label ?? 'Other'}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {groupedUnchecked.get(cat)!.map(item => (
+                    <GroceryRow key={item.id} item={item} onToggle={() => handleToggle(item.id)} onDelete={() => handleDelete(item.id)} />
+                  ))}
+                </div>
+              </div>
             ))}
 
             {checked.length > 0 && unchecked.length > 0 && (
-              <div className="flex items-center gap-3 py-2">
+              <div className="flex items-center gap-3 py-3 mt-2">
                 <div className="flex-1 h-px bg-cream-300 dark:bg-charcoal-700" />
                 <span className="text-xs font-display font-600 text-stone-400 dark:text-stone-500">In cart</span>
                 <div className="flex-1 h-px bg-cream-300 dark:bg-charcoal-700" />
               </div>
             )}
 
-            {checked.map(item => (
-              <GroceryRow key={item.id} item={item} onToggle={() => handleToggle(item.id)} onDelete={() => handleDelete(item.id)} />
-            ))}
+            {checked.length > 0 && (
+              <div className="space-y-2">
+                {checked.map(item => (
+                  <GroceryRow key={item.id} item={item} onToggle={() => handleToggle(item.id)} onDelete={() => handleDelete(item.id)} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

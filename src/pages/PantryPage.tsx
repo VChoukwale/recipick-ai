@@ -31,6 +31,7 @@ export default function PantryPage() {
   const [showChat, setShowChat] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [groceryNames, setGroceryNames] = useState<Set<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLDivElement>(null)
   const isNavigatingRef = useRef(false)
@@ -39,6 +40,7 @@ export default function PantryPage() {
     if (!user) return
     fetchItems()
     fetchVocabulary()
+    fetchGroceryNames()
   }, [user])
 
   async function fetchItems() {
@@ -57,6 +59,15 @@ export default function PantryPage() {
     setFetchError(false)
     setItems((data as PantryItem[]) ?? [])
     setLoading(false)
+  }
+
+  async function fetchGroceryNames() {
+    const { data } = await supabase
+      .from('grocery_list')
+      .select('name')
+      .eq('user_id', user!.id)
+      .eq('is_checked', false)
+    setGroceryNames(new Set((data ?? []).map((r: { name: string }) => r.name.toLowerCase())))
   }
 
   async function fetchVocabulary() {
@@ -147,6 +158,7 @@ export default function PantryPage() {
           category: item.category,
           is_checked: false,
         })
+        setGroceryNames(prev => new Set([...prev, item.name.toLowerCase()]))
         showToast(`🛒 ${item.name} added to grocery run`)
       } else {
         showToast(`${item.name} is already on your list`)
@@ -334,6 +346,7 @@ export default function PantryPage() {
                   dietConflictCount={conflictIds.size}
                   dietLabel={pantryDietLabel(diet)}
                   conflictItemIds={conflictIds}
+                  groceryNames={groceryNames}
                 />
               )
             })}
