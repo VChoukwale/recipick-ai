@@ -30,6 +30,7 @@ export default function PantryPage() {
   const [activeCategory, setActiveCategory] = useState<PantryCategory | null>(null)
   const [showChat, setShowChat] = useState(false)
   const [fetchError, setFetchError] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const tocRef = useRef<HTMLDivElement>(null)
   const isNavigatingRef = useRef(false)
@@ -121,9 +122,36 @@ export default function PantryPage() {
     } catch { /* silent */ }
   }
 
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
+
   async function handleToggleAvailable(id: string, value: boolean) {
+    const item = items.find(i => i.id === id)
     setItems(prev => prev.map(i => i.id === id ? { ...i, is_available: value } : i))
     await supabase.from('pantry_items').update({ is_available: value }).eq('id', id)
+
+    if (!value && item) {
+      const { data: existing } = await supabase
+        .from('grocery_list')
+        .select('id')
+        .eq('user_id', user!.id)
+        .ilike('name', item.name)
+        .maybeSingle()
+
+      if (!existing) {
+        await supabase.from('grocery_list').insert({
+          user_id: user!.id,
+          name: item.name,
+          category: item.category,
+          is_checked: false,
+        })
+        showToast(`🛒 ${item.name} added to grocery run`)
+      } else {
+        showToast(`${item.name} is already on your list`)
+      }
+    }
   }
 
   async function handleToggleStar(id: string) {
@@ -392,6 +420,15 @@ export default function PantryPage() {
           onPantryUpdate={fetchItems}
           onClose={() => setShowChat(false)}
         />
+      )}
+
+      {toast && (
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-2xl text-sm font-display font-600 text-white shadow-lg animate-pop"
+          style={{ background: '#E8713A', whiteSpace: 'nowrap' }}
+        >
+          {toast}
+        </div>
       )}
     </div>
   )

@@ -50,6 +50,14 @@ Secondary framing (less prominent in UI): recipick.ai also reduces food waste. S
 - `ai-pantry-chat` parses freeform intent into structured `{ add, mark_unavailable, remove }` actions.
 - Star an ingredient to always build recipes around it. Toggle availability without deleting.
 
+### Pantry → Grocery → Pantry Round-Trip
+
+Category is preserved across the full lifecycle:
+
+1. **Mark out of stock** (pantry) → item is automatically inserted into `grocery_list` with `category` copied from the pantry item. Duplicate-checked by name before inserting.
+2. **Check off as bought** (grocery) → item is restored to pantry as `is_available: true`. Category resolution uses priority order: grocery item's saved category → existing pantry item's category → AI categorization fallback (only called when category is truly unknown).
+3. Net result: an item that was previously categorised as `dairy_eggs` comes back as `dairy_eggs` automatically, with no prompt to the user and no unnecessary AI call.
+
 ### Chef Sage
 
 - Global AI cooking assistant, accessible from any page via the bottom nav.

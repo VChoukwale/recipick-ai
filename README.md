@@ -51,7 +51,7 @@ recipick.ai started as a simple pantry-based recipe idea and grew into a full pr
 | 📥 **Recipe Inbox** | Paste any URL or YouTube link. AI extracts ingredients, scores against your pantry, and saves in one tap. |
 | 📖 **Recipe Vault** | Saved recipes in collapsible sections: Not tried / Liked / Didn't enjoy. Filter by cuisine, difficulty, favourites. |
 | ⭐ **Favorites** | Star to bookmark. Rate 👍/👎 after cooking. Ratings feed back into AI for better future suggestions. |
-| 🛒 **Grocery List** | Missing ingredients go to your grocery list in one tap. Voice input. Check off as you shop. |
+| 🛒 **Smart Grocery Sync** | Mark a pantry item out of stock → it auto-appears on your grocery list with category intact. Buy it → it goes back to pantry in the right category. Voice input. Check off as you shop. |
 | ⚙️ **Diet & Profile** | Vegan, vegetarian, eggitarian, or non-vegetarian. Conflict detection on diet change. |
 | 📲 **PWA** | Install from the browser on any device. Auto-updates silently in the background. |
 | 🌙 **Dark Mode** | Full dark theme with persistent preference per device. |

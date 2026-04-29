@@ -26,6 +26,7 @@ declare global { interface Window { SpeechRecognition: new () => ISpeechRecognit
 interface GroceryItem {
   id: string
   name: string
+  category: string | null
   store_name: string | null
   is_checked: boolean
   created_at: string
@@ -160,18 +161,22 @@ export default function ShopPage() {
 
     if (newVal) {
       try {
-        const { data: existing } = await supabase
+        const { data: existingData } = await supabase
           .from('pantry_items')
-          .select('id')
+          .select('id, category')
           .eq('user_id', user!.id)
           .ilike('name', item.name)
           .maybeSingle()
+
+        const existing = existingData as { id: string; category: string } | null
+        // Priority: grocery item's saved category → existing pantry item's category → AI fallback
+        const resolvedCategory = item.category ?? existing?.category ?? 'other'
 
         if (!existing) {
           const { data: newPantryItem } = await supabase.from('pantry_items').insert({
             user_id: user!.id,
             name: item.name,
-            category: 'other',
+            category: resolvedCategory,
             is_available: true,
             is_favorite: false,
             is_star_ingredient: false,
@@ -180,7 +185,8 @@ export default function ShopPage() {
 
           showToast(`✓ ${item.name} added to pantry`)
 
-          if (newPantryItem) {
+          // Only call AI if we had no category info — avoids unnecessary edge function calls
+          if (newPantryItem && resolvedCategory === 'other') {
             supabase.functions.invoke('ai-categorize', { body: { item_name: item.name } }).then(({ data }) => {
               if (data?.category) {
                 supabase.from('pantry_items')
