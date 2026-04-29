@@ -133,9 +133,16 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
       }
 
       // Execute DB mutations
-      await applyActions(actions)
+      const { alreadyPresent } = await applyActions(actions)
 
-      setMessages(prev => [...prev, { role: 'assistant', text: reply, actions }])
+      // Override reply if all items were already in pantry
+      let finalReply = reply
+      if (alreadyPresent.length > 0 && actions.add.length === alreadyPresent.length && actions.mark_unavailable.length === 0 && actions.remove.length === 0) {
+        const names = alreadyPresent.join(', ')
+        finalReply = `${alreadyPresent.length === 1 ? `${alreadyPresent[0]} is` : `${names} are`} already in your pantry! ✓`
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', text: finalReply, actions: { ...actions, add: actions.add.filter(n => !alreadyPresent.includes(n)) } }])
       onPantryUpdate()
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', text: 'Something went wrong. Try again?' }])
@@ -144,32 +151,49 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
     }
   }
 
-  async function applyActions(actions: { add: string[]; mark_unavailable: string[]; remove: string[] }) {
+  async function applyActions(actions: { add: string[]; mark_unavailable: string[]; remove: string[] }): Promise<{ alreadyPresent: string[] }> {
     const uid = user!.id
+    const alreadyPresent: string[] = []
 
-    // Add new items
+    // Add new items — skip if already in pantry
     if (actions.add.length > 0) {
-      const inserts = actions.add.map(name => ({
-        user_id: uid,
-        name,
-        category: 'other' as PantryCategory,
-        is_available: true,
-        is_favorite: false,
-        is_star_ingredient: false,
-        ai_tags: [],
-      }))
-      await supabase.from('pantry_items').insert(inserts)
+      const toInsert: string[] = []
 
-      // Trigger async categorization for each new item
       for (const name of actions.add) {
-        supabase.functions.invoke('ai-categorize', { body: { item_name: name } }).then(({ data }) => {
-          if (data?.category) {
-            supabase.from('pantry_items')
-              .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
-              .eq('user_id', uid)
-              .eq('name', name)
+        const existing = pantryItems.find(i => i.name.toLowerCase() === name.toLowerCase())
+        if (existing) {
+          alreadyPresent.push(name)
+          // If it exists but is marked unavailable, restore it
+          if (!existing.is_available) {
+            await supabase.from('pantry_items').update({ is_available: true }).eq('id', existing.id)
           }
-        })
+        } else {
+          toInsert.push(name)
+        }
+      }
+
+      if (toInsert.length > 0) {
+        const inserts = toInsert.map(name => ({
+          user_id: uid,
+          name,
+          category: 'other' as PantryCategory,
+          is_available: true,
+          is_favorite: false,
+          is_star_ingredient: false,
+          ai_tags: [],
+        }))
+        await supabase.from('pantry_items').insert(inserts)
+
+        for (const name of toInsert) {
+          supabase.functions.invoke('ai-categorize', { body: { item_name: name } }).then(({ data }) => {
+            if (data?.category) {
+              supabase.from('pantry_items')
+                .update({ category: data.category, ai_tags: data.ai_tags ?? [] })
+                .eq('user_id', uid)
+                .eq('name', name)
+            }
+          })
+        }
       }
     }
 
@@ -188,6 +212,8 @@ export default function PantryChat({ pantryItems, onPantryUpdate, onClose }: Pro
         await supabase.from('pantry_items').delete().eq('id', match.id)
       }
     }
+
+    return { alreadyPresent }
   }
 
   function ActionChips({ actions }: { actions: Message['actions'] }) {
