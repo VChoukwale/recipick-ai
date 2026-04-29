@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import CookingSpinner from '../components/ui/CookingSpinner'
+import { CATEGORY_META, CATEGORY_ORDER } from '../components/pantry/categoryMeta'
+import type { PantryCategory } from '../types/database'
 
 function MicIcon({ size = 16 }: { size?: number }) {
   return (
@@ -30,6 +32,48 @@ interface GroceryItem {
   store_name: string | null
   is_checked: boolean
   created_at: string
+}
+
+function CategoryPickerSheet({ itemName, onPick, onSkip }: {
+  itemName: string
+  onPick: (category: PantryCategory) => void
+  onSkip: () => void
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onSkip} />
+      <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white dark:bg-charcoal-900 rounded-t-3xl shadow-2xl animate-slide-up" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="w-10 h-1 bg-stone-200 dark:bg-stone-700 rounded-full mx-auto mt-3 mb-4" />
+        <div className="px-5 pb-6">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-display font-800 text-base text-stone-800 dark:text-stone-100">
+              Where does <span className="text-brand-500">"{itemName}"</span> go?
+            </h3>
+            <button onClick={onSkip} className="text-stone-400 hover:text-stone-600 text-xl">✕</button>
+          </div>
+          <p className="text-xs font-body text-stone-400 dark:text-stone-500 mb-4">Pick a category so it lands in the right section when added to your pantry.</p>
+          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto pb-1">
+            {CATEGORY_ORDER.filter(c => c !== 'other').map(cat => (
+              <button
+                key={cat}
+                onClick={() => onPick(cat)}
+                className="flex flex-col items-center gap-1 px-2 py-3 rounded-2xl border border-cream-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-800 hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-charcoal-700 transition-all duration-150 active:scale-95"
+              >
+                <span className="text-xl leading-none">{CATEGORY_META[cat].emoji}</span>
+                <span className="text-[10px] font-display font-600 text-stone-600 dark:text-stone-400 text-center leading-tight">{CATEGORY_META[cat].label}</span>
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={onSkip}
+            className="w-full mt-3 py-2.5 rounded-2xl text-sm font-display font-600 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 border border-cream-200 dark:border-charcoal-700 transition-colors"
+          >
+            Skip — add without category
+          </button>
+        </div>
+      </div>
+    </>
+  )
 }
 
 function GroceryRow({ item, onToggle, onDelete }: { item: GroceryItem; onToggle: () => void; onDelete: () => void }) {
@@ -72,6 +116,7 @@ export default function ShopPage() {
   const [adding, setAdding] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [listening, setListening] = useState(false)
+  const [pendingItem, setPendingItem] = useState<string | null>(null)
   const recognitionRef = useRef<ISpeechRecognition | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -131,14 +176,38 @@ export default function ShopPage() {
     }
     setAdding(true)
     try {
+      // Check if this item already exists in pantry — if so, reuse its category silently
+      const { data: pantryMatch } = await supabase
+        .from('pantry_items')
+        .select('category')
+        .eq('user_id', user!.id)
+        .ilike('name', name)
+        .maybeSingle()
+
+      if (pantryMatch) {
+        await insertGroceryItem(name, (pantryMatch as { category: string }).category)
+      } else {
+        // New item — ask for category before adding
+        setAdding(false)
+        setPendingItem(name)
+      }
+    } catch {
+      showToast('Could not add item. Check your connection.')
+      setAdding(false)
+    }
+  }
+
+  async function insertGroceryItem(name: string, category: string | null) {
+    try {
       const { data, error } = await supabase
         .from('grocery_list')
-        .insert({ user_id: user!.id, name, is_checked: false })
+        .insert({ user_id: user!.id, name, category: category ?? null, is_checked: false })
         .select()
         .single()
       if (error) throw error
       if (data) setItems(prev => [...prev, data as GroceryItem])
       setNewItem('')
+      setPendingItem(null)
       inputRef.current?.focus()
     } catch {
       showToast('Could not add item. Check your connection.')
@@ -300,6 +369,14 @@ export default function ShopPage() {
              style={{ background: '#E8713A', whiteSpace: 'nowrap' }}>
           {toast}
         </div>
+      )}
+
+      {pendingItem && (
+        <CategoryPickerSheet
+          itemName={pendingItem}
+          onPick={(category) => insertGroceryItem(pendingItem, category)}
+          onSkip={() => insertGroceryItem(pendingItem, null)}
+        />
       )}
 
       {/* Sticky add form — fixed above nav, safe-area aware */}

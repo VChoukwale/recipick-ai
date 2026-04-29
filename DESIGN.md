@@ -58,6 +58,10 @@ Category is preserved across the full lifecycle:
 2. **Check off as bought** (grocery) → item is restored to pantry as `is_available: true`. Category resolution uses priority order: grocery item's saved category → existing pantry item's category → AI categorization fallback (only called when category is truly unknown).
 3. Net result: an item that was previously categorised as `dairy_eggs` comes back as `dairy_eggs` automatically, with no prompt to the user and no unnecessary AI call.
 
+**Adding new items to grocery list:**
+- If the typed item exists in pantry → category is silently copied over, no prompt.
+- If the item is brand new (never been in pantry) → `CategoryPickerSheet` appears before saving. User picks from the 15 named categories or skips (saves as uncategorised). This ensures new items never default silently to "Other".
+
 ### Chef Sage
 
 - Global AI cooking assistant, accessible from any page via the bottom nav.
