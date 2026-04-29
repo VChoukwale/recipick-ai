@@ -52,7 +52,10 @@ Category guide:
     })
 
     const data = await response.json()
-    const result = JSON.parse(data.content?.[0]?.text ?? '{}')
+    let rawText = data.content?.[0]?.text ?? '{}'
+    // Strip markdown code fences Claude sometimes wraps around JSON
+    rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim()
+    const result = JSON.parse(rawText)
 
     return new Response(JSON.stringify(result), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

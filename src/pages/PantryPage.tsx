@@ -67,7 +67,7 @@ export default function PantryPage() {
     // Process sequentially to avoid hitting Claude API rate limits
     if (!didBackfillCategoriesRef.current) {
       didBackfillCategoriesRef.current = true
-      const needsCategorizing = fetched.filter(i => i.category === 'other' && (!i.ai_tags || i.ai_tags.length === 0))
+      const needsCategorizing = fetched.filter(i => i.category === 'other')
       if (needsCategorizing.length > 0) {
         ;(async () => {
           for (const item of needsCategorizing) {
