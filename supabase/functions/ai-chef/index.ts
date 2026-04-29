@@ -111,8 +111,12 @@ serve(async (req) => {
       }),
     })
 
+    if (!response.ok) {
+      const errText = await response.text()
+      throw new Error(`Anthropic error ${response.status}: ${errText.slice(0, 300)}`)
+    }
+
     const data = await response.json()
-    if (!response.ok) throw new Error(`Anthropic error: ${JSON.stringify(data)}`)
 
     const text = data.content?.[0]?.text ?? ''
     const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
