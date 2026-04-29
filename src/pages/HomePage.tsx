@@ -727,7 +727,8 @@ export default function HomePage() {
               {recipes.map((recipe, i) => (
                 <div key={`${recipe.title}-${i}`} className="animate-card-enter" style={{ animationDelay: `${i * 80}ms` }}>
                   <RecipeCard recipe={recipe} saved={savedTitles.has(recipe.title)}
-                    onView={() => setSelectedRecipe(recipe)} onSave={() => handleSave(recipe)} />
+                    onView={() => setSelectedRecipe(recipe)} onSave={() => handleSave(recipe)}
+                    userAllergies={profile?.allergies ?? []} />
                 </div>
               ))}
             </div>

@@ -39,7 +39,12 @@ RULES:
 - Never refuse a food/cooking knowledge question. Always try to help.
 - Use simple language. Avoid jargon unless you explain it.
 - For "how to" questions, give numbered steps.
-- Respect dietary preferences if the user mentions them.`
+- Respect dietary preferences if the user mentions them.
+
+YOUTUBE LINKS:
+- After answering a "how to" question about a specific hands-on technique (chopping, kneading, tempering spices, sprouting, fermenting, folding, piping, etc.), append [[YOUTUBE:search query]] at the very end of your response.
+- The search query should be short and specific, optimised for YouTube (e.g. "how to temper mustard seeds Indian cooking", "knife julienne technique vegetables", "how to sprout moong at home").
+- Do NOT add [[YOUTUBE:...]] for: recipe redirects, ingredient info questions, substitution lists, storage tips, or general food knowledge — only for technique/hands-on "how to" answers.`
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
@@ -78,12 +83,17 @@ serve(async (req) => {
 
     const raw = data.content?.[0]?.text ?? 'Sorry, I couldn\'t get a response. Please try again.'
 
-    // Parse [[DISH:name]] marker — strip from reply, expose as redirect_dish
+    // Parse [[DISH:name]] and [[YOUTUBE:query]] markers
     const dishMatch = raw.match(/\[\[DISH:([^\]]+)\]\]/)
     const redirect_dish = dishMatch ? dishMatch[1].trim() : undefined
-    const reply = raw.replace(/\[\[DISH:[^\]]+\]\]/g, '').trim()
+    const youtubeMatch = raw.match(/\[\[YOUTUBE:([^\]]+)\]\]/)
+    const youtube_query = youtubeMatch ? youtubeMatch[1].trim() : undefined
+    const reply = raw
+      .replace(/\[\[DISH:[^\]]+\]\]/g, '')
+      .replace(/\[\[YOUTUBE:[^\]]+\]\]/g, '')
+      .trim()
 
-    return new Response(JSON.stringify({ reply, redirect_dish }), {
+    return new Response(JSON.stringify({ reply, redirect_dish, youtube_query }), {
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   } catch (err) {

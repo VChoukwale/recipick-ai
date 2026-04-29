@@ -44,6 +44,7 @@ export interface Profile {
   dietary_preference: DietaryPreference
   skill_level: SkillLevel
   preferred_cuisines: string[]
+  allergies: string[]
   day_status: DayStatus
   busy_until_time: string | null
   onboarding_completed: boolean

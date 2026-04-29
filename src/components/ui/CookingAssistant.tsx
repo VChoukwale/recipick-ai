@@ -7,6 +7,7 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   redirect_dish?: string
+  youtube_query?: string
 }
 
 const MAX_HISTORY = 10
@@ -158,7 +159,8 @@ export default function CookingAssistant() {
       if (error) throw error
       const reply = data?.reply ?? 'Sorry, something went wrong. Please try again.'
       const redirect_dish: string | undefined = data?.redirect_dish
-      setMessages(prev => [...prev, { role: 'assistant', content: reply, redirect_dish }])
+      const youtube_query: string | undefined = data?.youtube_query
+      setMessages(prev => [...prev, { role: 'assistant', content: reply, redirect_dish, youtube_query }])
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -316,6 +318,19 @@ export default function CookingAssistant() {
                         <span>Find "{msg.redirect_dish}" on Home</span>
                         <span>→</span>
                       </button>
+                    )}
+                    {msg.youtube_query && (
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(msg.youtube_query)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="self-start flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-display font-700 text-white transition-all active:scale-95"
+                        style={{ background: '#FF0000', boxShadow: '0 2px 10px rgba(255,0,0,0.25)' }}
+                      >
+                        <span>▶</span>
+                        <span>Watch on YouTube</span>
+                        <span className="text-xs opacity-80">↗</span>
+                      </a>
                     )}
                   </div>
                 </div>

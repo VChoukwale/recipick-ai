@@ -1,10 +1,12 @@
 import type { AiRecipe } from '../../types/database'
+import { detectAllergens } from '../../utils/allergens'
 
 interface Props {
   recipe: AiRecipe
   saved: boolean
   onView: () => void
   onSave: () => void
+  userAllergies?: string[]
 }
 
 function MatchBadge({ pct }: { pct: number }) {
@@ -32,8 +34,9 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   hard:   '#dc2626',
 }
 
-export default function RecipeCard({ recipe, saved, onView, onSave }: Props) {
+export default function RecipeCard({ recipe, saved, onView, onSave, userAllergies = [] }: Props) {
   const inPantryCount = recipe.ingredients.filter(i => i.in_pantry).length
+  const allergenWarnings = detectAllergens(recipe.ingredients, userAllergies)
   const rawMissing = recipe.missing_ingredients?.length > 0
     ? recipe.missing_ingredients
     : recipe.ingredients.filter(i => !i.in_pantry).map(i => ({ name: i.name, substitution: '' }))
@@ -123,6 +126,16 @@ export default function RecipeCard({ recipe, saved, onView, onSave }: Props) {
             <span style={{ color: 'var(--t3)' }}>a few items missing</span>
           ) : null}
         </div>
+
+        {/* Allergen warning */}
+        {allergenWarnings.length > 0 && (
+          <div className="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+            <span className="text-sm flex-shrink-0">⚠️</span>
+            <span className="text-[11px] font-display font-700 text-red-600">
+              Contains: {allergenWarnings.join(', ')}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Action row */}

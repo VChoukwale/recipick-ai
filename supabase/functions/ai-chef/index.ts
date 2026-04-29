@@ -29,6 +29,12 @@ DIETARY CONFLICT HANDLING (critical):
 - For each missing ingredient, suggest a culturally-appropriate substitution.
 - The "why_this" field must be EXACTLY 2–3 short bullet lines joined by "\n" (newline). Each line is a practical, specific reason the recipe suits this user. Examples: "Uses your star ingredients well", "Ready in under 20 minutes", "High protein, great post-workout". No quotes, no dashes, no introductory sentence — just the bullets joined with \n.
 
+ALLERGY RULES (absolute — treat like dietary_preference):
+- If "allergies" is provided in the request (array of allergen IDs), NEVER include any ingredient matching those allergens in any recipe, substitution, or suggestion.
+- Allergen → ingredient mappings: peanuts→peanut/groundnut, tree_nuts→almond/cashew/walnut/pecan/pistachio/hazelnut/macadamia/pine nut, dairy→milk/butter/cheese/cream/yogurt/ghee/paneer/whey, eggs→egg, wheat→wheat/flour/bread/pasta/semolina/gluten/noodle/seitan, soy→soy/tofu/tempeh/edamame/miso, sesame→sesame/tahini/til, shellfish→shrimp/crab/lobster/prawn/clam/oyster/scallop, fish→fish/tuna/salmon/cod/sardine/anchovy.
+- If an allergen conflicts with many pantry items, silently use the remaining safe pantry items.
+- This is a safety rule — NEVER override it, even if focus_ingredients contain the allergen.
+
 VARIETY RULES (critical):
 - Each recipe MUST feature a DIFFERENT hero/star ingredient — never suggest two recipes built around the same main item.
 - Spread across at least 2 different cuisines when count >= 3, UNLESS cuisine_filter is set.

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { ALLERGENS } from '../../utils/allergens'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -83,6 +84,7 @@ export default function SettingsSheet({ onClose }: Props) {
   const [dietary, setDietary] = useState<DietaryPreference>(profile?.dietary_preference ?? 'vegetarian')
   const [skill, setSkill] = useState<SkillLevel>(profile?.skill_level ?? 'intermediate')
   const [cuisines, setCuisines] = useState<string[]>(profile?.preferred_cuisines ?? [])
+  const [allergies, setAllergies] = useState<string[]>(profile?.allergies ?? [])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [conflictItems, setConflictItems] = useState<{ id: string; name: string }[]>([])
@@ -125,11 +127,16 @@ export default function SettingsSheet({ onClose }: Props) {
       setDietary(profile.dietary_preference)
       setSkill(profile.skill_level)
       setCuisines(profile.preferred_cuisines ?? [])
+      setAllergies(profile.allergies ?? [])
     }
   }, [profile])
 
   function toggleCuisine(c: string) {
     setCuisines(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
+  }
+
+  function toggleAllergen(id: string) {
+    setAllergies(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id])
   }
 
   async function handleSave() {
@@ -141,6 +148,7 @@ export default function SettingsSheet({ onClose }: Props) {
       dietary_preference: dietary,
       skill_level: skill,
       preferred_cuisines: cuisines,
+      allergies,
     }).eq('id', user.id)
     if (error) { setSaving(false); return }
     await refreshProfile()
@@ -336,6 +344,41 @@ export default function SettingsSheet({ onClose }: Props) {
                   {cuisines.length} selected
                 </span>
                 <button onClick={() => setCuisines([])}
+                  className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 hover:text-red-400 transition-colors">
+                  Clear all
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Allergies section */}
+          <div className="rounded-2xl p-4" style={{ background: 'var(--s2)', border: '1px solid var(--bdr-s)' }}>
+            <SectionHeader emoji="⚠️" label="Allergies & Restrictions" color="orange" />
+            <p className="text-xs font-body mb-3" style={{ color: 'var(--t3)' }}>
+              Recipes will warn you if they contain these ingredients. Leave empty if no allergies.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {ALLERGENS.map(a => {
+                const active = allergies.includes(a.id)
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => toggleAllergen(a.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-600 border-2 transition-all"
+                    style={active
+                      ? { background: '#ef4444', borderColor: '#ef4444', color: '#fff', boxShadow: '0 2px 8px rgba(239,68,68,0.25)' }
+                      : { background: 'var(--s1)', borderColor: 'var(--bdr-m)', color: 'var(--t2)' }
+                    }
+                  >
+                    <span>{a.emoji}</span> {a.label}
+                  </button>
+                )
+              })}
+            </div>
+            {allergies.length > 0 && (
+              <div className="flex items-center justify-between mt-3 pt-2.5" style={{ borderTop: '1px solid var(--bdr-s)' }}>
+                <span className="text-xs font-body text-red-500 font-600">{allergies.length} selected</span>
+                <button onClick={() => setAllergies([])}
                   className="text-xs font-display font-600 text-stone-400 dark:text-stone-500 hover:text-red-400 transition-colors">
                   Clear all
                 </button>

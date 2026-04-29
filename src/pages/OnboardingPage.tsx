@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { DietaryPreference, SkillLevel, PantryCategory } from '../types/database'
+import { ALLERGENS } from '../utils/allergens'
 
 // ─── Step 2 data ────────────────────────────────────────────
 const CUISINES = [
@@ -108,6 +109,9 @@ export default function OnboardingPage() {
   const [skill, setSkill] = useState<SkillLevel>('beginner')
   const [cuisines, setCuisines] = useState<string[]>([])
 
+  // Step 2 allergies
+  const [allergies, setAllergies] = useState<string[]>([])
+
   // Step 3 state — set of selected item names
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
@@ -115,6 +119,10 @@ export default function OnboardingPage() {
     setCuisines(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     )
+  }
+
+  function toggleAllergen(id: string) {
+    setAllergies(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id])
   }
 
   function toggleItem(name: string) {
@@ -137,6 +145,7 @@ export default function OnboardingPage() {
           dietary_preference: dietary,
           skill_level: skill,
           preferred_cuisines: cuisines,
+          allergies,
           onboarding_completed: true,
         })
         .eq('id', user.id)
@@ -292,6 +301,26 @@ export default function OnboardingPage() {
                   }`}
                 >
                   <span>{c.flag}</span> {c.id}
+                </button>
+              ))}
+            </div>
+
+            {/* Allergies */}
+            <p className="font-display font-700 text-stone-700 dark:text-stone-300 text-sm mb-1">
+              Food allergies <span className="text-stone-400 font-400">(optional — skip if none)</span>
+            </p>
+            <div className="flex flex-wrap gap-2 mb-8">
+              {ALLERGENS.map(a => (
+                <button
+                  key={a.id}
+                  onClick={() => toggleAllergen(a.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full border-2 text-sm font-display font-600 transition-all duration-150 ${
+                    allergies.includes(a.id)
+                      ? 'border-red-400 bg-red-400 text-white'
+                      : 'border-cream-200 dark:border-charcoal-700 bg-white dark:bg-charcoal-800 text-stone-700 dark:text-stone-300'
+                  }`}
+                >
+                  <span>{a.emoji}</span> {a.label}
                 </button>
               ))}
             </div>
